@@ -18,5 +18,5 @@
             "../../node_modules/@types"
         ]
   },
-  "include": ["src/**/*.ts", "src/typings/index.d.ts"],
+  "include": ["src/**/*.ts", "src/typings/auth/index.d.ts"],
 }

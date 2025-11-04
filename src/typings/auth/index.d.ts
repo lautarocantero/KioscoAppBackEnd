@@ -1,22 +1,25 @@
 declare module 'db-local' {
   interface FieldDefinition {
-    type: any;
+    type: unknown;
     required?: boolean;
-    default?: any;
+    default?: unknown;
   }
 
   interface SchemaDefinition {
     [key: string]: FieldDefinition;
   }
 
-  interface Document<T> {
+  export interface DocumentAuth<T> {
     save(): T;
+    username: string;
+    password: string;
+    refreshToken: string;
   }
 
   interface Schema<T> {
-    create(data: T): Document<T>;
+    create(data: T): DocumentAuth<T>;
     find(query: Partial<T> | ((item: T) => boolean)): T[];
-    findOne(query: Partial<T> | ((item: T) => boolean)): T | undefined;
+    findOne(query: Partial<T> | ((item: T) => boolean)): DocumentAuth<T> | undefined;
     update(query: Partial<T>, update: Partial<T>): void;
     delete(query: Partial<T>): void;
   }
