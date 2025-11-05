@@ -14,6 +14,7 @@ declare module 'db-local' {
     username: string;
     password: string;
     refreshToken: string;
+    authToken: string;
   }
 
   interface Schema<T> {

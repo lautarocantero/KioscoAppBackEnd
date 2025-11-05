@@ -1,8 +1,6 @@
 import Validation from './validation';
 import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../config';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
 import DBLocal from 'db-local';
 import { AuthBaseType, AuthPublic, AuthTokenInterface } from '../typings/auth/authTypes';
 
