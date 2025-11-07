@@ -18,9 +18,17 @@ export type AuthInfo = Omit<AuthBaseType, 'save'> // Sin metodos
 export type AuthPublic = Omit<AuthBaseType, 'save' | 'password'>  // datos publicos, sin metodos
 
 
+// export type RequestLogout = Pick<AuthPublic, '_id'>
+
 /////////////////////////
+// token
+/////////////////////////
+
+
 export interface AuthTokenInterface {
     userId: string,
     token: string,
 }
+
+export type AuthTokenPublic = Pick<AuthPublic, 'refreshToken'>
 

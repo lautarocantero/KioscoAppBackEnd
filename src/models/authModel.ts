@@ -2,7 +2,7 @@ import Validation from './validation';
 import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../config';
 import DBLocal from 'db-local';
-import { AuthBaseType, AuthPublic, AuthTokenInterface } from '../typings/auth/authTypes';
+import { AuthBaseType, AuthPublic, AuthTokenInterface, AuthTokenPublic } from '../typings/auth/authTypes';
 
 const { Schema } = new DBLocal({ path: './db'});
 
@@ -35,6 +35,8 @@ export class AuthModel {
         return id;
     }
 
+    // Busca el usuario, si lo encuentra y la contra coincide, devuelo los datos del usuario
+
     static async login ({username, password} : {username: unknown, password: unknown} ) : Promise<AuthPublic> {
         Validation.username(username);
         Validation.password(password);
@@ -56,6 +58,42 @@ export class AuthModel {
         user.refreshToken = token;
         user.save();
     }
+
+    /**
+    Busca el token público de refresco para un usuario dado.
+    Devuelve undefined si el usuario no existe o no tiene token.
+    */
+
+    static async getRefreshToken (userId : string): Promise <AuthTokenPublic | undefined> {
+        const { refreshToken } : { refreshToken: string} = Auth.findOne({ _id: userId }) as AuthBaseType;
+        
+        if( !refreshToken)
+            return undefined;
+
+        if (typeof refreshToken !== 'string')
+            return undefined;
+
+        return {refreshToken} as  AuthTokenPublic;
+    }
+
+    /**
+        Busca un usuario con un id dado e intenta borrar el refresh token.
+        Devuelve undefined si no lo encuentra o si ya se borro, si lo encuentra borra el token
+    */
+
+    static async deleteRefreshToken (userId: string) : Promise<void | undefined > {
+        const user: AuthBaseType = Auth.findOne({ _id: userId});
+
+        if(!user) return undefined;
+
+        if(!user.refreshToken) return undefined;
+
+        user.update(
+            { id: user.id }, //buscar
+            { refreshToken: null } //actualizar
+        );
+    }
+    
 
 }
 

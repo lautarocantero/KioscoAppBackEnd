@@ -24,9 +24,13 @@
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "db-local": "^3.1.0",
-    "express": "5.1.0"
+    "express": "5.1.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "eslintConfig": {
     "parserOptions": {

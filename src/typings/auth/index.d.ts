@@ -9,12 +9,13 @@ declare module 'db-local' {
     [key: string]: FieldDefinition;
   }
 
-  export interface DocumentAuth<T> {
-    save(): T;
+  export interface DocumentAuth {
+    _id: string;
+    email: string;
     username: string;
     password: string;
-    refreshToken: string;
     authToken: string;
+    refreshToken: string;
   }
 
   interface Schema<T> {
