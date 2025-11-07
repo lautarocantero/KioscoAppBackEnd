@@ -6,6 +6,8 @@ import { AuthBaseType, AuthPublic, AuthTokenInterface, AuthTokenPublic } from '.
 
 const { Schema } = new DBLocal({ path: './db'});
 
+// prueba de mi script de guardado
+
 const Auth = Schema('Auth', {
     _id: { type: String, required: true},
     username: { type: String, required: true},
