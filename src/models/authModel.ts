@@ -11,15 +11,18 @@ const { Schema } = new DBLocal({ path: './db'});
 const Auth = Schema('Auth', {
     _id: { type: String, required: true},
     username: { type: String, required: true},
+    email: { type: String, required: true},
     password: { type: String, required: true},
     refreshToken: { type: String, required: false},
 });
 
 export class AuthModel {
 
-    static async create ({username, password}: {username: unknown, password: unknown}) : Promise<string> {
+    static async create ({username,email, password, repeatPassword}: {username: unknown,email: unknown, password: unknown , repeatPassword: unknown}) : Promise<string> {
         Validation.username(username);
+        Validation.email(email);
         Validation.password(password);
+        Validation.password(repeatPassword);
         
         const auth = Auth.findOne({ username });
         if(auth) throw new Error('username already exists');
@@ -32,6 +35,7 @@ export class AuthModel {
             _id: id,
             username,
             password: hashedPassword,
+            email,
         }).save();
 
         return id;

@@ -11,10 +11,10 @@ export async function home(_req: Request, res: Response) {
 }
 
 export async function register(req: Request,res: Response): Promise<void>  {
-    const { username, password } = req.body;
+    const { username, email, password, repeatPassword } = req.body;
 
     try{
-        const id = await AuthModel.create({username, password});
+        const id = await AuthModel.create({username, email,  password , repeatPassword});
         res.send({id});
     } catch(error: unknown){
         if (error instanceof Error) {

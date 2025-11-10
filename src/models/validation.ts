@@ -23,6 +23,12 @@ class Validation {
         if(isShortString(password as string) ) throw new Error('password must be at least 3 characters long');
     }
 
+    static email (email : unknown): void {
+        if(!email) throw new Error(`No email provided`);
+        if(!isString(email)) throw new Error('email must be a string');
+        if(isShortString(email as string) ) throw new Error('email must be at least 3 characters long');
+    }
+
     static refreshToken (token: unknown): void {
         if(!token) throw new Error(`No refresh Token provided`);
         if(!isString(token)) throw new Error('token must be a string');
