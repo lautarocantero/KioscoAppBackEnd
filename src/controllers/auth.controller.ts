@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import Validation from "../models/validation";
 
 
+
 export async function home(_req: Request, res: Response) {
     res.send('estas en auth!!!');
 }
