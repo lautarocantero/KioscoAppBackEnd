@@ -14,8 +14,8 @@ export async function register(req: Request,res: Response): Promise<void>  {
     const { username, email, password, repeatPassword } = req.body;
 
     try{
-        const id = await AuthModel.create({username, email,  password , repeatPassword});
-        res.send({id});
+        const _id = await AuthModel.create({username, email,  password , repeatPassword});
+        res.send({_id});
     } catch(error: unknown){
         if (error instanceof Error) {
             res
@@ -28,26 +28,25 @@ export async function register(req: Request,res: Response): Promise<void>  {
 
 
 export async function login ( req: Request, res: Response ) : Promise <void>  {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    Validation.username(username);
+    Validation.email(email);
     Validation.password(password);
     
     try{
-        const user: AuthPublic = await AuthModel.login({username, password});
+        const user: AuthPublic = await AuthModel.login({email, password});
 
         const token = jwt.sign(
-          { id: user._id, username: user.username },
+          { id: user._id, email: user.email },
           ACCESS_SECRET,
           { expiresIn: '5m' }
         );
 
         const refreshToken = jwt.sign(
-          { id: user._id, username: user.username },
+          { id: user._id, email: user.email },
           REFRESH_SECRET,
           { expiresIn: '7d' }
         );
-
         await AuthModel.saveRefreshToken({ userId: user._id, token: refreshToken });
 
         res
@@ -101,6 +100,48 @@ export async function logout(req: Request, res: Response): Promise<void> {
     }
   }
 }
+
+export async function checkAuth(req: Request, res: Response): Promise<void> {                                            
+    const refreshToken = req.cookies?.refresh_token;
+    
+    try{
+
+      const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; };
+      const user = await AuthModel.chechAuth(accessPayload.id);
+      
+      if(!user) throw new Error('No se encuentra ese usuario');
+      
+      res
+        .status(200)
+        .send(user);
+    } catch(err: unknown) {
+      if(!(err instanceof Error)) throw new Error('Oops, something went wrong, try again.');
+      throw new Error(err.message);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  
  

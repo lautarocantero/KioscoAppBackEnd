@@ -6,8 +6,6 @@ import { AuthBaseType, AuthPublic, AuthTokenInterface, AuthTokenPublic } from '.
 
 const { Schema } = new DBLocal({ path: './db'});
 
-// prueba de mi script de guardado
-
 const Auth = Schema('Auth', {
     _id: { type: String, required: true},
     username: { type: String, required: true},
@@ -27,28 +25,26 @@ export class AuthModel {
         const auth = Auth.findOne({ username });
         if(auth) throw new Error('username already exists');
 
-        const id = crypto.randomUUID();
+        const _id = crypto.randomUUID();
 
         const hashedPassword = await bcrypt.hash(password as string, SALT_ROUNDS);
 
         Auth.create({
-            _id: id,
+            _id:
             username,
             password: hashedPassword,
             email,
         }).save();
 
-        return id;
+        return _id as string;
     }
 
-    // Busca el usuario, si lo encuentra y la contra coincide, devuelo los datos del usuario
-
-    static async login ({username, password} : {username: unknown, password: unknown} ) : Promise<AuthPublic> {
-        Validation.username(username);
+    static async login ({email, password} : {email: unknown, password: unknown} ) : Promise<AuthPublic> {
+        Validation.email(email);
         Validation.password(password);
-
-        const user = Auth.findOne({username});
-        if(!user) throw new Error('username does not exist');
+        
+        const user = Auth.findOne({email});
+        if(!user) throw new Error('email does not exist');
 
         const isValid = await bcrypt.compare(password as string, user.password as string);
         if(!isValid) throw new Error('password is invalid');
@@ -98,6 +94,15 @@ export class AuthModel {
             { id: user.id }, //buscar
             { refreshToken: null } //actualizar
         );
+    }
+
+    static async chechAuth (id: string): Promise<void | undefined> {
+        const user: AuthBaseType = Auth.findOne({ _id: id});
+        if(!user) return undefined;
+
+        if(!user.refreshToken) return undefined;
+
+        return user;
     }
     
 
