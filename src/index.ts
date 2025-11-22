@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
+import sellRoutes from './routes/sell.routes';
 import cookieParser from 'cookie-parser';
 import { PORT } from './config';
 import cors from 'cors';
@@ -21,7 +22,7 @@ app.use('/auth', authRoutes);
 
 // app.use('/user', userRoutes);
 // app.use('/provider', provider);
-// app.use('/sell', sell);
+app.use('/sell', sellRoutes);
 app.use('/product', productRoutes);
 // app.use('/category', category);
 
