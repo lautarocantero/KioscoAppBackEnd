@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
+import productVariantRoutes from './routes/productVariant.routes';
 import sellRoutes from './routes/sell.routes';
 import cookieParser from 'cookie-parser';
 import { PORT } from './config';
@@ -24,6 +25,7 @@ app.use('/auth', authRoutes);
 // app.use('/provider', provider);
 app.use('/sell', sellRoutes);
 app.use('/product', productRoutes);
+app.use('/product-variant', productVariantRoutes);
 // app.use('/category', category);
 
 
