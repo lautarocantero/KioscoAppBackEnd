@@ -40,7 +40,6 @@ const isImageUrl = (value: string): boolean => {
   }
 };
 
-
 const isShortString = (string: string, lenght: number = 3): boolean => {
     if(string.length < lenght) return true;
     return false;
@@ -123,6 +122,23 @@ class Validation {
         if(!isString(image)) throw new Error('image Url is not a string');
         if(isShortString(image as string) ) throw new Error('image must be at least 3 characters long');
         if(!isImageUrl(image as string)) throw new Error('ImageUrl does not provide a valid url');
+    }
+    
+    static imageArray(images: unknown): void {
+      if (!images) throw new Error("No images provided");
+      if (!Array.isArray(images)) throw new Error("images must be an array");
+
+      images.forEach((image, index) => {
+        if (!isImageUrl(image)) {
+          throw new Error(`Image at index ${index} is not a string`);
+        }
+        if (isShortString(image as string)) {
+          throw new Error(`Image at index ${index} must be at least 3 characters long`);
+        }
+        if (!isImageUrl(image as string)) {
+          throw new Error(`Image at index ${index} is not a valid image URL`);
+        }
+      });
     }
 
     static barcode (barcode: unknown): void {

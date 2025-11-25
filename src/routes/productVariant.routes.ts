@@ -1,13 +1,36 @@
 import express from 'express';
-import { home } from '../controllers/auth.controller';
-import { createProductVariant, getProductVariant } from '../controllers/productVariant.controller';
+import { getProductVariantByProductId, getAllProductVariants, home, deleteProductVariant, editProductVariant } from '../controllers/productVariant.controller';
+import { createProductVariant, getProductVariantById } from '../controllers/productVariant.controller';
 
 const router = express.Router();
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
 router.get('/', home);
 
-router.get('/get-product-variant', getProductVariant);
+router.get('/get-product-variants', getAllProductVariants);
+
+router.get('/get-product-variant-by-id', getProductVariantById);
+
+router.get('/get-product-variant-by-product-id', getProductVariantByProductId);
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
 
 router.post('/create-product-variant', createProductVariant);
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+router.delete('/delete-product-variant', deleteProductVariant);
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+router.put('/edit-product-variant', editProductVariant);
 
 export default router;

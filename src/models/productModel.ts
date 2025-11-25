@@ -82,19 +82,19 @@ export class ProductModel {
     }
 
     static async getProducts() {
-    // Implementación interna de limitación
-    let count = 0;
-    const results: DocumentProduct[] = [];
-
-    // find acepta un predicado, lo usamos para cortar en 100
-    Product.find((item: DocumentProduct) => {
-      if (count < 100) {
-        results.push(item);
-        count++;
-        return true;
-      }
-      return false; // después de 100 ya no agrega más
-    });
+      // Implementación interna de limitación
+      let count = 0;
+      const results: DocumentProduct[] = [];
+      
+      // find acepta un predicado, lo uso para cortar en 100
+      Product.find((item: DocumentProduct) => {
+        if (count < 100) {
+          results.push(item);
+          count++;
+          return true;
+        }
+        return false; // después de 100 ya no agrega más
+      });
 
     return results;
   }

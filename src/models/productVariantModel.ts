@@ -1,17 +1,19 @@
 import DBLocal from "db-local";
-import { ProductVariantCreate, ProductVariantGet, ProductVariantSchema } from '../typings/product-variant/productVariantTypes';
+import { ProductVariant, ProductVariantCreate, ProductVariantGetById, ProductVariantGetByProductId, ProductVariantSchemaType } from '../typings/product-variant/productVariantTypes';
 import Validation from "./validation";
 
 const { Schema } = new DBLocal({ path: './db'});
 
-const ProductVariant = Schema <ProductVariantSchema> ('ProductVariant', {
+// TO DO seria buena idea mover esto a ../schema/ProductVariantObjectSchema
+
+const ProductVariantObjectSchema = Schema <ProductVariantSchemaType> ('ProductVariant', {
     _id: {type: String, required: true},
     name: {type: String, required: true},
     description: {type: String, required: true},
     created_at: {type: String, required: true},
     updated_at: {type: String, required: true},
     image_url: {type: String, required: true},
-    gallery_urls: {type: String, required: true},
+    gallery_urls: {type: [String], required: true},
     brand: {type: String, required: true},
     product_id: {type: String, required: true},
     sku: {type: String, required: true},
@@ -22,10 +24,64 @@ const ProductVariant = Schema <ProductVariantSchema> ('ProductVariant', {
     price: {type: Number, required: true},
     expiration_date: {type: String, required: true},
 });
+
 export class ProductVariantModel {
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async create (data: ProductVariantCreate) {
+    static async getAllProductVariants() {
+        let count = 0;
+        const results: ProductVariant[] = [];
+
+        ProductVariantObjectSchema.find((item: ProductVariant) => {
+            if(count < 100) {
+                results.push(item);
+                count++;
+                return true;
+            }
+            return false;
+        });
+
+        return results;
+    }
+
+    static async getProductVariantById (data: ProductVariantGetById) {
+        const { _id } = data;
+
+        Validation.stringValidation(_id, 'id');
+
+        const ProductVariantObject = ProductVariantObjectSchema?.findOne((prodvar: ProductVariant) => prodvar?._id === _id );
+
+        if(!ProductVariantObject) throw new Error('Does not exist a productVariant with this id');
+
+        return ProductVariantObject;
+    }
+
+    static async getgetProductVariantByProductId (data: ProductVariantGetByProductId) {
+        const { product_id } = data;
+
+        Validation.stringValidation(product_id, 'product_id');
+
+        const results: ProductVariant[] = [];
+
+        ProductVariantObjectSchema.find((item: ProductVariant) => {
+            if(item?.product_id === product_id ) {
+                results?.push(item);
+                return true;
+            }
+            return false;
+        });
+
+        return results;
+    }
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+    static async createProductVariant (data: ProductVariantCreate) {
         const {
             name,description,created_at,updated_at,image_url,
             gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
@@ -36,8 +92,8 @@ export class ProductVariantModel {
         Validation.stringValidation(description,'description');
         Validation.date(created_at,'created_at');
         Validation.date(updated_at,'updated_at');
-        Validation.stringValidation(image_url,'image_url');
-        Validation.stringValidation(gallery_urls,'gallery_urls');
+        Validation.image(image_url);
+        Validation.imageArray(gallery_urls);
         Validation.stringValidation(brand,'brand');
         Validation.stringValidation(product_id,'product_id');
         Validation.stringValidation(sku,'sku');
@@ -48,12 +104,13 @@ export class ProductVariantModel {
         Validation.number(price,'price');
         Validation.date(expiration_date,'expiration_date');
 
-        const productVariant = ProductVariant.findOne((prodvar) => prodvar.name === name);
+        const productVariant = ProductVariantObjectSchema.findOne((prodvar: ProductVariant ) => prodvar.name === name);
+
         if (productVariant) throw new Error ('Product Variant already exists');
 
         const _id = crypto.randomUUID();
 
-        ProductVariant.create({
+        ProductVariantObjectSchema.create({
             _id: _id as string,
             name: name as string,
             description: description as string,
@@ -70,20 +127,53 @@ export class ProductVariantModel {
             stock: stock as number,
             price: price as number,
             expiration_date: expiration_date as string,
-        });
+        }).save(); //save hace que se guarde en la dblocal
 
         return _id as string;
     }
 
-    static async getById (data: ProductVariantGet) {
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+    static async deleteProductVariant (data: ProductVariantGetById) {
         const { _id } = data;
+
         Validation.stringValidation(_id, 'id');
 
-        const ProductVariantObject = ProductVariant?.findOne((prodvar) => prodvar?._id === _id );
+        const ProductVariantObject = ProductVariantObjectSchema.findOne(
+        (prodvar: ProductVariant) => prodvar._id === _id
+        );
 
-        if(!ProductVariantObject) throw new Error('Does not exist a productVariant with this id');
+        if (!ProductVariantObject) {
+            throw new Error('Does not exist a productVariant with this id');
+        }
 
-        return ProductVariantObject;
+        ProductVariantObject.remove();
+
+    }
+
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+    static async editProductVariant (data: ProductVariantGetById) {
+        const { _id } = data;
+
+        Validation.stringValidation(_id, 'id');
+
+        const ProductVariantObject = ProductVariantObjectSchema.findOne(
+        (prodvar: ProductVariant) => prodvar._id === _id
+        );
+
+        if (!ProductVariantObject) {
+            throw new Error('Does not exist a productVariant with this id');
+        }
+
+        // TO DO agregar los elementos editables 
+        ProductVariantObject.update();
+
     }
 
 }

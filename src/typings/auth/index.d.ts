@@ -23,7 +23,7 @@ declare module 'db-local' {
     find(query: Partial<T> | ((item: T) => boolean)): T[];
     findOne(query: Partial<T> | ((item: T) => boolean)): DocumentAuth<T> | undefined;
     update(query: Partial<T>, update: Partial<T>): void;
-    delete(query: Partial<T>): void;
+    // remove(query: Partial<T> | ((item: T) => boolean)): void;
   }
 
   interface DBLocalOptions {

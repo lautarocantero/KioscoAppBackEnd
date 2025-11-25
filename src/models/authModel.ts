@@ -34,7 +34,7 @@ export class AuthModel {
             username,
             password: hashedPassword,
             email,
-        }).save();
+        }).save(); //save hace que se guarde en la dblocal
 
         return _id as string;
     }
