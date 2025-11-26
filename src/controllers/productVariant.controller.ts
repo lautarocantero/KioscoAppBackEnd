@@ -15,22 +15,23 @@ export async function home(_req: Request, res: Response) {
     ----Get: /get-product-variant-by-product-id<br>
     ----Get: /get-product-variants<br>
     ----Post: /create-product-varaint<br>
-    ----Delete: /delete-product-variant
+    ----Delete: /delete-product-variant<br>
+    ----Put: /edit-product-variant<br>
     `);
 }
 
 export async function getAllProductVariants (_req: Request, res: Response ) {
 
     try{
-        const productVariants = await ProductVariantModel.getAllProductVariants();
+        const productVariantsObject = await ProductVariantModel.getAllProductVariants();
         res
             .status(200)
-            .json(productVariants);
+            .json(productVariantsObject);
     } 
     catch(error: unknown) {
         if(!(error instanceof Error)) {
             res
-                .status(400)
+                .status(500)
                 .send('An unexpected error ocurred, try again');
             return;
         }
@@ -42,15 +43,16 @@ export async function getAllProductVariants (_req: Request, res: Response ) {
 
 export async function getProductVariantById (req: ProductVariantGetByIdRequest, res: Response) {
     const { _id } = req.body;
+
     try {
-        const ProductVariant = await ProductVariantModel.getProductVariantById({_id});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantById({_id});
         res
             .status(200)
-            .send(ProductVariant);
+            .send(ProductVariantObject);
     } catch (error: unknown) {
         if(!(error instanceof Error)) {
             res
-                .status(400)
+                .status(500)
                 .send('An unexpected error ocurred, try again');
             return;
         }
@@ -62,15 +64,16 @@ export async function getProductVariantById (req: ProductVariantGetByIdRequest, 
 
 export async function getProductVariantByProductId (req: ProductVariantGetByProductIdRequest, res: Response) {
     const { product_id } = req.body;
+
     try {
-        const ProductVariant = await ProductVariantModel.getgetProductVariantByProductId({product_id});
+        const ProductVariantObject = await ProductVariantModel.getgetProductVariantByProductId({product_id});
         res
             .status(200)
-            .send(ProductVariant);
+            .send(ProductVariantObject);
     } catch (error: unknown) {
         if(!(error instanceof Error)) {
             res
-                .status(400)
+                .status(500)
                 .send('An unexpected error ocurred, try again');
             return;
         }
@@ -99,11 +102,14 @@ export async function createProductVariant(req: ProductVariantCreateRequest, res
         });
         res
             .status(200)
-            .send({_id});
+            .send({
+                _id,
+                message: "Product variant created successfully",
+            });
     } catch (error: unknown) {
         if(!(error instanceof Error)) {
             res
-                .status(400)
+                .status(500)
                 .send('An unexpected error ocurred, try again');
             return;
         }
@@ -128,7 +134,7 @@ export async function deleteProductVariant(req: ProductVariantGetByIdRequest, re
     } catch(error: unknown) {
         if(!(error instanceof Error)) {
             res
-                .status(400)
+                .status(500)
                 .send('An unexpected error ocurred, try again');
             return;
         }
@@ -152,18 +158,21 @@ export async function editProductVariant(req: ProductVariantEditRequest, res: Re
      } = req.body;
 
     try{
-        const response = await ProductVariantModel.editProductVariant({ 
+        await ProductVariantModel.editProductVariant({ 
             _id, name, description, created_at, updated_at, image_url,
             gallery_urls, brand, product_id, sku, model_type, model_size,
             min_stock, stock, price, expiration_date 
         });
         res
             .status(200)
-            .send(response);
+            .send({
+                _id,
+                message: "Product variant edited successfully",
+            });
     } catch(error: unknown) {
         if(!(error instanceof Error)) {
             res
-                .status(400)
+                .status(500)
                 .send('An unexpected error ocurred, try again');
             return;
         }

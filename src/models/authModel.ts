@@ -1,18 +1,8 @@
 import Validation from './validation';
 import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../config';
-import DBLocal from 'db-local';
 import { AuthBaseType, AuthPublic, AuthTokenInterface, AuthTokenPublic } from '../typings/auth/authTypes';
-
-const { Schema } = new DBLocal({ path: './db'});
-
-const Auth = Schema('Auth', {
-    _id: { type: String, required: true},
-    username: { type: String, required: true},
-    email: { type: String, required: true},
-    password: { type: String, required: true},
-    refreshToken: { type: String, required: false},
-});
+import { Auth } from '../schemas/authSchema';
 
 export class AuthModel {
 

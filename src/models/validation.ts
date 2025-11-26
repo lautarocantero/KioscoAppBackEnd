@@ -67,7 +67,7 @@ const isBarcode = (value: string): boolean => {
   return barcodePattern.test(value);
 };
 
-class Validation {
+export class Validation {
     static username (username : unknown): void {
         if(!username) throw new Error(`No user provided`);
         if(!isString(username)) throw new Error(`username must be a string ${username}`);
@@ -148,6 +148,3 @@ class Validation {
     }
 
 }
-
-export default Validation;
-

@@ -1,29 +1,7 @@
-import DBLocal from "db-local";
-import { ProductVariant, ProductVariantCreate, ProductVariantEdit, ProductVariantGetById, ProductVariantGetByProductId, ProductVariantSchemaType } from '../typings/product-variant/productVariantTypes';
-import Validation from "./validation";
 
-const { Schema } = new DBLocal({ path: './db'});
-
-// TO DO seria buena idea mover esto a ../schema/ProductVariantObjectSchema
-
-const ProductVariantObjectSchema = Schema <ProductVariantSchemaType> ('ProductVariant', {
-    _id: {type: String, required: true},
-    name: {type: String, required: true},
-    description: {type: String, required: true},
-    created_at: {type: String, required: true},
-    updated_at: {type: String, required: true},
-    image_url: {type: String, required: true},
-    gallery_urls: {type: [String], required: true},
-    brand: {type: String, required: true},
-    product_id: {type: String, required: true},
-    sku: {type: String, required: true},
-    model_type: {type: String, required: true},
-    model_size: {type: String, required: true},
-    min_stock: {type: Number, required: true},
-    stock: {type: Number, required: true},
-    price: {type: Number, required: true},
-    expiration_date: {type: String, required: true},
-});
+import { ProductVariantObjectSchema } from '../schemas/productVariantSchema';
+import { ProductVariant, ProductVariantCreate, ProductVariantEdit, ProductVariantGetById, ProductVariantGetByProductId } from '../typings/product-variant/productVariantTypes';
+import { Validation } from './validation';
 
 export class ProductVariantModel {
 
@@ -56,7 +34,7 @@ export class ProductVariantModel {
 
         if(!ProductVariantObject) throw new Error('Does not exist a productVariant with this id');
 
-        return ProductVariantObject;
+        return ProductVariantObject as ProductVariant;
     }
 
     static async getgetProductVariantByProductId (data: ProductVariantGetByProductId) {
@@ -142,7 +120,7 @@ export class ProductVariantModel {
         Validation.stringValidation(_id, 'id');
 
         const ProductVariantObject = ProductVariantObjectSchema.findOne(
-        (prodvar: ProductVariant) => prodvar._id === _id
+            (prodvar: ProductVariant) => prodvar._id === _id
         );
 
         if (!ProductVariantObject) {
@@ -150,7 +128,6 @@ export class ProductVariantModel {
         }
 
         ProductVariantObject.remove();
-
     }
 
 
@@ -210,7 +187,6 @@ export class ProductVariantModel {
         ProductVariantObject.expiration_date = expiration_date;
         
         ProductVariantObject.save();
-        return _id as string;
     }
 
 }
