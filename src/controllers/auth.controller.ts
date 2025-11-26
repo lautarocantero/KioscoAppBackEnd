@@ -1,8 +1,8 @@
 import { AuthModel } from "../models/authModel";
 import { Request, Response } from 'express';
-import { AuthBaseType, AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthRegisterRequest } from "../typings/auth/authTypes";
 import { ACCESS_SECRET, REFRESH_SECRET } from "../config";
 import jwt from 'jsonwebtoken';
+import { Auth, AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthRegisterRequest } from "../typings/auth/authTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -11,20 +11,20 @@ import jwt from 'jsonwebtoken';
 export async function home(_req: Request, res: Response): Promise<void> {
     res
     .status(200)
-    .json({message:`
+    .send(`
       Estas en auth<br>
       Endpoints =><br>
       ----Post: /register<br>
       ----Post: /login<br>
       ----Post: /logout<br>
       ----Post: /checkAuth<br>
-  `});
+  `);
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-
+// 🆗
 export async function register(req: AuthRegisterRequest, res: Response): Promise<void>  {
     const { username, email, password, repeatPassword } = req.body;
 
@@ -48,7 +48,7 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
             .json({message:error.message});
       }
 }
-
+// 🆗
 export async function login ( req: AuthLoginRequest, res: Response ) : Promise <void>  {
     const { email, password } = req.body;
 
@@ -67,7 +67,7 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
           { expiresIn: '7d' }
         );
 
-        await AuthModel.saveRefreshToken({ userId: user._id, token: refreshToken });
+        await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
 
         res
           .cookie('access_token', token, {
@@ -101,7 +101,7 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
           .json({message:error.message});
     }
 }
-
+// 🆗
 export async function logout(req: AuthLogoutRequest, res: Response): Promise<void> {
   const refreshToken = req?.cookies?.refresh_token;
 
@@ -114,7 +114,7 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
       return;
     }
 
-    await AuthModel.deleteRefreshToken({userId: payload.id});
+    await AuthModel.deleteRefreshToken({_id: payload.id});
 
     res
       .clearCookie('access_token')
@@ -133,14 +133,14 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
         .json({message:error.message});
 }
 }
-
+// 🆗
 export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promise<void> {                                            
     const refreshToken = req.cookies?.refresh_token;
     
     try{
 
       const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; };
-      const user: AuthBaseType = await AuthModel.chechAuth({ _id: accessPayload.id});
+      const user: Auth = await AuthModel.checkAuth({ _id: accessPayload.id});
       
       if(!user) throw new Error('No se encuentra ese usuario');
       
@@ -157,7 +157,6 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
         res 
           .status(400)
           .json({message:error.message});
-
     }
 }
 
