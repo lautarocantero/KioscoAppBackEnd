@@ -4,7 +4,35 @@ import { Validation } from "./validation";
 
 export class ProductModel {
 
-    static async create (data: ProductInput) {
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+    static async getProducts(): Promise<DocumentProduct[]> {
+      // Implementación interna de limitación
+      let count = 0;
+      const results: DocumentProduct[] = [];
+      
+      // find acepta un predicado, lo uso para cortar en 100
+      Product.find((item: DocumentProduct) => {
+        if (count < 100) {
+          results.push(item);
+          count++;
+          return true;
+        }
+        return false; // después de 100 ya no agrega más
+      });
+
+    return results;
+  }
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+    // TO DO APLICAR ESTO A LOS DEMAS MODELOS
+    // NO SE DE QUE TIPO SERAN, POR ESO LOS VALIDO
+    static async create (data: ProductInput): Promise <string> {
 
         const {
             name, description, sku, price, category_id, 
@@ -24,13 +52,14 @@ export class ProductModel {
         Validation.number(stock, 'stock');
         Validation.number(min_stock, 'min_stock');
         Validation.image(image_url);
-        Validation.image(gallery_urls);
+        Validation.imageArray(gallery_urls);
         Validation.stringValidation(size, 'size', 2);
         Validation.stringValidation(brand, 'brand');
         Validation.barcode(barcode);
         Validation.date(expiration_date, 'expiration_date');
 
-        const product = Product.findOne((prod) => prod.name === name);
+        const product: DocumentProduct = Product.findOne((prod: DocumentProduct) => prod.name === name);
+
         if(product) throw new Error('product already exists');
 
         const _id = crypto.randomUUID();
@@ -56,25 +85,5 @@ export class ProductModel {
         });
 
         return _id as string;
-
     }
-
-    static async getProducts() {
-      // Implementación interna de limitación
-      let count = 0;
-      const results: DocumentProduct[] = [];
-      
-      // find acepta un predicado, lo uso para cortar en 100
-      Product.find((item: DocumentProduct) => {
-        if (count < 100) {
-          results.push(item);
-          count++;
-          return true;
-        }
-        return false; // después de 100 ya no agrega más
-      });
-
-    return results;
-  }
-
 }

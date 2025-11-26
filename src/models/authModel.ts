@@ -1,10 +1,45 @@
 import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../config';
-import { AuthBaseType, AuthLogin, AuthPublic, AuthRefreshTokenType, AuthRegister, AuthTokenInterface, AuthTokenPublic, DocumentAuth } from '../typings/auth/authTypes';
+import { AuthBaseType, AuthLogin, AuthPublic, AuthRefreshTokenType, AuthRegister, AuthTokenInterface, AuthTokenPublic, ChechAuthType, DocumentAuth } from '../typings/auth/authTypes';
 import { AuthSchema } from '../schemas/authSchema';
 import { Validation } from './validation';
 
 export class AuthModel {
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+/**
+Busca el token público de refresco para un usuario dado.
+Devuelve undefined si el usuario no existe o no tiene token.
+*/
+    static async getRefreshToken (data : AuthRefreshTokenType): Promise <AuthTokenPublic> {
+        const { userId } = data;
+
+        Validation.stringValidation(userId, 'userId');
+
+        const { refreshToken } : { refreshToken: string} = AuthSchema.findOne({ _id: userId }) as AuthBaseType;
+
+        if( !refreshToken) throw new Error("Missing refresh token in cookies");
+
+        if (typeof refreshToken !== 'string') throw new Error("Refresh token is not a string");
+
+        return { refreshToken } as  AuthTokenPublic;
+    }
+
+    static async chechAuth (data: ChechAuthType): Promise<AuthBaseType> {
+        const { _id } = data;
+
+        Validation.stringValidation(_id, '_id');
+
+        const user: AuthBaseType = AuthSchema.findOne({ _id: _id});
+
+        if(!user) throw new Error('User not found');
+
+        if(!user.refreshToken) throw new Error('Missing refresh token in cookies');
+
+        return user as AuthBaseType;
+    }
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
@@ -13,7 +48,7 @@ export class AuthModel {
     static async create (data: AuthRegister) : Promise<string> {
         const { username, email, password, repeatPassword} = data;
 
-        Validation.username(username);
+        Validation.stringValidation(username, 'username');
         Validation.email(email);
         Validation.password(password);
         Validation.password(repeatPassword);
@@ -57,8 +92,15 @@ export class AuthModel {
         return publicUser as AuthPublic;
     }
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
     static async saveRefreshToken(data : AuthTokenInterface): Promise<void> {
         const {userId, token} = data;
+
+        Validation.stringValidation(userId, 'userId');
+        Validation.stringValidation(token, 'token');
 
         const user = AuthSchema.findOne({_id: userId});
         if(!user) throw new Error('User not found');
@@ -66,25 +108,7 @@ export class AuthModel {
         user.refreshToken = token;
         user.save();
     }
-
-    /**
-    Busca el token público de refresco para un usuario dado.
-    Devuelve undefined si el usuario no existe o no tiene token.
-    */
-
-    static async getRefreshToken (data : AuthRefreshTokenType): Promise <AuthTokenPublic> {
-        const { userId } = data;
-
-        const { refreshToken } : { refreshToken: string} = AuthSchema.findOne({ _id: userId }) as AuthBaseType;
-        
-        if( !refreshToken)
-            throw new Error("Missing refresh token in cookies");
-
-        if (typeof refreshToken !== 'string')
-            throw new Error("Refresh token is not a string");
-
-        return {refreshToken} as  AuthTokenPublic;
-    }
+    
 
     /**
         Busca un usuario con un id dado e intenta borrar el refresh token.
@@ -93,6 +117,8 @@ export class AuthModel {
 
     static async deleteRefreshToken (data : AuthRefreshTokenType) : Promise<void> {
         const { userId } = data;
+
+        Validation.stringValidation(userId, 'userId');
 
         const user: AuthBaseType = AuthSchema.findOne({ _id: userId});
 
@@ -105,16 +131,6 @@ export class AuthModel {
             { refreshToken: null } //actualizar
         );
     }
-
-    static async chechAuth (id: string): Promise<AuthBaseType> {
-        const user: AuthBaseType = AuthSchema.findOne({ _id: id});
-        if(!user) throw new Error('User not found');
-
-        if(!user.refreshToken) throw new Error('Missing refresh token in cookies');
-
-        return user as AuthBaseType;
-    }
-    
 
 }
 

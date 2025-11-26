@@ -20,16 +20,12 @@ app.use(cookieParser());
 
 
 app.use('/auth', authRoutes);
-
 // app.use('/user', userRoutes);
 // app.use('/provider', provider);
 app.use('/sell', sellRoutes);
 app.use('/product', productRoutes);
 app.use('/product-variant', productVariantRoutes);
-// app.use('/category', category);
 
 
 
-app.listen(PORT, () => { console.log(`en el puerto numero ${PORT}`);
-    
-});
+app.listen(PORT, () => { console.log(`en el puerto numero ${PORT}`);});

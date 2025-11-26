@@ -68,11 +68,12 @@ const isBarcode = (value: string): boolean => {
 };
 
 export class Validation {
-    static username (username : unknown): void {
-        if(!username) throw new Error(`No user provided`);
-        if(!isString(username)) throw new Error(`username must be a string ${username}`);
-        if(isShortString(username as string) ) throw new Error('username must be at least 3 characters long');
-    }
+
+  static stringValidation (string: unknown, title: string, lenght: number = 3): void {
+    if(!string) throw new Error(`No ${title} provided`);
+    if(!isString(string)) throw new Error(`${title} must be a string`);
+    if(isShortString(string as string, lenght) ) throw new Error(`${title} must be at least ${lenght} characters long`);
+  }
 
     static password (password : unknown): void {
         if(!password) throw new Error(`No password provided`);
@@ -90,12 +91,6 @@ export class Validation {
         if(!token) throw new Error(`No refresh Token provided`);
         if(!isString(token)) throw new Error('token must be a string');
         if(isShortString(token as string) ) throw new Error('token miss match');
-    }
-
-    static stringValidation (string: unknown, title: string, lenght: number = 3): void {
-        if(!string) throw new Error(`No ${title} provided`);
-        if(!isString(string)) throw new Error(`${title} must be a string`);
-        if(isShortString(string as string, lenght) ) throw new Error(`${title} must be at least ${lenght} characters long`);
     }
 
     static sku (sku: unknown): void {

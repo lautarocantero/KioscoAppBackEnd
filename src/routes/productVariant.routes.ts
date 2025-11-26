@@ -1,5 +1,5 @@
 import express from 'express';
-import { getProductVariantByProductId, getAllProductVariants, home, deleteProductVariant, editProductVariant, createProductVariant, getProductVariantById } from '../controllers/productVariant.controller';
+import { getProductVariantByProductId, getProductVariants, home, deleteProductVariant, editProductVariant, createProductVariant, getProductVariantById } from '../controllers/productVariant.controller';
 
 const router = express.Router();
 
@@ -9,11 +9,17 @@ const router = express.Router();
 
 router.get('/', home);
 
-router.get('/get-product-variants', getAllProductVariants);
+router.get('/get-product-variants', getProductVariants);
 
 router.get('/get-product-variant-by-id', getProductVariantById);
 
 router.get('/get-product-variant-by-product-id', getProductVariantByProductId);
+
+// router.get('/get-product-variant-by-brand', getProductVariantByBrand);
+
+// router.get('/get-product-variant-by-stock', getProductVariantByStock);
+
+// router.get('/get-product-variant-by-price', getProductVariantByPrice);
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║

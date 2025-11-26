@@ -160,8 +160,6 @@ export class ProductVariantModel {
         Validation.number(price,'price');
         Validation.date(expiration_date,'expiration_date');
 
-        
-
         const ProductVariantObject = ProductVariantObjectSchema.findOne(
             (prodvar: ProductVariant) => prodvar._id === _id
         );

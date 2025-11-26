@@ -7,19 +7,22 @@ import { ProductVariantModel } from "../models/productVariantModel";
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 export async function home(_req: Request, res: Response): Promise<void> {
-    res.send(`
-        Estas en productVariant<br>
-        Endpoints =><br>
-        ----Get: /get-product-variants<br>
-        ----Get: /get-product-variant-by-id<br>
-        ----Get: /get-product-variant-by-product-id<br>
-        ----Post: /create-product-variant<br>
-        ----Delete: /delete-product-variant<br>
-        ----Put: /edit-product-variant<br>
-    `);
+    res
+    .status(200)
+    .json({message:`
+      Estas en product variant<br>
+      Endpoints =><br>
+      ----Get:      /get-product-variants<br>
+      ----Get:      /get-product-variant-by-id<br>
+      ----Get:      /get-product-variant-by-product-id<br>
+      ----Post:     /create-product-variant<br>
+      ----Delete:   /delete-product-variant<br>
+      ----Put:      /edit-product-variant<br>
+  `});
 }
+
 // 🆗
-export async function getAllProductVariants (_req: Request, res: Response ): Promise<void>  {
+export async function getProductVariants (_req: Request, res: Response ): Promise<void>  {
 
     try{
         const productVariantsObject = await ProductVariantModel.getAllProductVariants();

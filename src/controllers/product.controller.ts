@@ -1,26 +1,52 @@
 import { Request, Response } from "express";
 import { ProductModel } from "../models/productModel";
+import { createProductRequest } from "../typings/product/productTypes";
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
 
-// luego modificarlo para diferentes contextos
-export async function getProducts( _req: Request,res: Response) {
+export async function home(_req: Request, res: Response): Promise<void> {
+    res
+    .status(200)
+    .json({message:`
+      Estas en product<br>
+      Endpoints =><br>
+      ----Get:  /get-products<br>
+      ----Post: /create-product<br>
+  `});
+}
+
+export async function getProducts( _req: Request,res: Response): Promise <void> {
   try {
     const products = await ProductModel.getProducts();
-    res.status(200).json(products);
-  } catch (err) {
-        if (err instanceof Error) {
+    res
+        .status(200)
+        .json(products);
+  } catch (error: unknown) {
+        if (!(error instanceof Error)) {
             res
-                .status(400)
-                .send(err.message);
+                .status(500)
+                .json({ message: 'An unexpected error ocurred, try again'});
             return;
         }
+        res
+            .status(400)
+            .json({ message: error.message});
   }
 }
 
-export async function createProduct(req: Request, res: Response): Promise <void> {
+/*══════════════════════════════════════════════════════════════════════╗
+║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+export async function createProduct(req: createProductRequest, res: Response): Promise <void> {
     const {
-        name, description, sku, price, category_id, product_status, created_at, update_at,
-        stock, min_stock, image_url, gallery_urls, size, brand, barcode, expiration_date } = req.body;
+        name, description, sku, price, category_id, 
+        product_status, created_at, update_at,
+        stock, min_stock, image_url, gallery_urls, 
+        size, brand, barcode, expiration_date 
+    } = req.body;
 
     try{
         const _id = await ProductModel.create({
@@ -29,14 +55,20 @@ export async function createProduct(req: Request, res: Response): Promise <void>
         });
         res
             .status(200)
-            .send({_id});
+            .json({
+                _id,
+                message: 'Product created successfully',
+            });
     } catch(error: unknown) {
-        if (error instanceof Error) {
+        if (!(error instanceof Error)) {
             res
-                .status(400)
-                .send(error.message);
+                .status(500)
+                .json({ message: 'An unexpected error ocurred, try again'});
             return;
         }
-    }
+        res
+            .status(400)
+            .json({ message: error.message});
+        }
 }
 

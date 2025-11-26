@@ -9,21 +9,23 @@ import jwt from 'jsonwebtoken';
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 export async function home(_req: Request, res: Response): Promise<void> {
-    res.send(`
+    res
+    .status(200)
+    .json({message:`
       Estas en auth<br>
       Endpoints =><br>
       ----Post: /register<br>
       ----Post: /login<br>
       ----Post: /logout<br>
       ----Post: /checkAuth<br>
-  `);
+  `});
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export async function register(req: AuthRegisterRequest,res: Response): Promise<void>  {
+export async function register(req: AuthRegisterRequest, res: Response): Promise<void>  {
     const { username, email, password, repeatPassword } = req.body;
 
     try{
@@ -138,7 +140,7 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
     try{
 
       const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; };
-      const user: AuthBaseType = await AuthModel.chechAuth(accessPayload.id);
+      const user: AuthBaseType = await AuthModel.chechAuth({ _id: accessPayload.id});
       
       if(!user) throw new Error('No se encuentra ese usuario');
       
