@@ -9,17 +9,17 @@ import { ProductVariantModel } from "../models/productVariantModel";
 
 export async function home(_req: Request, res: Response) {
     res.send(`
-    Estas en productVariant<br>
-    Endpoints =><br>
-    ----Get: /get-product-variant-by-id<br>
-    ----Get: /get-product-variant-by-product-id<br>
-    ----Get: /get-product-variants<br>
-    ----Post: /create-product-varaint<br>
-    ----Delete: /delete-product-variant<br>
-    ----Put: /edit-product-variant<br>
+        Estas en productVariant<br>
+        Endpoints =><br>
+        ----Get: /get-product-variants<br>
+        ----Get: /get-product-variant-by-id<br>
+        ----Get: /get-product-variant-by-product-id<br>
+        ----Post: /create-product-variant<br>
+        ----Delete: /delete-product-variant<br>
+        ----Put: /edit-product-variant<br>
     `);
 }
-
+// 🆗
 export async function getAllProductVariants (_req: Request, res: Response ) {
 
     try{
@@ -41,6 +41,7 @@ export async function getAllProductVariants (_req: Request, res: Response ) {
     }
 }
 
+// 🆗
 export async function getProductVariantById (req: ProductVariantGetByIdRequest, res: Response) {
     const { _id } = req.body;
 
@@ -62,6 +63,7 @@ export async function getProductVariantById (req: ProductVariantGetByIdRequest, 
     }
 }
 
+// 🆗
 export async function getProductVariantByProductId (req: ProductVariantGetByProductIdRequest, res: Response) {
     const { product_id } = req.body;
 
@@ -86,7 +88,7 @@ export async function getProductVariantByProductId (req: ProductVariantGetByProd
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-
+// 🆗
 export async function createProductVariant(req: ProductVariantCreateRequest, res:Response) {
     const { 
         name,description,created_at,updated_at,image_url,
@@ -122,7 +124,7 @@ export async function createProductVariant(req: ProductVariantCreateRequest, res
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-
+// 🆗
 export async function deleteProductVariant(req: ProductVariantGetByIdRequest, res: Response) {
     const { _id } = req.body;
 
@@ -149,7 +151,7 @@ export async function deleteProductVariant(req: ProductVariantGetByIdRequest, re
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-
+// 🆗
 export async function editProductVariant(req: ProductVariantEditRequest, res: Response) {
     const { 
         _id ,name, description, created_at, updated_at, image_url,
