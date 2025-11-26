@@ -1,12 +1,9 @@
-//   ____                      
-//  |  _ \                     
-//  | |_) | __ _ ___  ___  ___ 
-//  |  _ < / _` / __|/ _ \/ __|
-//  | |_) | (_| \__ \  __/\__ \
-//  |____/ \__,_|___/\___||___/
-
 // TO DO fijarme que no estoy usando los tipos adecuadamente
 // no deberia usar DocumentAuth, deberia usar alguna interfaz que herede de esta
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
 
 export interface DocumentAuth {
   _id: string;
@@ -17,8 +14,6 @@ export interface DocumentAuth {
   authToken: string;
   refreshToken: string;
 }                     
-
-
 
 type AuthBaseType = DocumentAuth<T>; //Base de todos los tipos
 export type AuthInfo = Omit<AuthBaseType, 'save'> // Sin metodos
