@@ -1,6 +1,6 @@
-import Validation from "./validation";
 import { DocumentProduct, ProductInput } from "../typings/product/productTypes";
 import { Product } from "../schemas/productSchema";
+import { Validation } from "./validation";
 
 export class ProductModel {
 

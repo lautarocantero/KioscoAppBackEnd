@@ -1,35 +1,66 @@
-import { DocumentAuth } from './auth/index';
 //   ____                      
 //  |  _ \                     
 //  | |_) | __ _ ___  ___  ___ 
 //  |  _ < / _` / __|/ _ \/ __|
 //  | |_) | (_| \__ \  __/\__ \
 //  |____/ \__,_|___/\___||___/
-                            
-/**
- * DocumentAuth es un Documento completo de autenticación.
- * Contiene métodos y datos sensibles.
- * - Métodos: save()
- * - Campos: username, password, refreshToken
- */
+
+// TO DO fijarme que no estoy usando los tipos adecuadamente
+// no deberia usar DocumentAuth, deberia usar alguna interfaz que herede de esta
+
+export interface DocumentAuth {
+  _id: string;
+  email: string;
+  username: string;
+  password: string;
+  repeatPassword: string;
+  authToken: string;
+  refreshToken: string;
+}                     
+
+
 
 type AuthBaseType = DocumentAuth<T>; //Base de todos los tipos
 export type AuthInfo = Omit<AuthBaseType, 'save'> // Sin metodos
 export type AuthPublic = Omit<AuthBaseType, 'save' | 'password'>  // datos publicos, sin metodos
 
+export type AuthRegister = Pick<AuthBaseType, 'username' | 'email' | 'password' | 'repeatPassword'>
+export type AuthLogin = Pick<AuthBaseType, 'email' | 'password'>
 
-// export type RequestLogout = Pick<AuthPublic, '_id'>
+export type AuthLogout = {
+  cookies: {
+    refresh_token: string;
+  };
+};
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+export type AuthRegisterRequest = Request<AuthParams, unknown, AuthRegister>;
+
+export type AuthLoginRequest = Request<AuthParams, unknown, AuthLogin>;
+
+export type AuthLogoutRequest = Request<AuthParams, unknown, AuthLogout>;
+
+export type AuthCheckAuthRequest = AuthLogoutRequest;
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+export type AuthSchemaType = DocumentAuth;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🪙 TOKEN 🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-
 export interface AuthTokenInterface {
     userId: string,
     token: string,
 }
+
+export type  AuthRefreshTokenType = Pick<AuthTokenInterface, 'userId'>
 
 export type AuthTokenPublic = Pick<AuthPublic, 'refreshToken'>
 

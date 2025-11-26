@@ -1,12 +1,12 @@
 import express from 'express';
-import { getProductVariantByProductId, getAllProductVariants, home, deleteProductVariant, editProductVariant } from '../controllers/productVariant.controller';
-import { createProductVariant, getProductVariantById } from '../controllers/productVariant.controller';
+import { getProductVariantByProductId, getAllProductVariants, home, deleteProductVariant, editProductVariant, createProductVariant, getProductVariantById } from '../controllers/productVariant.controller';
 
 const router = express.Router();
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
+
 router.get('/', home);
 
 router.get('/get-product-variants', getAllProductVariants);

@@ -1,3 +1,4 @@
+
 declare module 'db-local' {
   interface FieldDefinition {
     type: unknown;
@@ -9,19 +10,10 @@ declare module 'db-local' {
     [key: string]: FieldDefinition;
   }
 
-  export interface DocumentAuth {
-    _id: string;
-    email: string;
-    username: string;
-    password: string;
-    authToken: string;
-    refreshToken: string;
-  }
-
   interface Schema<T> {
-    create(data: T): DocumentAuth<T>;
+    create(data: T): T<T>;
     find(query: Partial<T> | ((item: T) => boolean)): T[];
-    findOne(query: Partial<T> | ((item: T) => boolean)): DocumentAuth<T> | undefined;
+    findOne(query: Partial<T> | ((item: T) => boolean)): T<T> | undefined;
     update(query: Partial<T>, update: Partial<T>): void;
     // remove(query: Partial<T> | ((item: T) => boolean)): void;
   }

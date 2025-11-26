@@ -9,7 +9,7 @@ export class ProductVariantModel {
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async getAllProductVariants() {
+    static async getAllProductVariants(): Promise<ProductVariant[]> {
         let count = 0;
         const results: ProductVariant[] = [];
 
@@ -25,19 +25,19 @@ export class ProductVariantModel {
         return results;
     }
 
-    static async getProductVariantById (data: ProductVariantGetById) {
+    static async getProductVariantById (data: ProductVariantGetById): Promise<ProductVariant> {
         const { _id } = data;
 
         Validation.stringValidation(_id, 'id');
 
-        const ProductVariantObject = ProductVariantObjectSchema?.findOne((prodvar: ProductVariant) => prodvar?._id === _id );
+        const ProductVariantObject: ProductVariant = ProductVariantObjectSchema?.findOne((prodvar: ProductVariant) => prodvar?._id === _id );
 
         if(!ProductVariantObject) throw new Error('Does not exist a productVariant with this id');
 
-        return ProductVariantObject as ProductVariant;
+        return ProductVariantObject;
     }
 
-    static async getgetProductVariantByProductId (data: ProductVariantGetByProductId) {
+    static async getgetProductVariantByProductId (data: ProductVariantGetByProductId): Promise<ProductVariant[]> {
         const { product_id } = data;
 
         Validation.stringValidation(product_id, 'product_id');
@@ -59,7 +59,7 @@ export class ProductVariantModel {
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async createProductVariant (data: ProductVariantCreate) {
+    static async createProductVariant (data: ProductVariantCreate) : Promise<string> {
         const {
             name,description,created_at,updated_at,image_url,
             gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
@@ -114,7 +114,7 @@ export class ProductVariantModel {
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async deleteProductVariant (data: ProductVariantGetById) {
+    static async deleteProductVariant (data: ProductVariantGetById) : Promise<void> {
         const { _id } = data;
 
         Validation.stringValidation(_id, 'id');
@@ -135,7 +135,7 @@ export class ProductVariantModel {
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async editProductVariant (data: ProductVariantEdit) {
+    static async editProductVariant (data: ProductVariantEdit): Promise <void> {
         const { 
             _id,
             name, description, created_at, updated_at, image_url,
