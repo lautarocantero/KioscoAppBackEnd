@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { ProductVariantCreateRequest, ProductVariantGetByIdRequest, ProductVariantGetByProductIdRequest } from "../typings/product-variant/productVariantTypes";
+import { ProductVariantCreateRequest, ProductVariantEditRequest, ProductVariantGetByIdRequest, ProductVariantGetByProductIdRequest } from "../typings/product-variant/productVariantTypes";
 import { ProductVariantModel } from "../models/productVariantModel";
 
 
@@ -144,12 +144,19 @@ export async function deleteProductVariant(req: ProductVariantGetByIdRequest, re
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export async function editProductVariant(req: Request, res: Response) {
-    const { _id } = req.body;
-    // TO DO agregar los demas elementos editables 
+export async function editProductVariant(req: ProductVariantEditRequest, res: Response) {
+    const { 
+        _id ,name, description, created_at, updated_at, image_url,
+        gallery_urls, brand, product_id, sku, model_type, model_size,
+        min_stock, stock, price, expiration_date
+     } = req.body;
 
     try{
-        const response = await ProductVariantModel.editProductVariant({ _id });
+        const response = await ProductVariantModel.editProductVariant({ 
+            _id, name, description, created_at, updated_at, image_url,
+            gallery_urls, brand, product_id, sku, model_type, model_size,
+            min_stock, stock, price, expiration_date 
+        });
         res
             .status(200)
             .send(response);

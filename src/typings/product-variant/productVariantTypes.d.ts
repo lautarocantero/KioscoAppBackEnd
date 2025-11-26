@@ -26,12 +26,13 @@ interface ProductVariant {
     expiration_date: string,
 }
 
+export type ProductVariantCreate = Omit<ProductVariant, '_id'>
+
 export type ProductVariantGetById = Pick<ProductVariant, '_id'>
 
 export type ProductVariantGetByProductId = Pick<ProductVariant, 'product_id'>
 
-export type ProductVariantCreate = Omit<ProductVariant, '_id'>
-
+export type ProductVariantEdit = ProductVariant;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
@@ -42,6 +43,8 @@ export type ProductVariantCreateRequest = Request<ProductVariantParams, unknown,
 export type ProductVariantGetByIdRequest = Request<ProductVariantParams, unknown, ProductVariantGetById>;
 
 export type ProductVariantGetByProductIdRequest = Request<ProductVariantParams, unknown, ProductVariantGetByProductId>; 
+
+export type ProductVariantEditRequest = Request<ProductVariantParams, unknown, ProductVariantEdit>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
