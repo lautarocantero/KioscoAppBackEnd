@@ -54,6 +54,16 @@ export type GetProductVariantByIdPayload = Pick<ProductUnknown, '_id' >;
 
 export type GetProductVariantByProductIdPayload = Pick<ProductUnknown, 'product_id' >;
 
+export type GetProductVariantByBrandPayload = Pick<ProductUnknown, 'brand' >;
+
+export type GetProductVariantByStockPayload = Pick<ProductUnknown, 'stock' >;
+
+export type GetProductVariantByPricePayload = Pick<ProductUnknown, 'price' >;
+
+export type GetProductVariantBySizePayload = Pick<ProductUnknown, 'model_size' >;
+
+export type GetProductVariantByPresentationPayload = Pick<ProductUnknown, 'model_type' >;
+
 export type CreateProductVariantPayload = Omit<ProductVariantUnknown, '_id'>;
 
 export type EditProductVariantPayload = ProductUnknown;
@@ -65,6 +75,16 @@ export type EditProductVariantPayload = ProductUnknown;
 export type GetProductVariantByIdRequest = Request<ProductParams, unknown, GetProductVariantByIdPayload>;
 
 export type GetProductVariantByProductIdRequest = Request<ProductParams, unknown, GetProductVariantByProductIdPayload>;
+
+export type GetProductVariantByBrandRequest = Request<ProductParams, unknown, GetProductVariantByBrandPayload>;
+
+export type GetProductVariantByStockRequest = Request<ProductParams, unknown, GetProductVariantByStockPayload>;
+
+export type GetProductVariantByPriceRequest = Request<ProductParams, unknown, GetProductVariantByPricePayload>;
+
+export type GetProductVariantBySizeRequest = Request<ProductParams, unknown, GetProductVariantBySizePayload>;
+
+export type GetProductVariantByPresentationRequest = Request<ProductParams, unknown, GetProductVariantByPresentationPayload>;
 
 export type CreateProductVariantRequest = Request<ProductVariantParams, unknown, CreateProductVariantPayload>;
 
