@@ -1,3 +1,7 @@
+import { SellSchema } from "../schemas/sellSchema";
+import { ProductVariant } from "../typings/product-variant/productVariantTypes";
+import { SellUnknown } from "../typings/sell/sellTypes";
+import { Validation } from "./validation";
 
 
 export class SellModel {
@@ -7,6 +11,29 @@ export class SellModel {
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
+
+    static async create (data: SellUnknown): Promise <string> {
+        
+        const { products,purchase_date,seller_name,total_amount } = data;
+
+        const productsResult: ProductVariant[] = Validation.isVariantArray(products);
+        const purchaseDateResult: string = Validation.date(purchase_date, 'purchase date');
+        const sellerNameResult: string = Validation.stringValidation(seller_name, 'seller name');
+        const totalAmountResult: number = Validation.number(total_amount, 'total amount');
+
+        const _id = crypto.randomUUID();
+
+        SellSchema.create({
+            _id,
+            products: productsResult,
+            purchase_date: purchaseDateResult,
+            seller_name: sellerNameResult,
+            total_amount: totalAmountResult,
+        });
+
+        return _id as string;
+    }
+
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/

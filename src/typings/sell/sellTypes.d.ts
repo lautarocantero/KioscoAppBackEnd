@@ -1,52 +1,46 @@
 import { ProductVariant } from "../product-variant/productVariantTypes";
-
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
+
 //base con todos los tipos
-interface ProductDocument {
+interface SellDocument {
     _id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    updated_at: string;
-    image_url: string;
-    gallery_urls: string[];
-    brand: string;
-    variants: ProductVariant[];
+    products: ProductVariant[];
+    purchase_date: string;
+    seller_name: string;
+    total_amount: number;
 }
 
 //base con las funciones de db-local
-interface ProductModelInterface extends ProductDocument {
-  find(query: Partial<ProductDocument>): Promise<ProductDocument[]>;
-  findOne(query: Partial<ProductDocument>): Promise<ProductDocument | null>;
-  save(query?: Partial<ProductDocument>, data?: Partial<ProductDocument>): Promise<void>;
-  delete(query: Partial<ProductDocument>): Promise<void>;
+interface SellModelInterface extends SellDocument {
+  find(query: Partial<SellDocument>): Promise<SellDocument[]>;
+  findOne(query: Partial<SellDocument>): Promise<SellDocument | null>;
+  save(query?: Partial<SellDocument>, data?: Partial<SellDocument>): Promise<void>;
+  delete(query: Partial<SellDocument>): Promise<void>;
 }
 
 //base con tipos unknown para los payloads
-type ProductUnknown = Record<keyof Omit<ProductDocument, '_id'>, unknown>;
+type SellUnknown = Record<keyof Omit<SellDocument, '_id'>, unknown>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ ✂️ DERIVADOS ✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️                ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type Product = ProductDocument;
-
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type ProductSchemaType = ProductDocument;
+export type SellSchemaType = SellDocument;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type CreateProductPayload = Omit<ProductUnknown, '_id' >;
+export type CreateSellPayload = Omit<SellDocument, '_id'>
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type CreateProductRequest = Request<ProductParams, unknown, CreateProductPayload>;
+export type CreateSellRequest = Request<SellParams, unknown, CreateSellPayload>;

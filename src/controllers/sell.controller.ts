@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import { CreateSellRequest } from "../typings/sell/sellTypes";
+import { SellModel } from "../models/sellModel";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -6,24 +8,34 @@ import { Request, Response } from "express";
 
 export async function home(_req: Request, res: Response): Promise<void> {
     res
-    .status(200)
-    .json({message:`
-      Estas en sell<br>
-      Endpoints =><br>
-      ----Post: /create-sell<br>
-      ----Post: /login<br>
-      ----Post: /logout<br>
-      ----Post: /checkAuth<br>
-  `});
+        .status(200)
+        .send(`
+          Estas en sell<br>
+          Endpoints =><br>
+          ----Post: /create-sell<br>
+          ----Post: /login<br>
+          ----Post: /logout<br>
+          ----Post: /checkAuth<br>
+        `);
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export async function createSell (_req: Request, res: Response): Promise<void> {
+export async function createSell (req: CreateSellRequest, res: Response): Promise<void> {
+    const { products,purchase_date,seller_name,total_amount } = req.body;
+
     try{
-        console.log('');
+        const _id = SellModel.create({
+            products,purchase_date,seller_name,total_amount
+        });
+        res
+            .status(200)
+            .json({
+                _id,
+                message: 'Sell saved successfully',
+            });
     } catch(error: unknown){
         if(!(error instanceof Error)) {
             res

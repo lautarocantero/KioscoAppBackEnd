@@ -16,9 +16,9 @@ Devuelve undefined si el usuario no existe o no tiene token.
     static async getRefreshToken (data : AuthRefreshTokenPayload): Promise <AuthTokenPublic> {
         const { _id } = data;
 
-        Validation.stringValidation(_id, '_id');
+        const idResult: string = Validation.stringValidation(_id, '_id');
 
-        const { refreshToken } : AuthTokenPublic = AuthSchema.findOne({ _id: _id });
+        const { refreshToken } : AuthTokenPublic = AuthSchema.findOne({ _id: idResult });
 
         if( !refreshToken) throw new Error("Missing refresh token in cookies");
 
@@ -30,9 +30,9 @@ Devuelve undefined si el usuario no existe o no tiene token.
     static async checkAuth (data: AuthCheckAuthPayload): Promise<Auth> {
         const { _id } = data;
 
-        Validation.stringValidation(_id, '_id');
+        const idResult: string = Validation.stringValidation(_id, '_id');
 
-        const user: Auth = AuthSchema.findOne({ _id: _id});
+        const user: Auth = AuthSchema.findOne({ _id: idResult});
 
         if(!user) throw new Error('User not found');
 
@@ -48,23 +48,23 @@ Devuelve undefined si el usuario no existe o no tiene token.
     static async create (data: AuthRegisterPayload) : Promise<string> {
         const { username, email, password, repeatPassword} = data;
 
-        Validation.stringValidation(username, 'username');
-        Validation.email(email);
-        Validation.password(password);
+        const usernameResult: string = Validation.stringValidation(username, 'username');
+        const emailResult: string = Validation.email(email);
+        const passwordResult: string = Validation.password(password);
         Validation.password(repeatPassword);
         
-        const auth: Auth = AuthSchema.findOne({ username });
+        const auth: Auth = AuthSchema.findOne({ username: usernameResult });
 
         if(auth) throw new Error('username already exists');
 
-        const _id = crypto.randomUUID();
+        const _id: string = crypto.randomUUID();
 
-        const hashedPassword = await bcrypt.hash(password as string, SALT_ROUNDS);
+        const hashedPassword: string = await bcrypt.hash(passwordResult, SALT_ROUNDS);
 
         AuthSchema.create({
-            _id: _id as string,
-            username: username as string,
-            email: email as string,
+            _id,
+            username: usernameResult,
+            email: emailResult,
             password: hashedPassword as string,
             refreshToken: '' as string,
         }).save(); //save hace que se guarde en la dblocal
@@ -75,13 +75,13 @@ Devuelve undefined si el usuario no existe o no tiene token.
     static async login (data: AuthLoginPayload) : Promise<AuthPublic> {
         const { email, password } = data;
 
-        Validation.email(email);
-        Validation.password(password);
+        const emailResult: string = Validation.email(email);
+        const passwordResult: string = Validation.password(password);
         
-        const user: Auth = AuthSchema.findOne({email});
+        const user: Auth = AuthSchema.findOne({email: emailResult});
         if(!user) throw new Error('email does not exist');
 
-        const isValid = await bcrypt.compare(password as string, user.password as string);
+        const isValid = await bcrypt.compare(passwordResult, user.password as string);
         if(!isValid) throw new Error('password is invalid');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -97,16 +97,15 @@ Devuelve undefined si el usuario no existe o no tiene token.
     static async saveRefreshToken(data : AuthRefreshTokenPayload): Promise<void> {
         const {_id, token} = data;
 
-        Validation.stringValidation(_id, '_id');
-        Validation.stringValidation(token, 'token');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
+        const tokenResult: string = Validation.stringValidation(token, 'token');
 
-        const user: AuthModelType = AuthSchema.findOne({_id: _id});
+        const user: AuthModelType = AuthSchema.findOne({_id: _idResult});
         if(!user) throw new Error('User not found');
 
-        user.refreshToken = token as string;
+        user.refreshToken = tokenResult;
         user.save();
     }
-    
 
     /**
         Busca un usuario con un id dado e intenta borrar el refresh token.
@@ -116,9 +115,9 @@ Devuelve undefined si el usuario no existe o no tiene token.
     static async deleteRefreshToken (data : AuthRefreshTokenPayload) : Promise<void> {
         const { _id } = data;
 
-        Validation.stringValidation(_id, '_id');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
 
-        const user: AuthModelType = AuthSchema.findOne({ _id: _id});
+        const user: AuthModelType = AuthSchema.findOne({ _id: _idResult });
 
         if(!user) throw new Error('User not found');
 

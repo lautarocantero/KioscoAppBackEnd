@@ -45,20 +45,20 @@ export type AuthSchemaType = Pick<AuthDocument, '_id' | 'username' | 'email' | '
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type AuthRegisterPayload = Pick<AuthDocument, 'username' | 'email' | 'password' | 'repeatPassword'>;
+export type AuthRegisterPayload = Pick<AuthUnknown, 'username' | 'email' | 'password' | 'repeatPassword'>;
 
-export type AuthLoginPayload = Pick<AuthDocument, 'email' | 'password' >;
+export type AuthLoginPayload = Pick<AuthUnknown, 'email' | 'password' >;
 
 export interface AuthRefreshTokenPayload {
-  _id: string,
-  token?: string,
+  _id: unknown,
+  token?: unknown,
 }
 
-export type AuthCheckAuthPayload = Pick<AuthDocument, '_id'>;
+export type AuthCheckAuthPayload = Pick<AuthUnknown, '_id'>;
 
 export interface AuthLogoutPayload {
   cookies: {
-    refresh_token: string,
+    refresh_token: unknown,
   }
 }
 

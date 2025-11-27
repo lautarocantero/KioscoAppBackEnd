@@ -1,5 +1,6 @@
-import { DocumentProduct, ProductInput } from "../typings/product/productTypes";
-import { Product } from "../schemas/productSchema";
+import { ProductSchema } from "../schemas/productSchema";
+import { ProductVariant } from "../typings/product-variant/productVariantTypes";
+import { Product, ProductUnknown } from "../typings/product/productTypes";
 import { Validation } from "./validation";
 
 export class ProductModel {
@@ -8,13 +9,13 @@ export class ProductModel {
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async getProducts(): Promise<DocumentProduct[]> {
+    static async getProducts(): Promise<Product[]> {
       // Implementación interna de limitación
       let count = 0;
-      const results: DocumentProduct[] = [];
+      const results: Product[] = [];
       
       // find acepta un predicado, lo uso para cortar en 100
-      Product.find((item: DocumentProduct) => {
+      ProductSchema.find((item: Product) => {
         if (count < 100) {
           results.push(item);
           count++;
@@ -23,65 +24,45 @@ export class ProductModel {
         return false; // después de 100 ya no agrega más
       });
 
-    return results;
+    return results as Product[];
   }
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    // TO DO APLICAR ESTO A LOS DEMAS MODELOS
-    // NO SE DE QUE TIPO SERAN, POR ESO LOS VALIDO
-    static async create (data: ProductInput): Promise <string> {
+    static async create (data: ProductUnknown): Promise <string> {
 
         const {
-            name, description, sku, price, category_id, 
-            product_status, created_at, update_at,stock, 
-            min_stock, image_url, gallery_urls, size, brand, 
-            barcode, expiration_date
+          name, description, created_at, updated_at,
+          image_url, gallery_urls, brand, variants
         } = data;
 
-        Validation.stringValidation(name, 'name');
-        Validation.stringValidation(description, 'description');
-        Validation.sku(sku);
-        Validation.number(price, 'price');
-        Validation.stringValidation(category_id, 'category_id');
-        Validation.stringValidation(product_status, 'product_status');
-        Validation.date(created_at, 'created_at');
-        Validation.date(update_at, 'update_at');
-        Validation.number(stock, 'stock');
-        Validation.number(min_stock, 'min_stock');
-        Validation.image(image_url);
-        Validation.imageArray(gallery_urls);
-        Validation.stringValidation(size, 'size', 2);
-        Validation.stringValidation(brand, 'brand');
-        Validation.barcode(barcode);
-        Validation.date(expiration_date, 'expiration_date');
+        const nameResult: string = Validation.stringValidation(name, 'name');
+        const descriptionResult: string = Validation.stringValidation(description, 'description');
+        const createdAtResult: string = Validation.date(created_at, 'created_at');
+        const updatedAtResult: string = Validation.date(updated_at, 'updated_at');
+        const imageUrlResult: string = Validation.image(image_url);
+        const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
+        const brandResult: string = Validation.stringValidation(brand, 'brand');
+        const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
 
-        const product: DocumentProduct = Product.findOne((prod: DocumentProduct) => prod.name === name);
+        const product: Product = ProductSchema.findOne((prod: Product) => prod.name === nameResult);
 
         if(product) throw new Error('product already exists');
 
         const _id = crypto.randomUUID();
 
-        Product.create({
-            _id: _id as string,
-            name: name as string,
-            description: description as string,
-            sku: sku as string,
-            price: price as number,
-            category_id: category_id as string,
-            product_status: product_status as string,
-            created_at: created_at as string,
-            update_at: update_at as string,
-            stock: stock as number,
-            min_stock: min_stock as number,
-            image_url: image_url as string,
-            gallery_urls: gallery_urls as string,
-            size: size as string,
-            brand: brand as string,
-            barcode: barcode as string,
-            expiration_date: expiration_date as string,
+        ProductSchema.create({
+            _id: _id,
+            name: nameResult,
+            description: descriptionResult,
+            created_at: createdAtResult,
+            updated_at: updatedAtResult,
+            image_url: imageUrlResult,
+            gallery_urls: galleryUrlsResult,
+            brand: brandResult,
+            variants: variantsResult,
         });
 
         return _id as string;

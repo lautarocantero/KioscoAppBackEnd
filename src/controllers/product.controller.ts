@@ -1,23 +1,24 @@
 import { Request, Response } from "express";
 import { ProductModel } from "../models/productModel";
-import { createProductRequest } from "../typings/product/productTypes";
+import { CreateProductRequest } from "../typings/product/productTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-
+// TO DO se cambio el product, modificar los endpoints y controllers
 export async function home(_req: Request, res: Response): Promise<void> {
     res
     .status(200)
-    .json({message:`
+    .send(`
       Estas en product<br>
       Endpoints =><br>
       ----Get:  /get-products<br>
       ----Post: /create-product<br>
-  `});
+  `);
 }
 
 export async function getProducts( _req: Request,res: Response): Promise <void> {
+
   try {
     const products = await ProductModel.getProducts();
     res
@@ -40,18 +41,16 @@ export async function getProducts( _req: Request,res: Response): Promise <void> 
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export async function createProduct(req: createProductRequest, res: Response): Promise <void> {
+export async function createProduct(req: CreateProductRequest, res: Response): Promise <void> {
     const {
-        name, description, sku, price, category_id, 
-        product_status, created_at, update_at,
-        stock, min_stock, image_url, gallery_urls, 
-        size, brand, barcode, expiration_date 
+        name, description, created_at, updated_at,
+        image_url, gallery_urls, brand, variants,
     } = req.body;
 
     try{
         const _id = await ProductModel.create({
-            name, description, sku, price, category_id, product_status, created_at, update_at,
-            stock, min_stock, image_url, gallery_urls, size, brand, barcode, expiration_date
+            name, description, created_at, updated_at, image_url, gallery_urls, 
+            brand, variants
         });
         res
             .status(200)

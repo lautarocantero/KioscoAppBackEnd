@@ -9,7 +9,7 @@ import { ProductVariantModel } from "../models/productVariantModel";
 export async function home(_req: Request, res: Response): Promise<void> {
     res
     .status(200)
-    .json({message:`
+    .send(`
       Estas en product variant<br>
       Endpoints =><br>
       ----Get:      /get-product-variants<br>
@@ -18,7 +18,7 @@ export async function home(_req: Request, res: Response): Promise<void> {
       ----Post:     /create-product-variant<br>
       ----Delete:   /delete-product-variant<br>
       ----Put:      /edit-product-variant<br>
-  `});
+  `);
 }
 
 // 🆗
