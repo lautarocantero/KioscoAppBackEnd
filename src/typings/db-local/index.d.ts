@@ -14,8 +14,8 @@ declare module 'db-local' {
     create(data: T): T<T>;
     find(query: Partial<T> | ((item: T) => boolean)): T[];
     findOne(query: Partial<T> | ((item: T) => boolean)): T<T> | undefined;
-    update(query: Partial<T>, update: Partial<T>): void;
-    // remove(query: Partial<T> | ((item: T) => boolean)): void;
+    save(query: Partial<T>, update: Partial<T>): void;
+    remove(query: Partial<T> | ((item: T) => boolean)): void;
   }
 
   interface DBLocalOptions {

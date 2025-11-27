@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../config';
 import { AuthSchema } from '../schemas/authSchema';
 import { Validation } from './validation';
-import { Auth, AuthCheckAuthPayload, AuthLoginPayload, AuthModelType, AuthPublic, AuthRefreshTokenPayload, AuthRegisterPayload, AuthTokenPublic } from '../typings/auth/authTypes';
+import { Auth, AuthCheckAuthPayload, AuthLoginPayload, AuthModelType, AuthPublic, AuthRefreshTokenPayload, AuthRegisterPayload, AuthTokenPublic, DeleteAuthPayload, EditAuthPayload } from '../typings/auth/authTypes';
 
 export class AuthModel {
 
@@ -91,6 +91,21 @@ Devuelve undefined si el usuario no existe o no tiene token.
     }
 
 /*══════════════════════════════════════════════════════════════════════╗
+║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+
+    static async deleteAuth(data: DeleteAuthPayload): Promise<void> {
+        const { _id } = data;
+
+        const _idResult = Validation.stringValidation(_id, '_id');
+
+        const AuthObject: AuthModelType = AuthSchema.findOne({_id: _idResult});
+
+        if(!AuthObject) throw new Error('User not found');
+
+        AuthObject.remove();
+    }
+/*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
@@ -124,9 +139,29 @@ Devuelve undefined si el usuario no existe o no tiene token.
         if(!user.refreshToken) throw new Error('Missing refresh token in cookies');
 
         user.save(
-            { _id: user._id }, //buscar
-            { refreshToken: undefined } //actualizar
+            { _id: user._id }, //para encontrar el registro
+            { refreshToken: undefined } //modificar lo que deseo
         );
+    }
+
+    static async editAuth (data: EditAuthPayload) : Promise<void> {
+        const { _id, username, email, password } = data;
+
+        const _idResult: string = Validation.stringValidation(_id, '_id');
+        const userNameResult: string = Validation.stringValidation(username, 'username');
+        const emailResult: string = Validation.email(email);
+        const passwordResult: string = Validation.password(password);
+
+        const authObject: AuthModelType = AuthSchema.findOne({ _id: _idResult });
+
+        if(!authObject) throw new Error('User not found');
+
+        authObject.username = userNameResult;
+        authObject.email = emailResult;
+        authObject.password = passwordResult;
+
+        authObject.save();
+
     }
 
 }

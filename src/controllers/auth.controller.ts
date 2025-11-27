@@ -2,7 +2,7 @@ import { AuthModel } from "../models/authModel";
 import { Request, Response } from 'express';
 import { ACCESS_SECRET, REFRESH_SECRET } from "../config";
 import jwt from 'jsonwebtoken';
-import { Auth, AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthRegisterRequest } from "../typings/auth/authTypes";
+import { Auth, AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -18,6 +18,8 @@ export async function home(_req: Request, res: Response): Promise<void> {
       ----Post: /login<br>
       ----Post: /logout<br>
       ----Post: /checkAuth<br>
+      ----Delete: /delete-auth<br>
+      ----Edit: /edit-auth<br>
   `);
 }
 
@@ -160,6 +162,62 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
     }
 }
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+// 🆗
+export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise <void> {
+  const { _id } = req.body;
+
+  try{
+    await AuthModel.deleteAuth({ _id });
+    res
+      .status(200)
+      .json({
+        _id,
+        message: 'Auth deleted successfully',
+      });
+  } catch(error: unknown) {
+    if(!(error instanceof Error)) {
+      res
+        .status(500)
+        .json({message:'An unexpected error ocurred, try again'});
+      return;
+    }
+    res 
+      .status(400)
+      .json({message:error.message});
+  }
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+// 🆗
+export async function editAuth (req: EditAuthRequest, res: Response): Promise <void> {
+  const { _id, username, email, password } = req.body;
+  
+  try{
+    await AuthModel.editAuth({ _id, username, email, password });
+    res
+      .status(200)
+      .json({
+        _id,
+        message: 'Auth has been edited successfully',
+      });
+  } catch(error: unknown){
+      if(!(error instanceof Error)) {
+        res
+          .status(500)
+          .json({ message: 'An unexpected error ocurred, try again'});
+        return;
+      }
+      res
+        .status(400)
+        .json({message: error.message});
+  }
+
+}
 
 
 

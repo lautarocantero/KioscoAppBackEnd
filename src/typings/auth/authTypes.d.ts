@@ -19,7 +19,7 @@ interface AuthModelInterface extends AuthDocument {
   find(query: Partial<AuthDocument>): Promise<AuthDocument[]>;
   findOne(query: Partial<AuthDocument>): Promise<AuthDocument | null>;
   save(query?: Partial<AuthDocument>, data?: Partial<AuthDocument>): Promise<void>;
-  delete(query: Partial<AuthDocument>): Promise<void>;
+  remove(query?: Partial<AuthDocument>): Promise<void>;
 }
 
 //base con tipos unknown para los payloads
@@ -56,6 +56,10 @@ export interface AuthRefreshTokenPayload {
 
 export type AuthCheckAuthPayload = Pick<AuthUnknown, '_id'>;
 
+export type DeleteAuthPayload = Pick<AuthUnknown, '_id'>;
+
+export type EditAuthPayload = Omit<AuthUnknown, 'repeatPassword' | 'authToken' | 'refreshToken'>;
+
 export interface AuthLogoutPayload {
   cookies: {
     refresh_token: unknown,
@@ -73,6 +77,11 @@ export type AuthLoginRequest = Request<AuthParams, unknown, AuthLoginPayload>;
 export type AuthLogoutRequest = Request<AuthParams, unknown, AuthLogoutPayload>;
 
 export type AuthCheckAuthRequest = Request<AuthParams, unknown, AuthCheckAuthPayload>;
+
+export type DeleteAuthRequest = Request<AuthParams, unknown, DeleteAuthPayload>;
+
+export type EditAuthRequest = Request<AuthParmas, unknown, EditAuthPayload>;
+
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🪙 TOKEN 🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙                     ║

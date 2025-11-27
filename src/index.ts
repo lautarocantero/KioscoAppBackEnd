@@ -23,6 +23,7 @@ app.use('/auth', authRoutes);
 // app.use('/user', userRoutes);
 // app.use('/provider', provider);
 app.use('/sell', sellRoutes);
+// app.use('/seller', sellerRoutes);
 app.use('/product', productRoutes);
 app.use('/product-variant', productVariantRoutes);
 

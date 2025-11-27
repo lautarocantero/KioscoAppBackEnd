@@ -1,5 +1,5 @@
 import express from 'express';
-import { checkAuth, home, login, logout, register } from '../controllers/auth.controller';
+import { checkAuth, deleteAuth, editAuth, home, login, logout, register } from '../controllers/auth.controller';
 
 const router = express.Router();
 
@@ -25,12 +25,12 @@ router.post('/checkAuth', checkAuth);
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-//router.delete('/delete-auth', deleteAuth);
+router.delete('/delete-auth', deleteAuth);
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-//router.put('/edit-auth', editAuth);
+router.put('/edit-auth', editAuth);
 
 export default router;
