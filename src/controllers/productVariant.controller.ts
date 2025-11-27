@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { ProductVariantCreateRequest, ProductVariantEditRequest, ProductVariantGetByIdRequest, ProductVariantGetByProductIdRequest } from "../typings/product-variant/productVariantTypes";
 import { ProductVariantModel } from "../models/productVariantModel";
+import { CreateProductVariantRequest, DeleteProductVariantRequest, EditProductVariantRequest, GetProductVariantByIdRequest, GetProductVariantByProductIdRequest } from "../typings/product-variant/productVariantTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -44,7 +44,7 @@ export async function getProductVariants (_req: Request, res: Response ): Promis
 }
 
 // 🆗
-export async function getProductVariantById (req: ProductVariantGetByIdRequest, res: Response): Promise<void> {
+export async function getProductVariantById (req: GetProductVariantByIdRequest, res: Response): Promise<void> {
     const { _id } = req.body;
 
     try {
@@ -66,7 +66,7 @@ export async function getProductVariantById (req: ProductVariantGetByIdRequest, 
 }
 
 // 🆗
-export async function getProductVariantByProductId (req: ProductVariantGetByProductIdRequest, res: Response): Promise<void>  {
+export async function getProductVariantByProductId (req: GetProductVariantByProductIdRequest, res: Response): Promise<void>  {
     const { product_id } = req.body;
 
     try {
@@ -91,7 +91,7 @@ export async function getProductVariantByProductId (req: ProductVariantGetByProd
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 // 🆗
-export async function createProductVariant(req: ProductVariantCreateRequest, res:Response): Promise<void>  {
+export async function createProductVariant(req: CreateProductVariantRequest, res:Response): Promise<void>  {
     const { 
         name,description,created_at,updated_at,image_url,
         gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
@@ -127,7 +127,7 @@ export async function createProductVariant(req: ProductVariantCreateRequest, res
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 // 🆗
-export async function deleteProductVariant(req: ProductVariantGetByIdRequest, res: Response): Promise<void> {
+export async function deleteProductVariant(req: DeleteProductVariantRequest, res: Response): Promise<void> {
     const { _id } = req.body;
 
     try{
@@ -154,7 +154,7 @@ export async function deleteProductVariant(req: ProductVariantGetByIdRequest, re
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 // 🆗
-export async function editProductVariant(req: ProductVariantEditRequest, res: Response): Promise<void>  {
+export async function editProductVariant(req: EditProductVariantRequest, res: Response): Promise<void>  {
     const { 
         _id ,name, description, created_at, updated_at, image_url,
         gallery_urls, brand, product_id, sku, model_type, model_size,

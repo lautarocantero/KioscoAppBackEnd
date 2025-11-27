@@ -1,6 +1,6 @@
 
 import { ProductVariantObjectSchema } from '../schemas/productVariantSchema';
-import { ProductVariant, ProductVariantCreate, ProductVariantEdit, ProductVariantGetById, ProductVariantGetByProductId } from '../typings/product-variant/productVariantTypes';
+import { CreateProductVariantPayload, EditProductVariantPayload, GetProductVariantByIdPayload, GetProductVariantByProductIdPayload, ProductVariant } from '../typings/product-variant/productVariantTypes';
 import { Validation } from './validation';
 
 export class ProductVariantModel {
@@ -22,10 +22,10 @@ export class ProductVariantModel {
             return false;
         });
 
-        return results;
+        return results as ProductVariant[];
     }
 
-    static async getProductVariantById (data: ProductVariantGetById): Promise<ProductVariant> {
+    static async getProductVariantById (data: GetProductVariantByIdPayload): Promise<ProductVariant> {
         const { _id } = data;
 
         Validation.stringValidation(_id, 'id');
@@ -37,7 +37,7 @@ export class ProductVariantModel {
         return ProductVariantObject;
     }
 
-    static async getgetProductVariantByProductId (data: ProductVariantGetByProductId): Promise<ProductVariant[]> {
+    static async getgetProductVariantByProductId (data: GetProductVariantByProductIdPayload): Promise<ProductVariant[]> {
         const { product_id } = data;
 
         Validation.stringValidation(product_id, 'product_id');
@@ -59,7 +59,7 @@ export class ProductVariantModel {
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async createProductVariant (data: ProductVariantCreate) : Promise<string> {
+    static async createProductVariant (data: CreateProductVariantPayload) : Promise<string> {
         const {
             name,description,created_at,updated_at,image_url,
             gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
@@ -95,7 +95,7 @@ export class ProductVariantModel {
             created_at: created_at as string,
             updated_at: new Date().toISOString() as string,
             image_url: image_url as string,
-            gallery_urls: gallery_urls as string,
+            gallery_urls: gallery_urls as string[],
             brand: brand as string,
             product_id: product_id as string,
             sku: sku as string,
@@ -114,7 +114,7 @@ export class ProductVariantModel {
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async deleteProductVariant (data: ProductVariantGetById) : Promise<void> {
+    static async deleteProductVariant (data: GetProductVariantByIdPayload) : Promise<void> {
         const { _id } = data;
 
         Validation.stringValidation(_id, 'id');
@@ -135,7 +135,7 @@ export class ProductVariantModel {
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-    static async editProductVariant (data: ProductVariantEdit): Promise <void> {
+    static async editProductVariant (data: EditProductVariantPayload): Promise <void> {
         const { 
             _id,
             name, description, created_at, updated_at, image_url,

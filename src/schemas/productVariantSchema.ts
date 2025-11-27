@@ -10,7 +10,7 @@ export const ProductVariantObjectSchema = Schema <ProductVariantSchemaType> ('Pr
     created_at: {type: String, required: true},
     updated_at: {type: String, required: true},
     image_url: {type: String, required: true},
-    gallery_urls: {type: [String], required: true},
+    gallery_urls: {type: Array, required: true},
     brand: {type: String, required: true},
     product_id: {type: String, required: true},
     sku: {type: String, required: true},
