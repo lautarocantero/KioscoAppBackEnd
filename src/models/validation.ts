@@ -79,7 +79,7 @@ const isVariant = (value: ProductVariant): boolean => {
     typeof v.created_at === "string" &&
     typeof v.updated_at === "string" &&
     typeof v.image_url === "string" &&
-    typeof v.gallery_urls === "string" &&
+    Array.isArray(v.gallery_urls) && v.gallery_urls.every(url => typeof url === "string") &&
     typeof v.brand === "string" &&
     typeof v.product_id === "string" &&
     typeof v.sku === "string" &&

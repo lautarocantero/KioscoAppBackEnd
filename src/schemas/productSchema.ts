@@ -8,7 +8,7 @@ export const ProductSchema = Schema <ProductSchemaType> ('Product', {
     name: { type: String, required: true},
     description: { type: String, required: true}, 
     created_at: { type: String, required: true}, 
-    update_at: { type: String, required: true},
+    updated_at: { type: String, required: true},
     image_url: { type: String, required: true}, 
     gallery_urls: { type: Array, required: true}, 
     brand: { type: String, required: true}, 

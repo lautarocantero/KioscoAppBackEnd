@@ -1,5 +1,5 @@
 import express from 'express';
-import { createProduct, getProducts, home } from '../controllers/product.controller';
+import { createProduct, deleteProduct, editProduct, getProductByBrand, getProductById, getProductByName, getProducts, home } from '../controllers/product.controller';
 
 const router = express.Router();
 
@@ -11,13 +11,11 @@ router.get('/', home);
 
 router.get('/get-products', getProducts);
 
-// router.get('/get-product-by-id', getProductById);
+router.get('/get-product-by-id', getProductById);
 
-// router.get('/get-product-by-brand', getProductByBrand);
+router.get('/get-product-by-name', getProductByName);
 
-// router.get('/get-product-by-stock', getProductByStock);
-
-// router.get('/get-product-by-price', getProductByPrice);
+router.get('/get-product-by-brand', getProductByBrand);
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
@@ -29,12 +27,12 @@ router.post('/create-product', createProduct);
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-// router.delete('/delete-product', deleteProduct);
+router.delete('/delete-product', deleteProduct);
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-// router.post('/edit-product', editProduct);
+router.put('/edit-product', editProduct);
 
 export default router;
