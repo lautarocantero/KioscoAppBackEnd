@@ -3,6 +3,8 @@ import { ProductVariant } from "../product-variant/productVariantTypes";
 ║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
+// TO DO agregar el tipo public, comprobar que siga el estandar de auth
+
 //base con todos los tipos
 interface SellDocument {
     _id: string;

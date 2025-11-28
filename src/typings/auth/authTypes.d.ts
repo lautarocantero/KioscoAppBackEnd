@@ -3,6 +3,8 @@
 ║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
+//TO DO NO USAR AUTHDOCUMENT, CAMBIAR POR UNO DE LOS DERIVADOS
+
 //base con todos los tipos
 interface AuthDocument {
   _id: string;
