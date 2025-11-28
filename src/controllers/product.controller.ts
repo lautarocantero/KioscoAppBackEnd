@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ProductModel } from "../models/productModel";
-import { CreateProductRequest, DeleteProductRequest, EditProductRequest, GetProductByBrandRequest, GetProductByIdRequest, GetProductByNameRequest } from "../typings/product/productTypes";
+import { CreateProductRequest, DeleteProductRequest, EditProductRequest, GetProductByBrandRequest, GetProductByIdRequest, GetProductByNameRequest, Product } from "../typings/product/productTypes";
 import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -26,10 +26,10 @@ export async function home(_req: Request, res: Response): Promise<void> {
 export async function getProducts( _req: Request,res: Response): Promise <void> {
 
   try {
-    const products = await ProductModel.getProducts();
+    const productsObject: Product[] = await ProductModel.getProducts();
     res
         .status(200)
-        .json(products);
+        .json(productsObject);
   } catch (error: unknown) {
         handleControllerError(res, error);
   }
@@ -39,10 +39,11 @@ export async function getProductById (req: GetProductByIdRequest, res: Response)
     const { _id } = req.body;
 
     try {
-        const ProductVariantObject = await ProductModel.getProductByField('_id',_id,'string');
+        // pese a ser un array de product[], siempre devolvera uno solo.
+        const productObject: Product[] = await ProductModel.getProductByField('_id',_id,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -52,10 +53,10 @@ export async function getProductByName (req: GetProductByNameRequest, res: Respo
     const { name } = req.body;
 
     try {
-        const ProductVariantObject = await ProductModel.getProductByField('name',name,'string');
+        const productsObject: Product[] = await ProductModel.getProductByField('name',name,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -65,10 +66,10 @@ export async function getProductByBrand (req: GetProductByBrandRequest, res: Res
     const { brand } = req.body;
 
     try {
-        const ProductVariantObject = await ProductModel.getProductByField('brand',brand,'string');
+        const productsObject: Product[] = await ProductModel.getProductByField('brand',brand,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -86,7 +87,7 @@ export async function createProduct(req: CreateProductRequest, res: Response): P
     } = req.body;
 
     try{
-        const _id = await ProductModel.create({
+        const _id: string = await ProductModel.create({
             name, description, created_at, updated_at, image_url, gallery_urls, 
             brand, variants
         });

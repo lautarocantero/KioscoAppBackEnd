@@ -1,13 +1,10 @@
 
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
+║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-
-// TO DO agregar el tipo public, comprobar que siga el estandar de auth
-
-//base con todos los tipos
-interface ProductVariantDocument {
+//base
+interface ProductVariantEntity {
     _id: string;
     name: string;
     description: string;
@@ -27,49 +24,59 @@ interface ProductVariantDocument {
 }
 
 //base con las funciones de db-local
-interface ProductVariantModelInterface extends ProductVariantDocument {
-  find(query: Partial<ProductVariantDocument>): Promise<ProductVariantDocument[]>;
-  findOne(query: Partial<ProductVariantDocument>): Promise<ProductVariantDocument | null>;
-  save(query?: Partial<ProductVariantDocument>, data?: Partial<ProductVariantDocument>): Promise<void>;
-  delete(query: Partial<ProductVariantDocument>): Promise<void>;
+interface ProductVariantRepository extends ProductVariantEntity {
+  find(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity[]>;
+  findOne(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity | null>;
+  save(query?: Partial<ProductVariantEntity>, data?: Partial<ProductVariantEntity>): Promise<void>;
+  remove(query?: Partial<ProductVariantEntity>): Promise<void>;
 }
 
-//base con tipos unknown para los payloads
-type ProductVariantUnknown = Record<keyof Omit<ProductVariantDocument, '_id'>, unknown>;
+//base para payloads
+type ProductVariantPayloadUnknown = Record<keyof ProductVariantEntity, unknown>;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ ✂️ DERIVADOS ✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️                ║
+║ 🧩 DERIVADOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩                ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type ProductVariant = ProductVariantDocument;
+// derivado para no utilizar directamente el ProductVariantEntity
+export type ProductVariant = ProductVariantEntity;
+
+// derivado para los datos publicos
+export type ProductVariantPublic = Omit<ProductVariantEntity, ''>;
+
+// derivado para acceder a los metodos de ProductVariant
+export type ProductVariantModelType = ProductVariantRepository;
+
+// derivado para data de payloads y posterior validacion
+export type ProductVariantPayload = ProductVariantPayloadUnknown;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type ProductVariantSchemaType = ProductVariantDocument;
+export type ProductVariantSchemaType = ProductVariant;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 // recordar que deben ser unknown todos los campos
-export type GetProductVariantByIdPayload = Pick<ProductUnknown, '_id' >;
+export type GetProductVariantByIdPayload = Pick<ProductVariantPayload, '_id' >;
 
-export type GetProductVariantByProductIdPayload = Pick<ProductUnknown, 'product_id' >;
+export type GetProductVariantByProductIdPayload = Pick<ProductVariantPayload, 'product_id' >;
 
-export type GetProductVariantByBrandPayload = Pick<ProductUnknown, 'brand' >;
+export type GetProductVariantByBrandPayload = Pick<ProductVariantPayload, 'brand' >;
 
-export type GetProductVariantByStockPayload = Pick<ProductUnknown, 'stock' >;
+export type GetProductVariantByStockPayload = Pick<ProductVariantPayload, 'stock' >;
 
-export type GetProductVariantByPricePayload = Pick<ProductUnknown, 'price' >;
+export type GetProductVariantByPricePayload = Pick<ProductVariantPayload, 'price' >;
 
-export type GetProductVariantBySizePayload = Pick<ProductUnknown, 'model_size' >;
+export type GetProductVariantBySizePayload = Pick<ProductVariantPayload, 'model_size' >;
 
-export type GetProductVariantByPresentationPayload = Pick<ProductUnknown, 'model_type' >;
+export type GetProductVariantByPresentationPayload = Pick<ProductVariantPayload, 'model_type' >;
 
-export type CreateProductVariantPayload = Omit<ProductVariantUnknown, '_id'>;
+export type CreateProductVariantPayload = Omit<ProductVariantPayload, '_id' | 'created_at' | 'updated_at' >;
 
-export type EditProductVariantPayload = ProductUnknown;
+export type EditProductVariantPayload = ProductVariantPayload;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ProductVariantModel } from "../models/productVariantModel";
-import { CreateProductVariantRequest, DeleteProductVariantRequest, EditProductVariantRequest, GetProductVariantByBrandRequest, GetProductVariantByIdRequest, GetProductVariantByPresentationRequest, GetProductVariantByPriceRequest, GetProductVariantByProductIdRequest, GetProductVariantBySizeRequest, GetProductVariantByStockRequest } from "../typings/product-variant/productVariantTypes";
+import { CreateProductVariantRequest, DeleteProductVariantRequest, EditProductVariantRequest, GetProductVariantByBrandRequest, GetProductVariantByIdRequest, GetProductVariantByPresentationRequest, GetProductVariantByPriceRequest, GetProductVariantByProductIdRequest, GetProductVariantBySizeRequest, GetProductVariantByStockRequest, ProductVariant } from "../typings/product-variant/productVariantTypes";
 import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -31,7 +31,7 @@ export async function home(_req: Request, res: Response): Promise<void> {
 export async function getProductVariants (_req: Request, res: Response ): Promise<void>  {
 
     try{
-        const productVariantsObject = await ProductVariantModel.getAllProductVariants();
+        const productVariantsObject: ProductVariant[] = await ProductVariantModel.getAllProductVariants();
         res
             .status(200)
             .json(productVariantsObject);
@@ -46,10 +46,11 @@ export async function getProductVariantById (req: GetProductVariantByIdRequest, 
     const { _id } = req.body;
 
     try {
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('_id',_id,'string');
+        // pese a ser un array de product[], siempre devolvera uno solo.
+        const productVariantObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('_id',_id,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -60,10 +61,10 @@ export async function getProductVariantByProductId (req: GetProductVariantByProd
     const { product_id } = req.body;
 
     try {
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('product_id',product_id,'string');
+        const productVariantsObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('product_id',product_id,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -74,10 +75,10 @@ export async function getProductVariantByBrand(req: GetProductVariantByBrandRequ
     const { brand } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('brand',brand,'string');
+        const productVariantsObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('brand',brand,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -87,10 +88,10 @@ export async function getProductVariantByStock(req: GetProductVariantByStockRequ
     const { stock } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('stock',stock,'number');
+        const productVariantsObject: ProductVariant[]  = await ProductVariantModel.getProductVariantByField('stock',stock,'number');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -100,10 +101,10 @@ export async function getProductVariantByPrice(req: GetProductVariantByPriceRequ
     const { price } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('price',price,'number');
+        const productVariantsObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('price',price,'number');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -113,10 +114,10 @@ export async function getProductVariantBySize(req: GetProductVariantBySizeReques
     const { model_size } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('model_size',model_size,'string');
+        const productVariantsObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('model_size',model_size,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -126,10 +127,10 @@ export async function getProductVariantByPresentation(req: GetProductVariantByPr
     const { model_type } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('model_type',model_type,'string');
+        const productVariantObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('model_type',model_type,'string');
         res
             .status(200)
-            .json(ProductVariantObject);
+            .json(productVariantObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -141,14 +142,14 @@ export async function getProductVariantByPresentation(req: GetProductVariantByPr
 // 🆗
 export async function createProductVariant(req: CreateProductVariantRequest, res:Response): Promise<void>  {
     const { 
-        name,description,created_at,updated_at,image_url,
+        name,description,image_url,
         gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
         stock,price,expiration_date 
     } = req.body;
 
     try{
         const _id = await ProductVariantModel.createProductVariant({
-            name,description,created_at,updated_at,image_url,
+            name,description,image_url,
             gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
             stock,price,expiration_date
         });
@@ -166,6 +167,7 @@ export async function createProductVariant(req: CreateProductVariantRequest, res
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
+
 // 🆗
 export async function deleteProductVariant(req: DeleteProductVariantRequest, res: Response): Promise<void> {
     const { _id } = req.body;
@@ -180,7 +182,6 @@ export async function deleteProductVariant(req: DeleteProductVariantRequest, res
     }
 
 }
-
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║

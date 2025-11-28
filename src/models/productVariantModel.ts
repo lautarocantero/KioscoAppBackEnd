@@ -1,6 +1,6 @@
 
-import { ProductVariantObjectSchema } from '../schemas/productVariantSchema';
-import { CreateProductVariantPayload, EditProductVariantPayload, GetProductVariantByIdPayload, ProductVariant } from '../typings/product-variant/productVariantTypes';
+import { ProductVariantSchema } from '../schemas/productVariantSchema';
+import { CreateProductVariantPayload, EditProductVariantPayload, GetProductVariantByIdPayload, ProductVariant, ProductVariantModelType } from '../typings/product-variant/productVariantTypes';
 import { Validation } from './validation';
 
 export class ProductVariantModel {
@@ -13,7 +13,7 @@ export class ProductVariantModel {
         let count = 0;
         const results: ProductVariant[] = [];
 
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
+        ProductVariantSchema.find((item: ProductVariant) => {
             if(count < 100) {
                 results.push(item);
                 count++;
@@ -39,7 +39,8 @@ export class ProductVariantModel {
     
 
         const results: ProductVariant[] = [];
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
+
+        ProductVariantSchema.find((item: ProductVariant) => {
             if (item?.[field] === value) {
                 results.push(item);
                 return true;
@@ -47,9 +48,8 @@ export class ProductVariantModel {
             return false;
         });
 
-        return results;
+        return results as ProductVariant[];
     }
-
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
@@ -57,50 +57,48 @@ export class ProductVariantModel {
 
     static async createProductVariant (data: CreateProductVariantPayload) : Promise<string> {
         const {
-            name,description,created_at,updated_at,image_url,
+            name,description,image_url,
             gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
             stock,price,expiration_date
         } = data;
 
-        Validation.stringValidation(name,'name');
-        Validation.stringValidation(description,'description');
-        Validation.date(created_at,'created_at');
-        Validation.date(updated_at,'updated_at');
-        Validation.image(image_url);
-        Validation.imageArray(gallery_urls);
-        Validation.stringValidation(brand,'brand');
-        Validation.stringValidation(product_id,'product_id');
-        Validation.stringValidation(sku,'sku');
-        Validation.stringValidation(model_type,'model_type');
-        Validation.stringValidation(model_size,'model_size', 2);
-        Validation.number(min_stock,'min_stock');
-        Validation.number(stock,'stock');
-        Validation.number(price,'price');
-        Validation.date(expiration_date,'expiration_date');
+        const nameResult: string = Validation.stringValidation(name,'name');
+        const descriptionResult: string = Validation.stringValidation(description,'description');
+        const imageUrlResult: string = Validation.image(image_url);
+        const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
+        const brandResult: string = Validation.stringValidation(brand,'brand');
+        const productIdResult: string = Validation.stringValidation(product_id,'product_id');
+        const skuResult: string = Validation.stringValidation(sku,'sku');
+        const modelTypeResult: string = Validation.stringValidation(model_type,'model_type');
+        const modelSizeResult: string = Validation.stringValidation(model_size,'model_size', 2);
+        const minStockResult: number = Validation.number(min_stock,'min_stock');
+        const stockResult: number = Validation.number(stock,'stock');
+        const priceResult: number = Validation.number(price,'price');
+        const expirationDateResult: string = Validation.date(expiration_date,'expiration_date');
 
-        const productVariant = ProductVariantObjectSchema.findOne((prodvar: ProductVariant ) => prodvar.name === name);
+        const productVariantObject: ProductVariant = ProductVariantSchema.findOne({name: nameResult });
 
-        if (productVariant) throw new Error ('Product Variant already exists');
+        if (productVariantObject) throw new Error ('Product Variant already exists');
 
-        const _id = crypto.randomUUID();
+        const _id : string = crypto.randomUUID();
 
-        ProductVariantObjectSchema.create({
-            _id: _id as string,
-            name: name as string,
-            description: description as string,
-            created_at: created_at as string,
+        ProductVariantSchema.create({
+            _id: _id,
+            name: nameResult,
+            description: descriptionResult,
+            created_at: new Date().toISOString() as string,
             updated_at: new Date().toISOString() as string,
-            image_url: image_url as string,
-            gallery_urls: gallery_urls as string[],
-            brand: brand as string,
-            product_id: product_id as string,
-            sku: sku as string,
-            model_type: model_type as string,
-            model_size: model_size as string,
-            min_stock: min_stock as number,
-            stock: stock as number,
-            price: price as number,
-            expiration_date: expiration_date as string,
+            image_url: imageUrlResult,
+            gallery_urls: galleryUrlsResult,
+            brand: brandResult,
+            product_id: productIdResult,
+            sku: skuResult,
+            model_type: modelTypeResult,
+            model_size: modelSizeResult,
+            min_stock: minStockResult,
+            stock: stockResult,
+            price: priceResult,
+            expiration_date: expirationDateResult,
         }).save(); //save hace que se guarde en la dblocal
 
         return _id as string;
@@ -113,19 +111,14 @@ export class ProductVariantModel {
     static async deleteProductVariant (data: GetProductVariantByIdPayload) : Promise<void> {
         const { _id } = data;
 
-        Validation.stringValidation(_id, 'id');
+        const _idResult: string = Validation.stringValidation(_id, 'id');
 
-        const ProductVariantObject = ProductVariantObjectSchema.findOne(
-            (prodvar: ProductVariant) => prodvar._id === _id
-        );
+        const ProductVariantObject: ProductVariantModelType = ProductVariantSchema.findOne({ _id: _idResult });
 
-        if (!ProductVariantObject) {
-            throw new Error('Does not exist a productVariant with this id');
-        }
+        if (!ProductVariantObject) throw new Error('Does not exist a productVariant with this id');
 
         ProductVariantObject.remove();
     }
-
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
@@ -139,48 +132,44 @@ export class ProductVariantModel {
             min_stock, stock, price, expiration_date 
          } = data;
 
-        Validation.stringValidation(_id, 'id');
-        Validation.stringValidation(name,'name');
-        Validation.stringValidation(description,'description');
-        Validation.date(created_at,'created_at');
-        Validation.date(updated_at,'updated_at');
-        Validation.image(image_url);
-        Validation.imageArray(gallery_urls);
-        Validation.stringValidation(brand,'brand');
-        Validation.stringValidation(product_id,'product_id');
-        Validation.stringValidation(sku,'sku');
-        Validation.stringValidation(model_type,'model_type');
-        Validation.stringValidation(model_size,'model_size', 2);
-        Validation.number(min_stock,'min_stock');
-        Validation.number(stock,'stock');
-        Validation.number(price,'price');
-        Validation.date(expiration_date,'expiration_date');
+        const _idResult : string = Validation.stringValidation(_id, 'id');
+        const nameResult : string = Validation.stringValidation(name,'name');
+        const descriptionResult : string = Validation.stringValidation(description,'description');
+        const createdAtResult : string = Validation.date(created_at,'created_at');
+        const updatedAtResult : string = Validation.date(updated_at,'updated_at');
+        const imageUrlResult : string = Validation.image(image_url);
+        const galleryUrlsResult : string[] = Validation.imageArray(gallery_urls);
+        const brandResult : string = Validation.stringValidation(brand,'brand');
+        const productIdResult : string = Validation.stringValidation(product_id,'product_id');
+        const skuResult : string = Validation.stringValidation(sku,'sku');
+        const modelTypeResult : string = Validation.stringValidation(model_type,'model_type');
+        const modelSizeResult : string = Validation.stringValidation(model_size,'model_size', 2);
+        const minStockResult : number = Validation.number(min_stock,'min_stock');
+        const stockResult : number = Validation.number(stock,'stock');
+        const priceResult : number = Validation.number(price,'price');
+        const expirationDateResult : string = Validation.date(expiration_date,'expiration_date');
 
-        const ProductVariantObject = ProductVariantObjectSchema.findOne(
-            (prodvar: ProductVariant) => prodvar._id === _id
-        );
+        const productVariantObject: ProductVariantModelType = ProductVariantSchema.findOne({ _id: _idResult});
 
-        if (!ProductVariantObject) {
-            throw new Error('Does not exist a productVariant with this id');
-        }
-
-        ProductVariantObject.name = name;
-        ProductVariantObject.description = description;
-        ProductVariantObject.created_at = created_at;
-        ProductVariantObject.updated_at = updated_at;
-        ProductVariantObject.image_url = image_url;
-        ProductVariantObject.gallery_urls = gallery_urls;
-        ProductVariantObject.brand = brand;
-        ProductVariantObject.product_id = product_id;
-        ProductVariantObject.sku = sku;
-        ProductVariantObject.model_type = model_type;
-        ProductVariantObject.model_size = model_size;
-        ProductVariantObject.min_stock = min_stock;
-        ProductVariantObject.stock = stock;
-        ProductVariantObject.price = price;
-        ProductVariantObject.expiration_date = expiration_date;
+        if (!productVariantObject) throw new Error('Does not exist a productVariant with this id');
         
-        ProductVariantObject.save();
+        productVariantObject.name = nameResult;
+        productVariantObject.description = descriptionResult;
+        productVariantObject.created_at = createdAtResult;
+        productVariantObject.updated_at = updatedAtResult;
+        productVariantObject.image_url = imageUrlResult;
+        productVariantObject.gallery_urls = galleryUrlsResult;
+        productVariantObject.brand = brandResult;
+        productVariantObject.product_id = productIdResult;
+        productVariantObject.sku = skuResult;
+        productVariantObject.model_type = modelTypeResult;
+        productVariantObject.model_size = modelSizeResult;
+        productVariantObject.min_stock = minStockResult;
+        productVariantObject.stock = stockResult;
+        productVariantObject.price = priceResult;
+        productVariantObject.expiration_date = expirationDateResult;
+        
+        productVariantObject.save();
     }
 
 }

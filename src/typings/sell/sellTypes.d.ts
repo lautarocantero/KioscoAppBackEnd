@@ -1,12 +1,10 @@
 import { ProductVariant } from "../product-variant/productVariantTypes";
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
+║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-// TO DO agregar el tipo public, comprobar que siga el estandar de auth
-
-//base con todos los tipos
-interface SellDocument {
+//base
+interface SellEntity {
     _id: string;
     products: ProductVariant[];
     purchase_date: string;
@@ -15,47 +13,55 @@ interface SellDocument {
 }
 
 //base con las funciones de db-local
-interface SellModelInterface extends SellDocument {
-  find(query: Partial<SellDocument>): Promise<SellDocument[]>;
-  findOne(query: Partial<SellDocument>): Promise<SellDocument | null>;
-  save(query?: Partial<SellDocument>, data?: Partial<SellDocument>): Promise<void>;
-  remove(query?: Partial<SellDocument>): Promise<void>;
+interface SellRepository extends SellEntity {
+  find(query: Partial<SellEntity>): Promise<SellEntity[]>;
+  findOne(query: Partial<SellEntity>): Promise<SellEntity | null>;
+  save(query?: Partial<SellEntity>, data?: Partial<SellEntity>): Promise<void>;
+  remove(query?: Partial<SellEntity>): Promise<void>;
 }
 
-//base con tipos unknown para los payloads
-type SellUnknown = Record<keyof Omit<SellDocument, '_id'>, unknown>;
+//base para payloads
+type SellPayloadUnknown = Record<keyof SellEntity, unknown>;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ ✂️ DERIVADOS ✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️                ║
+║ 🧩 DERIVADOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩                ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type Sell = SellDocument;
+// derivado para no utilizar directamente el SellEntity
+export type Sell = SellEntity;
 
-export type SellModelType = SellModelInterface;
+// derivado para los datos publicos
+export type SellPublic = Omit<SellEntity ,''>;
+
+//derivado para acceder a los metodos de Sell 
+export type SellModelType = SellRepository;
+
+//derivado para data de payloads y posterior validacion
+export type SellPayload = SellPayloadUnknown;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type SellSchemaType = SellDocument;
+export type SellSchemaType = Sell;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type GetSellByIdPayload = Pick<SellDocument, '_id'>;
+export type GetSellByIdPayload = Pick<SellPayload, '_id'>;
 
-export type GetSellsBySellerPayload = Pick<SellDocument, 'seller_name'>;
+export type GetSellsBySellerPayload = Pick<SellPayload, 'seller_name'>;
 
-export type GetSellsByDatePayload = Pick<SellDocument, 'purchase_date'>;
+export type GetSellsByDatePayload = Pick<SellPayload, 'purchase_date'>;
 
-export type GetSellsByProductPayload = Pick<SellDocument, '_id'>;
+export type GetSellsByProductPayload = Pick<SellPayload, '_id'>;
 
-export type CreateSellPayload = Omit<SellDocument, '_id'>;
+export type CreateSellPayload = Omit<SellPayload, '_id'>;
 
-export type DeleteSellPayload = Pick<SellDocument, '_id'>;
+export type DeleteSellPayload = Pick<SellPayload, '_id'>;
 
-export type EditSellPayload = SellDocument;
+export type EditSellPayload = SellPayload;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║

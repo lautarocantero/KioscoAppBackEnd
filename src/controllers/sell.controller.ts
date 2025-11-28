@@ -40,7 +40,8 @@ export async function getSellById (req: GetSellByIdRequest, res: Response): Prom
     const { _id } = req.body;
 
     try {
-        const SellObject = await SellModel.getSellsByField('_id',_id,'string');
+        // pese a ser un array de sell[], siempre devolvera uno solo.
+        const SellObject: Sell[] = await SellModel.getSellsByField('_id',_id,'string');
         res
             .status(200)
             .json(SellObject);
@@ -53,7 +54,7 @@ export async function getSellsBySeller (req: GetSellsBySellerRequest, res: Respo
     const { seller_name } = req.body;
 
     try {
-        const SellObject = await SellModel.getSellsByField('seller_name',seller_name,'string');
+        const SellObject: Sell[] = await SellModel.getSellsByField('seller_name',seller_name,'string');
         res
             .status(200)
             .json(SellObject);
@@ -66,7 +67,7 @@ export async function getSellsByDate (req: GetSellsByDateRequest, res: Response)
     const { purchase_date } = req.body;
 
     try {
-        const SellObject = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
+        const SellObject: Sell[] = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
         res
             .status(200)
             .json(SellObject);
@@ -79,7 +80,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequest, res: Res
     const { _id } = req.body;
 
     try {
-        const SellObject = await SellModel.getSellsByProduct({_id});
+        const SellObject: Sell[] = await SellModel.getSellsByProduct({_id});
         res
             .status(200)
             .json(SellObject);
@@ -96,7 +97,7 @@ export async function createSell (req: CreateSellRequest, res: Response): Promis
     const { products,purchase_date,seller_name,total_amount } = req.body;
 
     try{
-        const _id = SellModel.create({
+        const _id: string = await SellModel.create({
             products,purchase_date,seller_name,total_amount
         });
         res

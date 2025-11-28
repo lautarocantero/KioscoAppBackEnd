@@ -1,13 +1,11 @@
 import { ProductVariant } from "../product-variant/productVariantTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🧱 BASES 🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱🧱                     ║
+║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-// TO DO agregar el tipo public, comprobar que siga el estandar de auth
-
-//base con todos los tipos
-interface ProductDocument {
+//base 
+interface ProductEntity {
     _id: string;
     name: string;
     description: string;
@@ -20,45 +18,53 @@ interface ProductDocument {
 }
 
 //base con las funciones de db-local
-interface ProductModelInterface extends ProductDocument {
-  find(query: Partial<ProductDocument>): Promise<ProductDocument[]>;
-  findOne(query: Partial<ProductDocument>): Promise<ProductDocument | null>;
-  save(query?: Partial<ProductDocument>, data?: Partial<ProductDocument>): Promise<void>;
-  remove(query?: Partial<ProductDocument>): Promise<void>;
+interface ProductRepository extends ProductEntity {
+  find(query: Partial<ProductEntity>): Promise<ProductEntity[]>;
+  findOne(query: Partial<ProductEntity>): Promise<ProductEntity | null>;
+  save(query?: Partial<ProductEntity>, data?: Partial<ProductEntity>): Promise<void>;
+  remove(query?: Partial<ProductEntity>): Promise<void>;
 }
 
-//base con tipos unknown para los payloads
-type ProductUnknown = Record<keyof ProductDocument, unknown>;
+//base para payloads, no se de que dato seran, necesito validarlos.
+type ProductPayloadUnknown = Record<keyof ProductEntity, unknown>;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ ✂️ DERIVADOS ✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️✂️                ║
+║ 🧩 DERIVADOS PUBLICOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩      ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type Product = ProductDocument;
+// derivado para no utilizar directamente el ProductEntity
+export type Product = ProductEntity;
 
-export type ProductModelType = ProductModelInterface;
+// derivado para los datos publicos
+export type ProductPublic = Omit<ProductEntity, ''>
+
+//derivado para acceder a los metodos de Product
+export type ProductModelType = ProductRepository;
+
+//derivado para data de payloads y posterior validacion
+export type ProductPayload = ProductPayloadUnknown;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type ProductSchemaType = ProductDocument;
+export type ProductSchemaType = Product;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type GetProductByIdPayload = Pick<ProductUnknown, '_id' >;
+export type GetProductByIdPayload = Pick<ProductPayload, '_id' >;
 
-export type GetProductByNamePayload = Pick<ProductUnknown, 'name' >;
+export type GetProductByNamePayload = Pick<ProductPayload, 'name' >;
 
-export type GetProductByBrandPayload = Pick<ProductUnknown, 'brand' >;
+export type GetProductByBrandPayload = Pick<ProductPayload, 'brand' >;
 
-export type CreateProductPayload = Omit<ProductUnknown, '_id' >;
+export type CreateProductPayload = Omit<ProductPayload, '_id' >;
 
-export type DeleteProductPayload = Pick<ProductUnknown, '_id'>;
+export type DeleteProductPayload = Pick<ProductPayload, '_id'>;
 
-export type EditProductPayload = ProductUnknown;
+export type EditProductPayload = ProductPayload;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║

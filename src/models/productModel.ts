@@ -48,7 +48,7 @@ export class ProductModel {
             return false;
         });
 
-        return results;
+        return results as Product[];
     }
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -71,7 +71,7 @@ export class ProductModel {
         const brandResult: string = Validation.stringValidation(brand, 'brand');
         const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
 
-        const product: Product = ProductSchema.findOne((prod: Product) => prod.name === nameResult);
+        const product: Product = ProductSchema.findOne({ name : nameResult});
 
         if(product) throw new Error('product already exists');
 
@@ -100,7 +100,7 @@ export class ProductModel {
 
         const { _id } = data;
 
-        const _idResult = Validation.stringValidation(_id, '_id');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
 
         const ProductObject: ProductModelType = ProductSchema.findOne({ _id: _idResult });
 
@@ -120,15 +120,15 @@ export class ProductModel {
           brand,variants 
          } = data;
 
-        const _idResult = Validation.stringValidation(_id,'_id');
-        const nameResult = Validation.stringValidation(name,'name');
-        const descriptionResult = Validation.stringValidation(description,'description');
-        const createdAtResult = Validation.date(created_at,'createdAt');
-        const updatedAtResult = Validation.date(updated_at,'updatedAt');
-        const imageUrlResult = Validation.image(image_url);
-        const galleryUrlsResult = Validation.imageArray(gallery_urls);
-        const brandResult = Validation.stringValidation(brand,'brand');
-        const variantsResult = Validation.isVariantArray(variants);
+        const _idResult: string = Validation.stringValidation(_id,'_id');
+        const nameResult: string  = Validation.stringValidation(name,'name');
+        const descriptionResult: string  = Validation.stringValidation(description,'description');
+        const createdAtResult: string  = Validation.date(created_at,'createdAt');
+        const updatedAtResult: string  = Validation.date(updated_at,'updatedAt');
+        const imageUrlResult: string  = Validation.image(image_url);
+        const galleryUrlsResult: string[]  = Validation.imageArray(gallery_urls);
+        const brandResult: string  = Validation.stringValidation(brand,'brand');
+        const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
 
         const ProductObject: ProductModelType = ProductSchema.findOne({ _id: _idResult });
 

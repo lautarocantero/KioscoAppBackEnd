@@ -32,13 +32,13 @@ Devuelve undefined si el usuario no existe o no tiene token.
 
         const idResult: string = Validation.stringValidation(_id, '_id');
 
-        const user: Auth = AuthSchema.findOne({ _id: idResult});
+        const authObject: Auth = AuthSchema.findOne({ _id: idResult});
 
-        if(!user) throw new Error('User not found');
+        if(!authObject) throw new Error('User not found');
 
-        if(!user.refreshToken) throw new Error('Missing refresh token in cookies');
+        if(!authObject.refreshToken) throw new Error('Missing refresh token in cookies');
 
-        return user as Auth;
+        return authObject as Auth;
     }
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -53,9 +53,9 @@ Devuelve undefined si el usuario no existe o no tiene token.
         const passwordResult: string = Validation.password(password);
         Validation.password(repeatPassword);
         
-        const auth: Auth = AuthSchema.findOne({ username: usernameResult });
+        const authObject: Auth = AuthSchema.findOne({ username: usernameResult });
 
-        if(auth) throw new Error('username already exists');
+        if(authObject) throw new Error('username already exists');
 
         const _id: string = crypto.randomUUID();
 
@@ -78,14 +78,14 @@ Devuelve undefined si el usuario no existe o no tiene token.
         const emailResult: string = Validation.email(email);
         const passwordResult: string = Validation.password(password);
         
-        const user: Auth = AuthSchema.findOne({email: emailResult});
-        if(!user) throw new Error('email does not exist');
+        const authObject: Auth = AuthSchema.findOne({email: emailResult});
+        if(!authObject) throw new Error('email does not exist');
 
-        const isValid = await bcrypt.compare(passwordResult, user.password as string);
+        const isValid = await bcrypt.compare(passwordResult, authObject.password as string);
         if(!isValid) throw new Error('password is invalid');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password:_password , refreshToken:_refreshToken, ...publicUser  } = user as Auth;
+        const { password:_password , repeatPassword:_repeatPassword , refreshToken:_refreshToken, ...publicUser  } = authObject as Auth;
 
         return publicUser as AuthPublic;
     }
@@ -99,11 +99,11 @@ Devuelve undefined si el usuario no existe o no tiene token.
 
         const _idResult = Validation.stringValidation(_id, '_id');
 
-        const AuthObject: AuthModelType = AuthSchema.findOne({_id: _idResult});
+        const authObject: AuthModelType = AuthSchema.findOne({_id: _idResult});
 
-        if(!AuthObject) throw new Error('User not found');
+        if(!authObject) throw new Error('User not found');
 
-        AuthObject.remove();
+        authObject.remove();
     }
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
@@ -115,11 +115,11 @@ Devuelve undefined si el usuario no existe o no tiene token.
         const _idResult: string = Validation.stringValidation(_id, '_id');
         const tokenResult: string = Validation.stringValidation(token, 'token');
 
-        const user: AuthModelType = AuthSchema.findOne({_id: _idResult});
-        if(!user) throw new Error('User not found');
+        const authObject: AuthModelType = AuthSchema.findOne({_id: _idResult});
+        if(!authObject) throw new Error('User not found');
 
-        user.refreshToken = tokenResult;
-        user.save();
+        authObject.refreshToken = tokenResult;
+        authObject.save();
     }
 
     /**
@@ -132,16 +132,14 @@ Devuelve undefined si el usuario no existe o no tiene token.
 
         const _idResult: string = Validation.stringValidation(_id, '_id');
 
-        const user: AuthModelType = AuthSchema.findOne({ _id: _idResult });
+        const authObject: AuthModelType = AuthSchema.findOne({ _id: _idResult });
 
-        if(!user) throw new Error('User not found');
+        if(!authObject) throw new Error('User not found');
 
-        if(!user.refreshToken) throw new Error('Missing refresh token in cookies');
+        if(!authObject.refreshToken) throw new Error('Missing refresh token in cookies');
 
-        user.save(
-            { _id: user._id }, //para encontrar el registro
-            { refreshToken: undefined } //modificar lo que deseo
-        );
+        authObject.refreshToken = undefined;
+        authObject.save();
     }
 
     static async editAuth (data: EditAuthPayload) : Promise<void> {

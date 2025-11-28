@@ -48,7 +48,7 @@ export class SellModel {
             return false;
         });
 
-        return results;
+        return results as Sell[];
     }
 
     static async getSellsByProduct (data: GetSellsByProductPayload) : Promise <Sell[]> {
@@ -56,7 +56,7 @@ export class SellModel {
         let count = 0;
         const results: Sell[] = [];
 
-        const _idResult = Validation.stringValidation(_id, '_id');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
 
         SellSchema.find((item: Sell) => {
             if (count >= 100) return false;
@@ -90,7 +90,7 @@ export class SellModel {
         const sellerNameResult: string = Validation.stringValidation(seller_name, 'seller name');
         const totalAmountResult: number = Validation.number(total_amount, 'total amount');
 
-        const _id = crypto.randomUUID();
+        const _id: string = crypto.randomUUID();
 
         SellSchema.create({
             _id,
@@ -111,7 +111,7 @@ export class SellModel {
 
         const { _id } = data;
 
-        const _idResult = Validation.stringValidation(_id, '_id');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
 
         const SellObject: SellModelType = SellSchema.findOne({ _id: _idResult });
 
@@ -127,11 +127,11 @@ export class SellModel {
       static async edit (data: EditSellPayload) : Promise <void> {
         const { _id,products,purchase_date,seller_name,total_amount} = data;
 
-        const _idResult = Validation.stringValidation(_id, '_id');
-        const productsResult = Validation.isVariantArray(products);
-        const purchaseDateResult = Validation.date(purchase_date, 'purchase_date');
-        const sellerNameResult = Validation.stringValidation(seller_name, 'seller_name');
-        const totalAmountResult = Validation.number(total_amount, 'total_amount');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
+        const productsResult: ProductVariant[] = Validation.isVariantArray(products);
+        const purchaseDateResult: string = Validation.date(purchase_date, 'purchase_date');
+        const sellerNameResult: string = Validation.stringValidation(seller_name, 'seller_name');
+        const totalAmountResult: number = Validation.number(total_amount, 'total_amount');
 
         const SellObject: SellModelType = SellSchema.findOne({ _id: _idResult });
 

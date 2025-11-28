@@ -3,7 +3,7 @@ import { ProductVariantSchemaType } from "../typings/product-variant/productVari
 
 const { Schema } = new DBLocal({ path: './db'});
 
-export const ProductVariantObjectSchema = Schema <ProductVariantSchemaType> ('ProductVariant', {
+export const ProductVariantSchema = Schema <ProductVariantSchemaType> ('ProductVariant', {
     _id: {type: String, required: true},
     name: {type: String, required: true},
     description: {type: String, required: true},
