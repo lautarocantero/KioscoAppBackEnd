@@ -1,5 +1,5 @@
 import express from 'express';
-import { createSell, home } from '../controllers/sell.controller';
+import { createSell, deleteSell, editSell, getSellById, getSells, getSellsByDate, getSellsByProduct, getSellsBySeller, home } from '../controllers/sell.controller';
 
 const router = express.Router();
 
@@ -9,15 +9,15 @@ const router = express.Router();
 
 router.get('/', home);
 
-//router.get('/get-sells', getSells);
+router.get('/get-sells', getSells);
 
-//router.get('/get-sells-by-id', getSellsById);
+router.get('/get-sell-by-id', getSellById);
 
-//router.get('/get-sells-by-seller', getSellsBySeller);
+router.get('/get-sells-by-seller', getSellsBySeller);
 
-//router.get('/get-sells-by-date', getSellsByDate);
+router.get('/get-sells-by-date', getSellsByDate);
 
-//router.get('/get-sells-by-product', getSellsByProduct);
+router.get('/get-sells-by-product', getSellsByProduct);
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║
@@ -29,13 +29,13 @@ router.post('/create-sell', createSell);
 ║ 🗑️ DELETE 🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️🗑️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-//router.delete('/delete-sell', deleteSell);
+router.delete('/delete-sell', deleteSell);
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🛠️ PUT 🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️🛠️                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-//router.put('/edit-sell', editSell);
+router.put('/edit-sell', editSell);
 
 
 export default router;
