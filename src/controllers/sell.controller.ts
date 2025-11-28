@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { CreateSellRequest } from "../typings/sell/sellTypes";
 import { SellModel } from "../models/sellModel";
+import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -13,9 +14,6 @@ export async function home(_req: Request, res: Response): Promise<void> {
           Estas en sell<br>
           Endpoints =><br>
           ----Post: /create-sell<br>
-          ----Post: /login<br>
-          ----Post: /logout<br>
-          ----Post: /checkAuth<br>
         `);
 }
 
@@ -37,14 +35,6 @@ export async function createSell (req: CreateSellRequest, res: Response): Promis
                 message: 'Sell saved successfully',
             });
     } catch(error: unknown){
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProductVariantModel } from "../models/productVariantModel";
 import { CreateProductVariantRequest, DeleteProductVariantRequest, EditProductVariantRequest, GetProductVariantByBrandRequest, GetProductVariantByIdRequest, GetProductVariantByPresentationRequest, GetProductVariantByPriceRequest, GetProductVariantByProductIdRequest, GetProductVariantBySizeRequest, GetProductVariantByStockRequest } from "../typings/product-variant/productVariantTypes";
+import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -15,6 +16,11 @@ export async function home(_req: Request, res: Response): Promise<void> {
       ----Get:      /get-product-variants<br>
       ----Get:      /get-product-variant-by-id<br>
       ----Get:      /get-product-variant-by-product-id<br>
+      ----Get:      /get-product-variant-by-brand<br>
+      ----Get:      /get-product-variant-by-stock<br>
+      ----Get:      /get-product-variant-by-price<br>
+      ----Get:      /get-product-variant-by-size<br>
+      ----Get:      /get-product-variant-by-presentation<br>
       ----Post:     /create-product-variant<br>
       ----Delete:   /delete-product-variant<br>
       ----Put:      /edit-product-variant<br>
@@ -31,15 +37,7 @@ export async function getProductVariants (_req: Request, res: Response ): Promis
             .json(productVariantsObject);
     } 
     catch(error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
 
@@ -48,20 +46,12 @@ export async function getProductVariantById (req: GetProductVariantByIdRequest, 
     const { _id } = req.body;
 
     try {
-        const ProductVariantObject = await ProductVariantModel.getProductVariantById({_id});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('_id',_id,'string');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
 
@@ -70,20 +60,12 @@ export async function getProductVariantByProductId (req: GetProductVariantByProd
     const { product_id } = req.body;
 
     try {
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByProductId({product_id});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('product_id',product_id,'string');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
 
@@ -92,104 +74,64 @@ export async function getProductVariantByBrand(req: GetProductVariantByBrandRequ
     const { brand } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByBrand({brand});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('brand',brand,'string');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
-
+// 🆗
 export async function getProductVariantByStock(req: GetProductVariantByStockRequest, res: Response): Promise <void> {
     const { stock } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByStock({stock});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('stock',stock,'number');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
-
+// 🆗
 export async function getProductVariantByPrice(req: GetProductVariantByPriceRequest, res: Response): Promise <void> {
     const { price } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByPrice({price});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('price',price,'number');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
-
+// 🆗
 export async function getProductVariantBySize(req: GetProductVariantBySizeRequest, res: Response): Promise <void> {
     const { model_size } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantBySize({model_size});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('model_size',model_size,'string');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
-
+// 🆗
 export async function getProductVariantByPresentation(req: GetProductVariantByPresentationRequest, res: Response): Promise <void> {
     const { model_type } = req.body;
 
     try{
-        const ProductVariantObject = await ProductVariantModel.getProductVariantByPresentation({model_type});
+        const ProductVariantObject = await ProductVariantModel.getProductVariantByField('model_type',model_type,'string');
         res
             .status(200)
             .json(ProductVariantObject);
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
 
@@ -217,15 +159,7 @@ export async function createProductVariant(req: CreateProductVariantRequest, res
                 message: "Product variant created successfully",
             });
     } catch (error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }
 
@@ -242,15 +176,7 @@ export async function deleteProductVariant(req: DeleteProductVariantRequest, res
             .status(200)
             .json({ message: 'Product variant Successfully deleted'});
     } catch(error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 
 }
@@ -280,14 +206,6 @@ export async function editProductVariant(req: EditProductVariantRequest, res: Re
                 message: "Product variant edited successfully",
             });
     } catch(error: unknown) {
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
     }
 }

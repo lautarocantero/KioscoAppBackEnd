@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { ACCESS_SECRET, REFRESH_SECRET } from "../config";
 import jwt from 'jsonwebtoken';
 import { Auth, AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
+import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -39,15 +40,7 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
             message: "User Registered successfully",
           });
     } catch(error: unknown){
-        if(!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({message:'An unexpected error ocurred, try again'});
-            return;
-        }
-        res 
-            .status(400)
-            .json({message:error.message});
+        handleControllerError(res, error);
       }
 }
 // 🆗
@@ -92,15 +85,7 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
             message: "User Logged successfully",
           });
     } catch(error: unknown){
-        if(!(error instanceof Error)) {
-          res
-            .status(500)
-            .json({message:'An unexpected error ocurred, try again'});
-          return;
-        }
-        res 
-          .status(400)
-          .json({message:error.message});
+        handleControllerError(res, error);
     }
 }
 // 🆗
@@ -124,15 +109,7 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
       .status(200)
       .json({ message: 'Logout successful' });
   } catch (error: unknown) {
-      if(!(error instanceof Error)) {
-        res
-          .status(500)
-          .json({message:'An unexpected error ocurred, try again'});
-        return;
-      }
-      res 
-        .status(400)
-        .json({message:error.message});
+      handleControllerError(res, error);
 }
 }
 // 🆗
@@ -150,15 +127,7 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
         .status(200)
         .json(user);
     } catch(error: unknown) {
-        if(!(error instanceof Error)) {
-          res
-            .status(500)
-            .json({message:'An unexpected error ocurred, try again'});
-          return;
-        }
-        res 
-          .status(400)
-          .json({message:error.message});
+        handleControllerError(res, error);
     }
 }
 
@@ -178,15 +147,7 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
         message: 'Auth deleted successfully',
       });
   } catch(error: unknown) {
-    if(!(error instanceof Error)) {
-      res
-        .status(500)
-        .json({message:'An unexpected error ocurred, try again'});
-      return;
-    }
-    res 
-      .status(400)
-      .json({message:error.message});
+      handleControllerError(res, error);
   }
 }
 
@@ -205,18 +166,10 @@ export async function editAuth (req: EditAuthRequest, res: Response): Promise <v
         _id,
         message: 'Auth has been edited successfully',
       });
-  } catch(error: unknown){
-      if(!(error instanceof Error)) {
-        res
-          .status(500)
-          .json({ message: 'An unexpected error ocurred, try again'});
-        return;
-      }
-      res
-        .status(400)
-        .json({message: error.message});
+  } catch(error: unknown) {
+    handleControllerError(res, error);
   }
-
+    
 }
 
 

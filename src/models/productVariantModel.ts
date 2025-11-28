@@ -1,6 +1,6 @@
 
 import { ProductVariantObjectSchema } from '../schemas/productVariantSchema';
-import { CreateProductVariantPayload, EditProductVariantPayload, GetProductVariantByBrandPayload, GetProductVariantByIdPayload, GetProductVariantByPresentationPayload, GetProductVariantByPricePayload, GetProductVariantByProductIdPayload, GetProductVariantBySizePayload, GetProductVariantByStockPayload, ProductVariant } from '../typings/product-variant/productVariantTypes';
+import { CreateProductVariantPayload, EditProductVariantPayload, GetProductVariantByIdPayload, ProductVariant } from '../typings/product-variant/productVariantTypes';
 import { Validation } from './validation';
 
 export class ProductVariantModel {
@@ -25,28 +25,23 @@ export class ProductVariantModel {
         return results as ProductVariant[];
     }
 
-    static async getProductVariantById (data: GetProductVariantByIdPayload): Promise<ProductVariant> {
-        const { _id } = data;
+    static async getProductVariantByField<T extends keyof ProductVariant>(
+        field: T,
+        value: ProductVariant[T],
+        type: 'string' | 'number',
+    ): Promise<ProductVariant[]> {
 
-        Validation.stringValidation(_id, 'id');
-
-        const ProductVariantObject: ProductVariant = ProductVariantObjectSchema?.findOne((prodvar: ProductVariant) => prodvar?._id === _id );
-
-        if(!ProductVariantObject) throw new Error('Does not exist a productVariant with this id');
-
-        return ProductVariantObject;
-    }
-
-    static async getProductVariantByProductId (data: GetProductVariantByProductIdPayload): Promise<ProductVariant[]> {
-        const { product_id } = data;
-
-        Validation.stringValidation(product_id, 'product_id');
+        if (type !== 'string' && type !== 'number') throw new Error(`Unsupported field type for ${String(field)}`);
+        
+        if (type === 'string') Validation.stringValidation(value, field as string);
+    
+        if (type === 'number') Validation.number(value, field as string);
+    
 
         const results: ProductVariant[] = [];
-
         ProductVariantObjectSchema.find((item: ProductVariant) => {
-            if(item?.product_id === product_id ) {
-                results?.push(item);
+            if (item?.[field] === value) {
+                results.push(item);
                 return true;
             }
             return false;
@@ -55,85 +50,6 @@ export class ProductVariantModel {
         return results;
     }
 
-    static async getProductVariantByBrand (data: GetProductVariantByBrandPayload): Promise<ProductVariant[]> {
-        const { brand } = data;
-
-        const brandResult = Validation.stringValidation(brand, 'brand');
-
-        const results: ProductVariant[] = [];
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
-            if(item?.brand === brandResult ) {
-                results?.push(item);
-                return true;
-            }
-            return false;
-        });
-        return results as ProductVariant[];
-    }
-
-    static async getProductVariantByStock (data: GetProductVariantByStockPayload): Promise<ProductVariant[]> {
-        const { stock } = data;
-
-        const stockResult = Validation.number(stock, 'stock');
-
-        const results: ProductVariant[] = [];
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
-            if(item?.stock === stockResult ) {
-                results?.push(item);
-                return true;
-            }
-            return false;
-        });
-        return results as ProductVariant[];
-    }
-
-    static async getProductVariantByPrice (data: GetProductVariantByPricePayload): Promise<ProductVariant[]> {
-        const { price } = data;
-
-        const priceResult = Validation.number(price, 'price');
-
-        const results: ProductVariant[] = [];
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
-            if(item?.price === priceResult ) {
-                results?.push(item);
-                return true;
-            }
-            return false;
-        });
-        return results as ProductVariant[];
-    }
-
-    static async getProductVariantBySize (data: GetProductVariantBySizePayload): Promise<ProductVariant[]> {
-        const { model_size } = data;
-
-        const sizeResult = Validation.stringValidation(model_size, 'model_size');
-
-        const results: ProductVariant[] = [];
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
-            if(item?.model_size === sizeResult ) {
-                results?.push(item);
-                return true;
-            }
-            return false;
-        });
-        return results as ProductVariant[];
-    }
-
-    static async getProductVariantByPresentation (data: GetProductVariantByPresentationPayload): Promise<ProductVariant[]> {
-        const { model_type } = data;
-
-        const typeResult = Validation.stringValidation(model_type, 'model_type');
-
-        const results: ProductVariant[] = [];
-        ProductVariantObjectSchema.find((item: ProductVariant) => {
-            if(item?.model_type === typeResult ) {
-                results?.push(item);
-                return true;
-            }
-            return false;
-        });
-        return results as ProductVariant[];
-    }
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📤 POST 📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤📤                     ║

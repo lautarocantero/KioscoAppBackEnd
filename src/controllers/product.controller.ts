@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ProductModel } from "../models/productModel";
 import { CreateProductRequest } from "../typings/product/productTypes";
+import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📥 GET 📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥📥                     ║
@@ -25,15 +26,7 @@ export async function getProducts( _req: Request,res: Response): Promise <void> 
         .status(200)
         .json(products);
   } catch (error: unknown) {
-        if (!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res
-            .status(400)
-            .json({ message: error.message});
+        handleControllerError(res, error);
   }
 }
 
@@ -59,15 +52,7 @@ export async function createProduct(req: CreateProductRequest, res: Response): P
                 message: 'Product created successfully',
             });
     } catch(error: unknown) {
-        if (!(error instanceof Error)) {
-            res
-                .status(500)
-                .json({ message: 'An unexpected error ocurred, try again'});
-            return;
-        }
-        res
-            .status(400)
-            .json({ message: error.message});
-        }
+        handleControllerError(res, error);
+    }
 }
 
