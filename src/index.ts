@@ -20,10 +20,9 @@ app.use(cookieParser());
 
 
 app.use('/auth', authRoutes);
-// app.use('/user', userRoutes);
-// app.use('/provider', provider);
 app.use('/sell', sellRoutes);
-// app.use('/seller', sellerRoutes);
+// app.use('/seller', sellerRoutes); //usuario normal/ admin 
+// app.use('/provider', provider); //dato externo, no usa la app
 app.use('/product', productRoutes);
 app.use('/product-variant', productVariantRoutes);
 
