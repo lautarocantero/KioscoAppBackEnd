@@ -14,7 +14,7 @@ El proyecto sigue el patrón **MVC (Modelo-Vista-Controlador)** para mantener un
 
 Este diagrama representa la estructura de datos de KioscoApp:
 
-![Diagrama ER](docs/der.png) 
+![Diagrama ER](src/schemas/der/kiosco-der.png) 
 
 ## 🚀 Tecnologías utilizadas
 
