@@ -1,6 +1,6 @@
 # 🍫🏪💰 KioscoApp Backend 🖥️🗄️📡
 
-Este repositorio contiene el backend de **KioscoApp**, una aplicación diseñada para la gestión de kioscos. Está desarrollado con **Node.js**, **Express** y **TypeScript**, y proporciona una API RESTful para autenticación, gestión de vendedores, productos, proveedores y ventas.
+Este repositorio contiene el backend de [**KioscoApp**](https://github.com/lautarocantero/KioscoApp), una aplicación diseñada para la gestión de kioscos. Está desarrollado con **Node.js**, **Express** y **TypeScript**, y proporciona una API RESTful para autenticación, gestión de vendedores, productos, proveedores y ventas.
 
 ## 🧱 Arquitectura
 
@@ -12,7 +12,7 @@ El proyecto sigue el patrón **MVC (Modelo-Vista-Controlador)** para mantener un
 
 ## 🧬 Diagrama Entidad-Relación (DER)
 
-Este diagrama representa la estructura de datos de KioscoApp:
+Este diagrama representa la estructura de datos de [**KioscoApp**](https://github.com/lautarocantero/KioscoApp):
 
 ![Diagrama ER](src/schemas/der/kiosco-der.png) 
 
