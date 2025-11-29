@@ -1,4 +1,4 @@
-# 🧠 KioscoApp Backend
+# 🍫🏪💰 KioscoApp Backend 🖥️🗄️📡
 
 Este repositorio contiene el backend de **KioscoApp**, una aplicación diseñada para la gestión de kioscos. Está desarrollado con **Node.js**, **Express** y **TypeScript**, y proporciona una API RESTful para autenticación, gestión de vendedores, productos, proveedores y ventas.
 
