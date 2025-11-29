@@ -32,11 +32,11 @@ El proyecto sigue el patrón **MVC (Modelo-Vista-Controlador)** para mantener un
 src/  
 ├── controllers/     # Lógica de negocio (controladores)  
 ├── models/          # Modelos y acceso a datos  
-├── routes/          # Definición de rutas Express  
-├── schemas/         # Definición de esquemas para db local 
-├── typings/         # Tipos y contratos TypeScript  
-├── utils/           # Funciones utiles compartidas 
-├── config/          # Configuración general (ej: constantes)  
+├── routes/          # Definición de rutas Express
+├── schemas/         # Definición de esquemas para db local
+├── typings/         # Tipos y contratos TypeScript
+├── utils/           # Funciones utiles compartidas
+├── config/          # Configuración general (ej: constantes)
 ├── index.ts         # Punto de entrada principal
 
 ## 🔐 Autenticación
