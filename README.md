@@ -10,6 +10,12 @@ El proyecto sigue el patrón **MVC (Modelo-Vista-Controlador)** para mantener un
 - **Controladores**: Manejan la lógica de negocio y las respuestas HTTP (`auth.controller.ts`).
 - **Rutas**: Definen los endpoints y delegan a los controladores (`auth.routes.ts`).
 
+## 🧬 Diagrama Entidad-Relación (DER)
+
+Este diagrama representa la estructura de datos de KioscoApp:
+
+![Diagrama ER](docs/der.png) 
+
 ## 🚀 Tecnologías utilizadas
 
 - [Node.js](https://nodejs.org/)
