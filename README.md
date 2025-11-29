@@ -1,6 +1,6 @@
 # 🧠 KioscoApp Backend
 
-Este repositorio contiene el backend de **KioscoApp**, una aplicación diseñada para la gestión de kioscos. Está desarrollado con **Node.js**, **Express** y **TypeScript**, y proporciona una API RESTful para autenticación, gestión de usuarios, productos y proveedores.
+Este repositorio contiene el backend de **KioscoApp**, una aplicación diseñada para la gestión de kioscos. Está desarrollado con **Node.js**, **Express** y **TypeScript**, y proporciona una API RESTful para autenticación, gestión de vendedores, productos, proveedores y ventas.
 
 ## 🧱 Arquitectura
 
@@ -17,7 +17,7 @@ El proyecto sigue el patrón **MVC (Modelo-Vista-Controlador)** para mantener un
 - [TypeScript](https://www.typescriptlang.org/)
 - [bcrypt](https://github.com/kelektiv/node.bcrypt.js) para el hash de contraseñas
 - [db-local](https://www.npmjs.com/package/db-local) como base de datos local para desarrollo
-- JWT (pendiente de integración) para autenticación segura
+- [JWT](https://www.jwt.io/) para autenticacion segura.
 
 ## 📦 Scripts disponibles
 
@@ -33,7 +33,9 @@ src/
 ├── controllers/     # Lógica de negocio (controladores)  
 ├── models/          # Modelos y acceso a datos  
 ├── routes/          # Definición de rutas Express  
-├── types/           # Tipos y contratos TypeScript  
+├── schemas/         # Definición de esquemas para db local 
+├── typings/         # Tipos y contratos TypeScript  
+├── utils/           # Funciones utiles compartidas 
 ├── config/          # Configuración general (ej: constantes)  
 ├── index.ts         # Punto de entrada principal
 
@@ -43,12 +45,10 @@ El sistema de autenticación incluye:
 
 - Registro de usuarios con validación de datos
 - Hash de contraseñas con `bcrypt`
-- (Próximamente) Inicio de sesión y generación de tokens JWT
+- Inicio de sesión y generación de tokens JWT
 
 ## 📌 Próximos pasos
 
-- Implementar autenticación con JWT
-- Agregar endpoints para productos, proveedores y usuarios
 - Validaciones adicionales con middlewares
 - Documentación de la API con Swagger o similar
 
