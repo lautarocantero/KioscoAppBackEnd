@@ -1,6 +1,7 @@
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import sellRoutes from './routes/sell.routes';
+import sellerRoutes from './routes/seller.routes';
 import providerRoutes from './routes/provider.routes';
 import productRoutes from './routes/product.routes';
 import productVariantRoutes from './routes/productVariant.routes';
@@ -21,7 +22,7 @@ app.use(cookieParser());
 
 app.use('/auth', authRoutes);
 app.use('/sell', sellRoutes);
-// app.use('/seller', sellerRoutes); //usuario normal/ admin 
+app.use('/seller', sellerRoutes); //usuario normal/ admin 
 app.use('/provider', providerRoutes); //dato externo, no usa la app
 app.use('/product', productRoutes);
 app.use('/product-variant', productVariantRoutes);
