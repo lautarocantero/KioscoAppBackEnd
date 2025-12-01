@@ -1,4 +1,4 @@
-
+// TO DO agregue la propiedad profilePhoto, agregarla a los endpoints
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
@@ -12,14 +12,18 @@ interface AuthEntity {
   repeatPassword: string;
   authToken: string | undefined;
   refreshToken: string | undefined;
+  profilePhoto: string | null;
 }
 
-//base con las funciones de db-local
-interface AuthRepository extends AuthEntity {
-  find(query: Partial<AuthEntity>): Promise<AuthEntity[]>;
-  findOne(query: Partial<AuthEntity>): Promise<AuthEntity | null>;
-  save(query?: Partial<AuthEntity>, data?: Partial<AuthEntity>): Promise<void>;
-  remove(query?: Partial<AuthEntity>): Promise<void>;
+// base para el schema
+type AuthSchema = Pick<AuthEntity, '_id' | 'username' | 'email' | 'password' | 'refreshToken' | 'profilePhoto'>;
+
+//base con las funciones del schema
+interface AuthRepository extends AuthSchema {
+  find(query: Partial<AuthSchema>): Promise<AuthSchema[]>;
+  findOne(query: Partial<AuthSchema>): Promise<AuthSchema | null>;
+  save(query?: Partial<AuthSchema>, data?: Partial<AuthSchema>): Promise<void>;
+  remove(query?: Partial<AuthSchema>): Promise<void>;
 }
 
 //base para payloads
@@ -32,11 +36,14 @@ type AuthPayloadUnknown = Record<keyof AuthEntity, unknown>;
 // derivado para no utilizar directamente el AuthEntity
 export type Auth = AuthEntity;
 
-// derivado para los datos publicos
-export type AuthPublic = Omit<AuthEntity, 'password' | 'repeatPassword' | 'refreshToken'>
+// derivado para acceder al esquema
+export type AuthSchemaType = AuthSchema;
 
-//derivado para acceder a los metodos de Auth
+//derivado para acceder a los metodos del esquema Auth
 export type AuthModelType = AuthRepository;
+
+// derivado para los datos publicos
+export type AuthPublic = Omit<AuthEntity, 'password' | 'repeatPassword' | 'authToken' | 'refreshToken'>
 
 //derivado para data de payloads y posterior validacion
 export type AuthPayload = AuthPayloadUnknown;
@@ -45,13 +52,13 @@ export type AuthPayload = AuthPayloadUnknown;
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type AuthSchemaType = Pick<Auth, '_id' | 'username' | 'email' | 'password' | 'refreshToken'>;
+export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profilePhoto'>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type AuthRegisterPayload = Pick<AuthPayload, 'username' | 'email' | 'password' | 'repeatPassword'>;
+export type AuthRegisterPayload = Pick<AuthPayload, 'username' | 'email' | 'profilePhoto' | 'password' | 'repeatPassword'>;
 
 export type AuthLoginPayload = Pick<AuthPayload, 'email' | 'password' >;
 

@@ -2,7 +2,7 @@ import { AuthModel } from "../models/authModel";
 import { Request, Response } from 'express';
 import { ACCESS_SECRET, REFRESH_SECRET } from "../config";
 import jwt from 'jsonwebtoken';
-import { Auth, AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
+import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
 import { handleControllerError } from "../utils/handleControllerError";
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -29,10 +29,10 @@ export async function home(_req: Request, res: Response): Promise<void> {
 ╚══════════════════════════════════════════════════════════════════════╝*/
 // 🆗
 export async function register(req: AuthRegisterRequest, res: Response): Promise<void>  {
-    const { username, email, password, repeatPassword } = req.body;
+    const { username, email, profilePhoto, password, repeatPassword } = req.body;
 
     try{
-        const _id = await AuthModel.create({username, email,  password , repeatPassword});
+        const _id: string = await AuthModel.create({username, email, profilePhoto, password , repeatPassword});
         res
           .status(200)
           .json({
@@ -48,7 +48,7 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
     const { email, password } = req.body;
 
     try{
-        const user = await AuthModel.login({email, password});
+        const user: AuthPublic = await AuthModel.login({email, password});
 
         const token = jwt.sign(
           { id: user._id, email: user.email },
@@ -80,8 +80,6 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
           .status(200)
           .json({ 
             user, 
-            token, 
-            refreshToken,
             message: "User Logged successfully",
           });
     } catch(error: unknown){
@@ -107,7 +105,7 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
       .clearCookie('access_token')
       .clearCookie('refresh_token')
       .status(200)
-      .json({ message: 'Logout successful' });
+      .json({ message: 'Logged out successfully' });
   } catch (error: unknown) {
       handleControllerError(res, error);
 }
@@ -119,10 +117,10 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
     try{
 
       const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; };
-      const user: Auth = await AuthModel.checkAuth({ _id: accessPayload.id});
+      const user: AuthPublicSchema = await AuthModel.checkAuth({ _id: accessPayload.id});
       
       if(!user) throw new Error('No se encuentra ese usuario');
-      
+
       res
         .status(200)
         .json(user);
@@ -156,10 +154,10 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
 ╚══════════════════════════════════════════════════════════════════════╝*/
 // 🆗
 export async function editAuth (req: EditAuthRequest, res: Response): Promise <void> {
-  const { _id, username, email, password } = req.body;
+  const { _id, username, email, password, profilePhoto } = req.body;
   
   try{
-    await AuthModel.editAuth({ _id, username, email, password });
+    await AuthModel.editAuth({ _id, username, email, password, profilePhoto });
     res
       .status(200)
       .json({

@@ -9,4 +9,5 @@ export const AuthSchema = Schema<AuthSchemaType>('Auth', {
     email: { type: String, required: true},
     password: { type: String, required: true},
     refreshToken: { type: String, required: false},
+    profilePhoto: { type: String, required: false},
 });
