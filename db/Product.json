@@ -1,1 +1,194 @@
-[{"_id":"f692f67c-6044-4ab0-a1cc-960ab2bd9c73","name":"Coca-Cola Original","description":"Refresco carbonatado clásico con sabor inconfundible, refrescante y burbujeante.","created_at":"2025-11-27","updated_at":"2025-11-27","image_url":"https://example.com/images/coca-cola-original.png","gallery_urls":["https://example.com/images/coca-cola-bottle.png","https://example.com/images/coca-cola-can.png","https://example.com/images/coca-cola-pack.png"],"brand":"Coca-Cola","variants":[{"_id":"f7c7cd79-02fd-4fb6-9607-8894e55a55cc","name":"Coca Cola Light 500ml","description":"Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión Light con menos calorías.","created_at":"2025-11-26T00:03:00Z","updated_at":"2025-11-26T00:03:00Z","image_url":"https://example.com/images/coca-cola-light-500ml.jpg","gallery_urls":["https://example.com/images/coca-cola-light-500ml-front.jpg","https://example.com/images/coca-cola-light-500ml-back.jpg","https://example.com/images/coca-cola-light-500ml-side.jpg"],"brand":"Coca Cola","product_id":"PROD-CC-500ML","sku":"CC500LIGHTPET","model_type":"Descartable PET","model_size":"500ml","min_stock":20,"stock":150,"price":1.65,"expiration_date":"2026-05-15"},{"_id":"984ddef3-b1c4-4bb9-8c22-05fe22ba20a1","name":"Coca Cola Sin Cafeína 500ml","description":"Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión sin cafeína.","created_at":"2025-11-22T14:35:00Z","updated_at":"2025-11-22T14:35:00Z","image_url":"https://example.com/images/coca-cola-sin-cafeina-500ml.jpg","gallery_urls":["https://example.com/images/coca-cola-sin-cafeina-500ml-front.jpg","https://example.com/images/coca-cola-sin-cafeina-500ml-back.jpg","https://example.com/images/coca-cola-sin-cafeina-500ml-side.jpg"],"brand":"Coca Cola","product_id":"PROD-CC-500ML","sku":"CC500NOPET","model_type":"Descartable PET","model_size":"500ml","min_stock":10,"stock":80,"price":1.6,"expiration_date":"2026-05-15"},{"_id":"8851d6ad-6778-45be-a937-4f0fad8604dd","name":"Coca Cola Zero 500ml","description":"Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión Zero sin azúcar.","created_at":"2025-11-22T14:35:00Z","updated_at":"2025-11-22T14:35:00Z","image_url":"https://example.com/images/coca-cola-zero-500ml.jpg","gallery_urls":["https://example.com/images/coca-cola-zero-500ml-front.jpg","https://example.com/images/coca-cola-zero-500ml-back.jpg","https://example.com/images/coca-cola-zero-500ml-side.jpg"],"brand":"Coca Cola","product_id":"PROD-CC-500ML","sku":"CC500ZEROPET","model_type":"Descartable PET","model_size":"500ml","min_stock":25,"stock":200,"price":1.7,"expiration_date":"2026-05-15"}]}]
+[
+    {
+        "_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+        "name": "Coca-Cola Original",
+        "description": "Refresco carbonatado clásico con sabor inconfundible, refrescante y burbujeante.",
+        "created_at": "2025-11-27",
+        "updated_at": "2025-11-27",
+        "image_url": "https://example.com/images/coca-cola-original.png",
+        "gallery_urls": [
+            "https://example.com/images/coca-cola-bottle.png",
+            "https://example.com/images/coca-cola-can.png",
+            "https://example.com/images/coca-cola-pack.png"
+        ],
+        "brand": "Coca-Cola",
+        "variants": [
+            {
+                "_id": "a1f3b2c4-9d12-4e8a-8f77-1c2d3e4f5a67",
+                "name": "Coca Cola Clásica 500ml",
+                "description": "Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión original.",
+                "created_at": "2025-11-26T00:03:00Z",
+                "updated_at": "2025-11-26T00:03:00Z",
+                "image_url": "https://example.com/images/coca-cola-clasica-500ml.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-clasica-500ml-front.jpg",
+                    "https://example.com/images/coca-cola-clasica-500ml-back.jpg",
+                    "https://example.com/images/coca-cola-clasica-500ml-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC500CLASPET",
+                "model_type": "Descartable PET",
+                "model_size": "500ml",
+                "min_stock": 30,
+                "stock": 200,
+                "price": 1.8,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "b2e4c5d6-7f89-4a01-9b23-2d3e4f5a6b78",
+                "name": "Coca Cola Light 1.5l",
+                "description": "Bebida gaseosa sabor cola en envase descartable PET de 1.5l, versión Light con menos calorías.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-light-1-5l.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-light-1-5l-front.jpg",
+                    "https://example.com/images/coca-cola-light-1-5l-back.jpg",
+                    "https://example.com/images/coca-cola-light-1-5l-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC1500LIGHTPET",
+                "model_type": "Descartable PET",
+                "model_size": "1.5l",
+                "min_stock": 15,
+                "stock": 100,
+                "price": 2.5,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "c3f5d6e7-8a90-4b12-9c34-3e4f5a6b7c89",
+                "name": "Coca Cola Zero 500ml",
+                "description": "Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión Zero sin azúcar.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-zero-500ml.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-zero-500ml-front.jpg",
+                    "https://example.com/images/coca-cola-zero-500ml-back.jpg",
+                    "https://example.com/images/coca-cola-zero-500ml-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC500ZEROPET",
+                "model_type": "Descartable PET",
+                "model_size": "500ml",
+                "min_stock": 25,
+                "stock": 220,
+                "price": 1.9,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "d4a6e7f8-9b01-4c23-8d45-4f5a6b7c8d90",
+                "name": "Coca Cola Zero 1.5l",
+                "description": "Bebida gaseosa sabor cola en envase descartable PET de 1.5l, versión Zero sin azúcar.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-zero-1-5l.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-zero-1-5l-front.jpg",
+                    "https://example.com/images/coca-cola-zero-1-5l-back.jpg",
+                    "https://example.com/images/coca-cola-zero-1-5l-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC1500ZEROPET",
+                "model_type": "Descartable PET",
+                "model_size": "1.5l",
+                "min_stock": 20,
+                "stock": 120,
+                "price": 2.6,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "e5b7f8g9-0c12-4d34-9e56-5a6b7c8d9e01",
+                "name": "Coca Cola Clásica 2.25l",
+                "description": "Bebida gaseosa sabor cola en envase descartable PET de 2.25l, versión original.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-clasica-2-25l.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-clasica-2-25l-front.jpg",
+                    "https://example.com/images/coca-cola-clasica-2-25l-back.jpg",
+                    "https://example.com/images/coca-cola-clasica-2-25l-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC2250CLASPET",
+                "model_type": "Descartable PET",
+                "model_size": "2.25l",
+                "min_stock": 40,
+                "stock": 300,
+                "price": 3.2,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "f6c8g9h0-1d23-4e45-8f67-6b7c8d9e0f12",
+                "name": "Coca Cola Zero 2.25l",
+                "description": "Bebida gaseosa sabor cola en envase descartable PET de 2.25l, versión Zero sin azúcar.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-zero-2-25l.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-zero-2-25l-front.jpg",
+                    "https://example.com/images/coca-cola-zero-2-25l-back.jpg",
+                    "https://example.com/images/coca-cola-zero-2-25l-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC2250ZEROPET",
+                "model_type": "Descartable PET",
+                "model_size": "2.25l",
+                "min_stock": 35,
+                "stock": 250,
+                "price": 3.3,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "h8e0j1k2-3f45-4g67-9h89-8d9e0f1g2h34",
+                "name": "Coca Cola Clásica 1.25l Retornable",
+                "description": "Bebida gaseosa sabor cola en botella de vidrio retornable de 1.25l, versión original.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-clasica-1-25l-ret.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-clasica-1-25l-ret-front.jpg",
+                    "https://example.com/images/coca-cola-clasica-1-25l-ret-back.jpg",
+                    "https://example.com/images/coca-cola-clasica-1-25l-ret-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC1250CLASRET",
+                "model_type": "Vidrio retornable",
+                "model_size": "1.25l",
+                "min_stock": 30,
+                "stock": 180,
+                "price": 2.1,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "i9f1k2l3-4g56-4h78-9i90-9e0f1g2h3i45",
+                "name": "Coca Cola Zero 1.25l Retornable",
+                "description": "Bebida gaseosa sabor cola en botella de vidrio retornable de 1.25l, versión Zero sin azúcar.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/coca-cola-zero-1-25l-ret.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/coca-cola-zero-1-25l-ret-front.jpg",
+                    "https://example.com/images/coca-cola-zero-1-25l-ret-back.jpg",
+                    "https://example.com/images/coca-cola-zero-1-25l-ret-side.jpg"
+                ],
+                "brand": "Coca Cola",
+                "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+                "sku": "CC1250ZERORET",
+                "model_type": "Vidrio retornable",
+                "model_size": "1.25l",
+                "min_stock": 25,
+                "stock": 140,
+                "price": 2.2,
+                "expiration_date": "2026-05-15"
+            }
+        ]
+    }
+]

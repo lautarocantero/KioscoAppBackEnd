@@ -3,5 +3,14 @@
   "editor.codeActionsOnSave": {
     "source.fixAll": "explicit"
   },
-  "eslint.packageManager": "npm"
+  "eslint.packageManager": "npm",
+
+  // 🔧 Prettier como formateador por defecto
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+
+  // ✨ Formatear al guardar
+  "editor.formatOnSave": true
 }

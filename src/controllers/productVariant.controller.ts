@@ -58,10 +58,11 @@ export async function getProductVariantById (req: GetProductVariantByIdRequest, 
 
 // 🆗
 export async function getProductVariantByProductId (req: GetProductVariantByProductIdRequest, res: Response): Promise<void>  {
-    const { product_id } = req.body;
+    const { product_id } = req.params;
 
     try {
         const productVariantsObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('product_id',product_id,'string');
+
         res
             .status(200)
             .json(productVariantsObject);

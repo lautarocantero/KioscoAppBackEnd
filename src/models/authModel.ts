@@ -56,7 +56,7 @@ Devuelve undefined si el usuario no existe o no tiene token.
         const emailResult: string = Validation.email(email);
         const passwordResult: string = Validation.password(password);
         Validation.password(repeatPassword);
-        const profileResult: string = Validation.image(profilePhoto);
+        const profileResult: string = profilePhoto ? Validation.image(profilePhoto) : '';
         
         const authObject: AuthSchemaType = AuthSchema.findOne({ username: usernameResult });
 
@@ -88,7 +88,7 @@ Devuelve undefined si el usuario no existe o no tiene token.
         if(!authObject) throw new Error('email does not exist');
 
         const isValid = await bcrypt.compare(passwordResult, authObject.password as string);
-        if(!isValid) throw new Error('password is invalid');
+        if(!isValid) throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password:_password ,refreshToken:_refreshToken, ...publicUser  } = authObject as AuthSchemaType;

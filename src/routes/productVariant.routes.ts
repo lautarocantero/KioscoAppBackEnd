@@ -13,7 +13,7 @@ router.get('/get-product-variants', getProductVariants);
 
 router.get('/get-product-variant-by-id', getProductVariantById);
 
-router.get('/get-product-variant-by-product-id', getProductVariantByProductId);
+router.get('/get-product-variant-by-product-id/:product_id', getProductVariantByProductId);
 
 router.get('/get-product-variant-by-brand', getProductVariantByBrand);
 
