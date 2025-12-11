@@ -15,7 +15,7 @@ Este repositorio contiene el backend de [**KioscoApp**](https://github.com/lauta
 
 Este diagrama representa la estructura de datos de [**KioscoApp**](https://github.com/lautarocantero/KioscoApp):
 
-![Diagrama ER](src/schemas/der/kiosco-der.png) 
+![Diagrama ER](src/documentation/kiosco-base-der.png) 
 
 ## 🚀 Tecnologías utilizadas
 
