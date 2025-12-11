@@ -57,6 +57,13 @@ El sistema de autenticación incluye:
 
 ## 📚 Documentación
 
+- Bloques teatrales con ASCII art para cada archivo (index, routes, controllers, models)
+- Narrativa clara del flujo de datos: Client → Routes → Controllers → Models → DB
+- Filosofía uniforme de local fallback vs SQL principal en todos los modelos
+- Minimización en routers y archivos simples para evitar redundancia
+- Meta‑guías y mapas arquitectónicos que muestran la relación entre capas (Schemas.md, Routes.md)
+- Uso de emojis para dramatizar y hacer el onboarding más memorable
+
 ![Documentación](src/documentation/documentation.png) 
 
 ## 📌 Próximos pasos
