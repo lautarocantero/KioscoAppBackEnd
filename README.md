@@ -37,15 +37,15 @@ Este diagrama representa la estructura de datos de [**KioscoApp**](https://githu
 ## 📁 Estructura del proyecto
 
 src/  
-├── controllers/   # Lógica de negocio (controladores)  
-├── documentation/ # documentacion del proyecto
-├── models/        # Modelos y acceso a datos  
-├── routes/        # Definición de rutas Express  
-├── schemas/       # Definición de esquemas para db local  
-├── typings/       # Tipos y contratos TypeScript  
-├── utils/         # Funciones útiles compartidas  
-├── config/        # Configuración general (ej: constantes)  
-└── index.ts       # Punto de entrada principal  
+├── controllers/   # Lógica de negocio (controladores)    
+├── documentation/ # documentacion del proyecto  
+├── models/        # Modelos y acceso a datos    
+├── routes/        # Definición de rutas Express    
+├── schemas/       # Definición de esquemas para db local    
+├── typings/       # Tipos y contratos TypeScript    
+├── utils/         # Funciones útiles compartidas    
+├── config/        # Configuración general (ej: constantes)    
+└── index.ts       # Punto de entrada principal    
 
 ## 🔐 Autenticación
 
