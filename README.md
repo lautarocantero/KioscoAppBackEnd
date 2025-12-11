@@ -36,7 +36,7 @@ Este diagrama representa la estructura de datos de [**KioscoApp**](https://githu
 
 ## 📁 Estructura del proyecto
 
-src/
+src/  
 ├── controllers/   # Lógica de negocio (controladores)  
 ├── documentation/ # documentacion del proyecto
 ├── models/        # Modelos y acceso a datos  
