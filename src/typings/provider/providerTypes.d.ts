@@ -1,4 +1,27 @@
 
+/*──────────────────────────────
+📘 ProviderTypes
+──────────────────────────────
+📜 Propósito:
+Definir tipados base y derivados para proveedores.  
+Incluye entidad principal, repositorio local (db-local), payloads y requests.
+
+🧩 Derivaciones:
+- ProviderEntity → Provider → ProviderSchemaType
+- ProviderEntity → ProviderRepository → ProviderModelType
+- ProviderEntity → ProviderPayloadUnknown → ProviderPayload
+- ProviderPayload → Payloads específicos (Get, Create, Edit, Delete)
+- Payloads → Requests tipados para controladores
+
+🛡️ Seguridad:
+- Usar ProviderPublic para exponer datos sin campos sensibles.
+- Validar siempre los payloads antes de persistir o responder.
+
+🌀 Flujo estándar:
+[Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
+──────────────────────────────*/
+
+
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/

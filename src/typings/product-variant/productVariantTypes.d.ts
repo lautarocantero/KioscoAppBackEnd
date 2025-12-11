@@ -1,4 +1,25 @@
 
+/*──────────────────────────────
+📘 ProductVariantTypes
+──────────────────────────────
+📜 Propósito:
+Definir tipados base y derivados para variantes de producto.  
+Incluye entidad principal, repositorio local (db-local), payloads y requests.
+
+🧩 Derivaciones:
+- ProductVariantEntity → ProductVariant → ProductVariantSchemaType
+- ProductVariantEntity → ProductVariantRepository → ProductVariantModelType
+- ProductVariantEntity → ProductVariantPayloadUnknown → ProductVariantPayload
+- ProductVariantPayload → Payloads específicos (Get, Create, Edit, Delete)
+- Payloads → Requests tipados para controladores
+
+🛡️ Seguridad:
+- Usar ProductVariantPublic para exponer datos sin campos sensibles.
+- Validar siempre los payloads antes de persistir o responder.
+
+🌀 Flujo estándar:
+[Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
+──────────────────────────────*/
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║

@@ -1,4 +1,22 @@
-// TO DO agregue la propiedad profilePhoto, agregarla a los endpoints
+
+/*──────────────────────────────
+📘 AuthTypes
+──────────────────────────────
+📜 Propósito:
+Tipado base para autenticación.  
+Define entidades, esquemas, repositorios, payloads y requests.
+
+🧩 Derivaciones:
+- AuthEntity → AuthSchema → AuthRepository → AuthModelType
+- AuthEntity → AuthPublic → AuthPublicSchema
+- AuthEntity → AuthPayload → Payloads → Requests
+
+🛡️ Seguridad:
+- Usar AuthPublic/AuthPublicSchema para ocultar campos sensibles.
+- Validar siempre los payloads antes de persistir.
+──────────────────────────────*/
+
+
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/

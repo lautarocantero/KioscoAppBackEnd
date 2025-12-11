@@ -1,3 +1,23 @@
+
+/*──────────────────────────────
+📘 ProductTypes
+──────────────────────────────
+📜 Propósito:
+Definir tipados base y derivados para productos.  
+Incluye entidad principal, repositorio local (db-local), payloads y requests.
+
+🧩 Derivaciones:
+- ProductEntity → Product → ProductSchemaType
+- ProductEntity → ProductRepository → ProductModelType
+- ProductEntity → ProductPayloadUnknown → ProductPayload
+- ProductPayload → Payloads específicos (Get, Create, Delete, Edit)
+- Payloads → Requests tipados para controladores
+
+🛡️ Seguridad:
+- Usar ProductPublic para exponer datos sin campos sensibles.
+- Validar siempre los payloads antes de persistir o responder.
+──────────────────────────────*/
+
 import { ProductVariant } from "../product-variant/productVariantTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗

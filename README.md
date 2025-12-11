@@ -4,11 +4,12 @@ Este repositorio contiene el backend de [**KioscoApp**](https://github.com/lauta
 
 ## 🧱 Arquitectura
 
-El proyecto sigue el patrón **MVC (Modelo-Vista-Controlador)** para mantener una estructura clara, escalable y mantenible:
+| Componente      | Propósito                                                   | Ejemplo                  |
+|-----------------|-------------------------------------------------------------|--------------------------|
+| **Modelos**     | Encapsulan la lógica de acceso a datos y validación         | `AuthModel`              |
+| **Controladores** | Manejan la lógica de negocio y las respuestas HTTP        | `auth.controller.ts`     |
+| **Rutas**       | Definen los endpoints y delegan a los controladores         | `auth.routes.ts`         |
 
-- **Modelos**: Encapsulan la lógica de acceso a datos y validación (por ejemplo, `AuthModel`).
-- **Controladores**: Manejan la lógica de negocio y las respuestas HTTP (`auth.controller.ts`).
-- **Rutas**: Definen los endpoints y delegan a los controladores (`auth.routes.ts`).
 
 ## 🧬 Diagrama Entidad-Relación (DER)
 
@@ -36,14 +37,15 @@ Este diagrama representa la estructura de datos de [**KioscoApp**](https://githu
 ## 📁 Estructura del proyecto
 
 src/
-├── controllers/ # Lógica de negocio (controladores)  
-├── models/      # Modelos y acceso a datos  
-├── routes/      # Definición de rutas Express  
-├── schemas/     # Definición de esquemas para db local  
-├── typings/     # Tipos y contratos TypeScript  
-├── utils/       # Funciones útiles compartidas  
-├── config/      # Configuración general (ej: constantes)  
-└── index.ts     # Punto de entrada principal  
+├── controllers/   # Lógica de negocio (controladores)  
+├── documentation/ # documentacion del proyecto
+├── models/        # Modelos y acceso a datos  
+├── routes/        # Definición de rutas Express  
+├── schemas/       # Definición de esquemas para db local  
+├── typings/       # Tipos y contratos TypeScript  
+├── utils/         # Funciones útiles compartidas  
+├── config/        # Configuración general (ej: constantes)  
+└── index.ts       # Punto de entrada principal  
 
 ## 🔐 Autenticación
 
@@ -56,7 +58,8 @@ El sistema de autenticación incluye:
 ## 📌 Próximos pasos
 
 - Validaciones adicionales con middlewares
-- Documentación de la API con Swagger o similar
+- Agregar testing a los endpoints
+- Agregar funciones que utilizen sql
 
 ## 🛠 Requisitos
 

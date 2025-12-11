@@ -1,3 +1,26 @@
+
+/*──────────────────────────────
+📘 SellerTypes
+──────────────────────────────
+📜 Propósito:
+Definir tipados base y derivados para vendedores.  
+Incluye entidad principal, repositorio local (db-local), payloads y requests.
+
+🧩 Derivaciones:
+- SellerEntity → Seller → SellerSchemaType
+- SellerEntity → SellerRepository → SellerModelType
+- SellerEntity → SellerPayloadUnknown → SellerPayload
+- SellerPayload → Payloads específicos (Get, Create, Edit, Delete)
+- Payloads → Requests tipados para controladores
+
+🛡️ Seguridad:
+- Usar SellerPublic para exponer datos sin campos sensibles (oculta `password`).
+- Validar siempre los payloads antes de persistir o responder.
+
+🌀 Flujo estándar:
+[Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
+──────────────────────────────*/
+
 import { SellerRol, SellerStatus } from "./sellerEnums";
 
 /*══════════════════════════════════════════════════════════════════════╗

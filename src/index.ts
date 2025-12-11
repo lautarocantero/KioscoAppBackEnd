@@ -1,3 +1,13 @@
+/**
+ * ┌───────────────────────────────────────────────┐
+ * │                 INDEX SERVER                  │
+ * └───────────────────────────────────────────────┘
+ * 🎭 Punto de entrada principal de la aplicación.
+ * - Configura middlewares globales (CORS, JSON, cookies).
+ * - Registra routers para cada dominio (auth, sell, seller, etc.).
+ * - Inicia el servidor en el puerto definido en config.
+ */
+
 import express from 'express';
 import authRoutes from './routes/auth.routes';
 import sellRoutes from './routes/sell.routes';
@@ -11,22 +21,49 @@ import cors from 'cors';
 
 const app = express();
 
+/**
+ * ┌───────────────────────────────────────────────┐
+ * │                 MIDDLEWARES                   │
+ * └───────────────────────────────────────────────┘
+ * 🎭 Configuración global de middlewares:
+ * - CORS: habilita comunicación segura con frontend.
+ * - JSON: parsea cuerpos de peticiones en formato JSON.
+ * - Cookies: permite lectura y escritura de cookies.
+ */
 app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
+  origin: 'http://localhost:5173', // 🌐 Frontend permitido
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // 🔧 Métodos habilitados
+  credentials: true // 🍪 Permite envío de cookies
 }));
 app.use(express.json());
 app.use(cookieParser());
 
-
+/**
+ * ┌───────────────────────────────────────────────┐
+ * │                   ROUTERS                     │
+ * └───────────────────────────────────────────────┘
+ * 🎭 Registro de rutas principales:
+ * - /auth → autenticación y sesiones
+ * - /sell → ventas y transacciones
+ * - /seller → gestión de usuarios (normal/admin)
+ * - /provider → datos externos (no usan la app)
+ * - /product → catálogo de productos
+ * - /product-variant → variantes de productos
+ */
 app.use('/auth', authRoutes);
 app.use('/sell', sellRoutes);
-app.use('/seller', sellerRoutes); //usuario normal/ admin 
-app.use('/provider', providerRoutes); //dato externo, no usa la app
+app.use('/seller', sellerRoutes);       // usuario normal / admin
+app.use('/provider', providerRoutes);   // dato externo, no usa la app
 app.use('/product', productRoutes);
 app.use('/product-variant', productVariantRoutes);
 
-
-
-app.listen(PORT, () => { console.log(`en el puerto numero ${PORT}`);});
+/**
+ * ┌───────────────────────────────────────────────┐
+ * │                 SERVER START                  │
+ * └───────────────────────────────────────────────┘
+ * 🎭 Inicializa el servidor en el puerto definido
+ * en config. Muestra mensaje confirmando inicio.
+ */
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+});

@@ -1,4 +1,29 @@
+
+/*──────────────────────────────
+📘 SellTypes
+──────────────────────────────
+📜 Propósito:
+Definir tipados base y derivados para ventas.  
+Incluye entidad principal, repositorio local (db-local), payloads y requests.
+
+🧩 Derivaciones:
+- SellEntity → Sell → SellSchemaType
+- SellEntity → SellRepository → SellModelType
+- SellEntity → SellPayloadUnknown → SellPayload
+- SellPayload → Payloads específicos (Get, Create, Edit, Delete)
+- Payloads → Requests tipados para controladores
+
+🛡️ Seguridad:
+- Usar SellPublic para exponer datos sin campos sensibles.
+- Validar siempre los payloads antes de persistir o responder.
+
+🌀 Flujo estándar:
+[Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
+──────────────────────────────*/
+
+
 import { ProductVariant } from "../product-variant/productVariantTypes";
+
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
