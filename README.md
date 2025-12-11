@@ -55,6 +55,10 @@ El sistema de autenticación incluye:
 - Hash de contraseñas con `bcrypt`
 - Inicio de sesión y generación de tokens JWT
 
+## 📚 Documentación
+
+![Documentación](src/documentation/documentation.png) 
+
 ## 📌 Próximos pasos
 
 - Validaciones adicionales con middlewares
