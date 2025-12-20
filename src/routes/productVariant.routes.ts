@@ -39,7 +39,7 @@ Define las rutas relacionadas con variantes de producto y las conecta con sus co
 
 router.get('/', home);
 router.get('/get-product-variants', getProductVariants);
-router.get('/get-product-variant-by-id', getProductVariantById);
+router.get('/get-product-variant-by-id/:product_variant_id', getProductVariantById);
 router.get('/get-product-variant-by-product-id/:product_id', getProductVariantByProductId);
 router.get('/get-product-variant-by-brand', getProductVariantByBrand);
 router.get('/get-product-variant-by-stock', getProductVariantByStock);

@@ -5,7 +5,7 @@
         "description": "Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión original.",
         "created_at": "2025-11-26T00:03:00Z",
         "updated_at": "2025-11-26T00:03:00Z",
-        "image_url": "https://example.com/images/coca-cola-clasica-500ml.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-clasica-500ml-front.jpg",
             "https://example.com/images/coca-cola-clasica-500ml-back.jpg",
@@ -27,7 +27,7 @@
         "description": "Bebida gaseosa sabor cola en envase descartable PET de 1.5l, versión Light con menos calorías.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-light-1-5l.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-light-1-5l-front.jpg",
             "https://example.com/images/coca-cola-light-1-5l-back.jpg",
@@ -49,7 +49,7 @@
         "description": "Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión Zero sin azúcar.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-zero-500ml.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-zero-500ml-front.jpg",
             "https://example.com/images/coca-cola-zero-500ml-back.jpg",
@@ -71,7 +71,7 @@
         "description": "Bebida gaseosa sabor cola en envase descartable PET de 1.5l, versión Zero sin azúcar.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-zero-1-5l.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-zero-1-5l-front.jpg",
             "https://example.com/images/coca-cola-zero-1-5l-back.jpg",
@@ -93,7 +93,7 @@
         "description": "Bebida gaseosa sabor cola en envase descartable PET de 2.25l, versión original.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-clasica-2-25l.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-clasica-2-25l-front.jpg",
             "https://example.com/images/coca-cola-clasica-2-25l-back.jpg",
@@ -115,7 +115,7 @@
         "description": "Bebida gaseosa sabor cola en envase descartable PET de 2.25l, versión Zero sin azúcar.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-zero-2-25l.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-zero-2-25l-front.jpg",
             "https://example.com/images/coca-cola-zero-2-25l-back.jpg",
@@ -132,12 +132,12 @@
         "expiration_date": "2026-05-15"
     },
     {
-        "_id": "h8e0j1k2-3f45-4g67-9h89-8d9e0f1g2h34",
+        "_id": "7791813888468123131",
         "name": "Coca Cola Clásica 1.25l Retornable",
         "description": "Bebida gaseosa sabor cola en botella de vidrio retornable de 1.25l, versión original.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-clasica-1-25l-ret.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-clasica-1-25l-ret-front.jpg",
             "https://example.com/images/coca-cola-clasica-1-25l-ret-back.jpg",
@@ -159,7 +159,7 @@
         "description": "Bebida gaseosa sabor cola en botella de vidrio retornable de 1.25l, versión Zero sin azúcar.",
         "created_at": "2025-11-22T14:35:00Z",
         "updated_at": "2025-11-22T14:35:00Z",
-        "image_url": "https://example.com/images/coca-cola-zero-1-25l-ret.jpg",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-zero-1-25l-ret-front.jpg",
             "https://example.com/images/coca-cola-zero-1-25l-ret-back.jpg",
@@ -173,6 +173,50 @@
         "min_stock": 25,
         "stock": 140,
         "price": 2200,
+        "expiration_date": "2026-05-15"
+    },
+    {
+        "_id": "7798422620014",
+        "name": "Monster",
+        "description": "Bebida energética Monster en lata de 473ml.",
+        "created_at": "2025-11-22T14:35:00Z",
+        "updated_at": "2025-11-22T14:35:00Z",
+        "image_url": "/images/productExample/monster.png",
+        "gallery_urls": [
+            "https://example.com/images/monster-473ml-front.jpg",
+            "https://example.com/images/monster-473ml-back.jpg",
+            "https://example.com/images/monster-473ml-side.jpg"
+        ],
+        "brand": "Monster",
+        "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+        "sku": "MON473ML",
+        "model_type": "Lata",
+        "model_size": "473ml",
+        "min_stock": 25,
+        "stock": 80,
+        "price": 3500,
+        "expiration_date": "2026-05-15"
+    },
+    {
+        "_id": "7791813888468",
+        "name": "Pepsi 2l",
+        "description": "Bebida gaseosa Pepsi sabor cola en botella plástica de 2 litros.",
+        "created_at": "2025-11-22T14:35:00Z",
+        "updated_at": "2025-11-22T14:35:00Z",
+        "image_url": "/images/productExample/pepsi.jpg",
+        "gallery_urls": [
+            "https://example.com/images/pepsi-2l-front.jpg",
+            "https://example.com/images/pepsi-2l-back.jpg",
+            "https://example.com/images/pepsi-2l-side.jpg"
+        ],
+        "brand": "Pepsi",
+        "product_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
+        "sku": "PEPSI2L",
+        "model_type": "Botella plástica",
+        "model_size": "2l",
+        "min_stock": 25,
+        "stock": 90,
+        "price": 2000,
         "expiration_date": "2026-05-15"
     }
 ]

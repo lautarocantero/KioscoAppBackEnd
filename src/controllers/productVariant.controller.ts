@@ -81,11 +81,11 @@ export async function getProductVariants (_req: Request, res: Response ): Promis
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function getProductVariantById (req: GetProductVariantByIdRequest, res: Response): Promise<void> {
-    const { _id } = req.body;
+    const { product_variant_id } = req.params;
 
     try {
-        // pese a ser un array de product[], siempre devolvera uno solo.
-        const productVariantObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('_id',_id,'string');
+        {/*─────────────────── 🔎 pese a ser un array de product[], siempre devolvera uno solo. 🔎 ───────────────────*/}
+        const productVariantObject: ProductVariant[] = await ProductVariantModel.getProductVariantByField('_id',product_variant_id,'string');
         res
             .status(200)
             .json(productVariantObject);

@@ -31,7 +31,7 @@
                 "model_type": "Descartable PET",
                 "model_size": "500ml",
                 "min_stock": 30,
-                "stock": 200,
+                "stock": 2,
                 "price": 1.8,
                 "expiration_date": "2026-05-15"
             },
@@ -75,7 +75,7 @@
                 "model_type": "Descartable PET",
                 "model_size": "500ml",
                 "min_stock": 25,
-                "stock": 220,
+                "stock": 2,
                 "price": 1.9,
                 "expiration_date": "2026-05-15"
             },
