@@ -1,5 +1,5 @@
 import DBLocal from 'db-local';
-import { AuthSchemaType } from '../typings/auth/authTypes';
+import { AuthSchemaType } from '@typings/auth';
 
 const { Schema } = new DBLocal({ path: './db'});
 

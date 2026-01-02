@@ -16,7 +16,6 @@ import providerRoutes from './routes/provider.routes';
 import productRoutes from './routes/product.routes';
 import productVariantRoutes from './routes/productVariant.routes';
 import cookieParser from 'cookie-parser';
-import { PORT } from './config';
 import cors from 'cors';
 
 const app = express();
@@ -67,6 +66,8 @@ app.use('/product-variant', productVariantRoutes);
  * 🎭 Inicializa el servidor en el puerto definido
  * en config. Muestra mensaje confirmando inicio.
  */
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+const port = Number(process.env.PORT) || 3000;
+
+app.listen(port, () => {
+  console.log(`🚀 Servidor corriendo en el puerto ${port}`);
 });

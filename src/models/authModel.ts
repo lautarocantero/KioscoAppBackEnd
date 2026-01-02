@@ -14,7 +14,7 @@ import {
     AuthRefreshTokenPayload,
     DeleteAuthPayload, 
     EditAuthPayload 
-} from '../typings/auth/authTypes';
+} from '@typings/auth';
 
 /*──────────────────────────────
 🔐 AuthModel

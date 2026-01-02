@@ -2,8 +2,10 @@ import { AuthModel } from "../models/authModel";
 import { Request, Response } from 'express';
 import { ACCESS_SECRET, REFRESH_SECRET } from "../config";
 import jwt from 'jsonwebtoken';
-import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
+// import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
+// import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/index";
 import { handleControllerError } from "../utils/handleControllerError";
+import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
 
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
