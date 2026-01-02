@@ -68,6 +68,6 @@ app.use('/product-variant', productVariantRoutes);
  */
 const port = Number(process.env.PORT) || 3000;
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en el puerto ${port}`);
 });
