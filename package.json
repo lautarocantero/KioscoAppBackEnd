@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
+    "build": "tsc",
     "linter": "ts-standard",
     "dev": "ts-node-dev src/index.ts",
     "start": "node --watch build/index",
