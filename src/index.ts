@@ -30,8 +30,11 @@ const app = express();
  * - JSON: parsea cuerpos de peticiones en formato JSON.
  * - Cookies: permite lectura y escritura de cookies.
  */
+
+const allowedOrigins = [ 'http://localhost:5173', 'https://69545059c2c5900008ded560--kioscoapp.netlify.app' ];
+
 app.use(cors({
-  origin: 'http://localhost:5173', // 🌐 Frontend permitido
+  origin: allowedOrigins, // 🌐 Frontend permitido
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // 🔧 Métodos habilitados
   credentials: true // 🍪 Permite envío de cookies
 }));

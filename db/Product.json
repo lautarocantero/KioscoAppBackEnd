@@ -5,7 +5,7 @@
         "description": "Refresco carbonatado clásico con sabor inconfundible, refrescante y burbujeante.",
         "created_at": "2025-11-27",
         "updated_at": "2025-11-27",
-        "image_url": "https://example.com/images/coca-cola-original.png",
+        "image_url": "/images/productExample/cocaCola.png",
         "gallery_urls": [
             "https://example.com/images/coca-cola-bottle.png",
             "https://example.com/images/coca-cola-can.png",
@@ -32,7 +32,7 @@
                 "model_size": "500ml",
                 "min_stock": 30,
                 "stock": 2,
-                "price": 1.8,
+                "price": 1800,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -54,7 +54,7 @@
                 "model_size": "1.5l",
                 "min_stock": 15,
                 "stock": 100,
-                "price": 2.5,
+                "price": 2500,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -76,7 +76,7 @@
                 "model_size": "500ml",
                 "min_stock": 25,
                 "stock": 2,
-                "price": 1.9,
+                "price": 1900,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -98,7 +98,7 @@
                 "model_size": "1.5l",
                 "min_stock": 20,
                 "stock": 120,
-                "price": 2.6,
+                "price": 2600,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -120,7 +120,7 @@
                 "model_size": "2.25l",
                 "min_stock": 40,
                 "stock": 300,
-                "price": 3.2,
+                "price": 3200,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -142,7 +142,7 @@
                 "model_size": "2.25l",
                 "min_stock": 35,
                 "stock": 250,
-                "price": 3.3,
+                "price": 3300,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -164,7 +164,7 @@
                 "model_size": "1.25l",
                 "min_stock": 30,
                 "stock": 180,
-                "price": 2.1,
+                "price": 2100,
                 "expiration_date": "2026-05-15"
             },
             {
@@ -186,8 +186,703 @@
                 "model_size": "1.25l",
                 "min_stock": 25,
                 "stock": 140,
-                "price": 2.2,
+                "price": 2200,
                 "expiration_date": "2026-05-15"
+            }
+        ]
+    },
+    {
+        "_id": "prod-monster-001",
+        "name": "Monster Energy",
+        "description": "Bebida energética con sabor intenso y alto contenido de cafeína.",
+        "created_at": "2025-11-22",
+        "updated_at": "2025-11-22",
+        "image_url": "/images/productExample/monster.png",
+        "gallery_urls": [
+            "https://example.com/images/monster-pack.png",
+            "https://example.com/images/monster-can.png"
+        ],
+        "brand": "Monster",
+        "variants": [
+            {
+                "_id": "7798422620014",
+                "name": "Monster 473ml",
+                "description": "Bebida energética Monster en lata de 473ml.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/monster-473ml-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/monster-473ml-front.jpg",
+                    "https://example.com/images/monster-473ml-back.jpg",
+                    "https://example.com/images/monster-473ml-side.jpg"
+                ],
+                "brand": "Monster",
+                "product_id": "prod-monster-001",
+                "sku": "MON473ML",
+                "model_type": "Lata",
+                "model_size": "473ml",
+                "min_stock": 25,
+                "stock": 80,
+                "price": 3500,
+                "expiration_date": "2026-05-15"
+            }
+        ]
+    },
+    {
+        "_id": "prod-pepsi-001",
+        "name": "Pepsi",
+        "description": "Refresco carbonatado con sabor cola, refrescante y burbujeante.",
+        "created_at": "2025-11-22",
+        "updated_at": "2025-11-22",
+        "image_url": "/images/productExample/pepsi.jpg",
+        "gallery_urls": [
+            "https://example.com/images/pepsi-bottle.png",
+            "https://example.com/images/pepsi-pack.png"
+        ],
+        "brand": "Pepsi",
+        "variants": [
+            {
+                "_id": "7791813888468",
+                "name": "Pepsi 2l",
+                "description": "Bebida gaseosa Pepsi sabor cola en botella plástica de 2 litros.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/pepsi-2l-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/pepsi-2l-front.jpg",
+                    "https://example.com/images/pepsi-2l-back.jpg",
+                    "https://example.com/images/pepsi-2l-side.jpg"
+                ],
+                "brand": "Pepsi",
+                "product_id": "prod-pepsi-001",
+                "sku": "PEPSI2L",
+                "model_type": "Botella plástica",
+                "model_size": "2l",
+                "min_stock": 25,
+                "stock": 90,
+                "price": 2000,
+                "expiration_date": "2026-05-15"
+            },
+            {
+                "_id": "7791813888437",
+                "name": "Pepsi 2l retornable",
+                "description": "Bebida gaseosa Pepsi sabor cola en botella plástica de 2 litros retornable.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "https://example.com/images/pepsi-2l-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/pepsi-2l-front.jpg",
+                    "https://example.com/images/pepsi-2l-back.jpg",
+                    "https://example.com/images/pepsi-2l-side.jpg"
+                ],
+                "brand": "Pepsi",
+                "product_id": "prod-pepsi-001",
+                "sku": "PEPSI2LR",
+                "model_type": "Botella retornable",
+                "model_size": "2l",
+                "min_stock": 25,
+                "stock": 90,
+                "price": 1900,
+                "expiration_date": "2026-05-15"
+            }
+        ]
+    },
+    {
+        "_id": "prod-elite-001",
+        "name": "Elite Pañuelos",
+        "description": "Pañuelos suaves de folha tripla, ideales para el cuidado personal.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/panuelos_elite.jpg",
+        "gallery_urls": [
+            "https://example.com/images/panuelos-elite-pack.png"
+        ],
+        "brand": "Elite",
+        "variants": [
+            {
+                "_id": "7790250000358",
+                "name": "Pañuelos Elite Folha Tripla",
+                "description": "Pañuelos Elite de folha tripla con máxima suavidad, ideales para el cuidado personal.",
+                "created_at": "2025-12-23T20:45:00Z",
+                "updated_at": "2025-12-23T20:45:00Z",
+                "image_url": "https://example.com/images/panuelos-elite-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/panuelos-elite-front.jpg",
+                    "https://example.com/images/panuelos-elite-back.jpg",
+                    "https://example.com/images/panuelos-elite-side.jpg"
+                ],
+                "brand": "Elite",
+                "product_id": "prod-elite-001",
+                "sku": "ELITE-TRIPLE-SOFT",
+                "model_type": "Caja",
+                "model_size": "50 unidades",
+                "min_stock": 30,
+                "stock": 120,
+                "price": 1500,
+                "expiration_date": "2027-01-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-raid-001",
+        "name": "Raid",
+        "description": "Productos para control de mosquitos y otros insectos, uso doméstico.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/espirales_raid.jpg",
+        "gallery_urls": [
+            "https://example.com/images/raid-pack.png"
+        ],
+        "brand": "Raid",
+        "variants": [
+            {
+                "_id": "7790520029089",
+                "name": "Espirales Raid",
+                "description": "Espirales Raid para control de mosquitos, uso doméstico.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "https://example.com/images/espirales-raid-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/espirales-raid-front.jpg",
+                    "https://example.com/images/espirales-raid-back.jpg"
+                ],
+                "brand": "Raid",
+                "product_id": "prod-raid-001",
+                "sku": "RAID-ESPIRALES",
+                "model_type": "Caja",
+                "model_size": "12 unidades",
+                "min_stock": 20,
+                "stock": 80,
+                "price": 2500,
+                "expiration_date": "2027-06-01"
+            },
+            {
+                "_id": "7790520029096",
+                "name": "Espirales Raid",
+                "description": "Espirales Raid para control de mosquitos, uso doméstico.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "https://example.com/images/espirales-raid-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/espirales-raid-front.jpg",
+                    "https://example.com/images/espirales-raid-back.jpg"
+                ],
+                "brand": "Raid",
+                "product_id": "prod-raid-001",
+                "sku": "RAID-ESPIRALES-24",
+                "model_type": "Caja",
+                "model_size": "24 unidades",
+                "min_stock": 10,
+                "stock": 5,
+                "price": 4800,
+                "expiration_date": "2027-06-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-fuyi-001",
+        "name": "Fuyi",
+        "description": "Insecticida para control de mosquitos y otros insectos voladores.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/fuyi.jpg",
+        "gallery_urls": [
+            "https://example.com/images/fuyi-pack.png"
+        ],
+        "brand": "Fuyi",
+        "variants": [
+            {
+                "_id": "7790520025869",
+                "name": "Fuyi Aerosol 360ml",
+                "description": "Insecticida Fuyi para control de mosquitos y otros insectos voladores.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "https://example.com/images/fuyi-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/fuyi-front.jpg",
+                    "https://example.com/images/fuyi-back.jpg"
+                ],
+                "brand": "Fuyi",
+                "product_id": "prod-fuyi-001",
+                "sku": "FUYI-INSECTICIDA",
+                "model_type": "Aerosol",
+                "model_size": "360 ml",
+                "min_stock": 15,
+                "stock": 60,
+                "price": 1800,
+                "expiration_date": "2027-03-15"
+            }
+        ]
+    },
+    {
+        "_id": "prod-spa-001",
+        "name": "Spa Aromatizadores",
+        "description": "Aromatizadores estilo spa con fragancias relajantes y energizantes.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/spa-maracuya.jpg",
+        "gallery_urls": [
+            "https://example.com/images/spa-pack.png"
+        ],
+        "brand": "Spa",
+        "variants": [
+            {
+                "_id": "7798096059257",
+                "name": "Spa Maracuyá 250ml",
+                "description": "Aromatizador estilo spa con fragancia maracuyá, ideal para ambientes relajantes.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "https://example.com/images/spa-maracuya-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/spa-maracuya-front.jpg",
+                    "https://example.com/images/spa-maracuya-back.jpg"
+                ],
+                "brand": "Spa",
+                "product_id": "prod-spa-001",
+                "sku": "SPA-MARACUYA",
+                "model_type": "Spray",
+                "model_size": "250 ml",
+                "min_stock": 10,
+                "stock": 40,
+                "price": 2200,
+                "expiration_date": "2027-08-20"
+            },
+            {
+                "_id": "7798096059233",
+                "name": "Spa Pomelo 250ml",
+                "description": "Aromatizador estilo spa con fragancia pomelo, refrescante y energizante.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "https://example.com/images/spa-pomelo-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/spa-pomelo-front.jpg",
+                    "https://example.com/images/spa-pomelo-back.jpg"
+                ],
+                "brand": "Spa",
+                "product_id": "prod-spa-001",
+                "sku": "SPA-POMELO",
+                "model_type": "Spray",
+                "model_size": "250 ml",
+                "min_stock": 10,
+                "stock": 35,
+                "price": 2200,
+                "expiration_date": "2027-08-20"
+            }
+        ]
+    },
+    {
+        "_id": "prod-yerba-001",
+        "name": "Yerba Mate Mañanita",
+        "description": "Yerba mate con sabor tradicional, ideal para el consumo diario.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/yerba-mananita.jpg",
+        "gallery_urls": [
+            "https://example.com/images/yerba-pack.png"
+        ],
+        "brand": "Mañanita",
+        "variants": [
+            {
+                "_id": "7790387015324",
+                "name": "Yerba Mate Mañanita 1kg",
+                "description": "Yerba mate Mañanita con sabor tradicional, ideal para el consumo diario.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "https://example.com/images/yerba-mananita-front.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/yerba-mananita-front.jpg",
+                    "https://example.com/images/yerba-mananita-back.jpg"
+                ],
+                "brand": "Mañanita",
+                "product_id": "prod-yerba-001",
+                "sku": "YERBA-MANANITA",
+                "model_type": "Paquete",
+                "model_size": "1 kg",
+                "min_stock": 50,
+                "stock": 200,
+                "price": 3500,
+                "expiration_date": "2027-12-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-alicante-001",
+        "name": "Alicante Condimentos",
+        "description": "Mezclas de especias seleccionadas para realzar el sabor de tus comidas.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/alicante-pizza.jpg",
+        "gallery_urls": [
+            "https://example.com/images/alicante-pizza-front.jpg",
+            "https://example.com/images/alicante-pizza-back.jpg"
+        ],
+        "brand": "Alicante",
+        "variants": [
+            {
+                "_id": "7790150490334",
+                "name": "Alicante Condimento para Pizza",
+                "description": "Condimento Alicante para pizza, mezcla de especias seleccionadas.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/alicante-pizza.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/alicante-pizza-front.jpg",
+                    "https://example.com/images/alicante-pizza-back.jpg"
+                ],
+                "brand": "Alicante",
+                "product_id": "prod-alicante-001",
+                "sku": "ALICANTE-PIZZA",
+                "model_type": "Sobre",
+                "model_size": "25 g",
+                "min_stock": 40,
+                "stock": 150,
+                "price": 800,
+                "expiration_date": "2027-05-10"
+            },
+            {
+                "_id": "7790150413005",
+                "name": "Alicante Albahaca",
+                "description": "Albahaca seca Alicante, ideal para condimentar comidas.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/alicante-albahaca.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/alicante-albahaca-front.jpg",
+                    "https://example.com/images/alicante-albahaca-back.jpg"
+                ],
+                "brand": "Alicante",
+                "product_id": "prod-alicante-001",
+                "sku": "ALICANTE-ALBAHACA",
+                "model_type": "Sobre",
+                "model_size": "15 g",
+                "min_stock": 40,
+                "stock": 160,
+                "price": 700,
+                "expiration_date": "2027-05-10"
+            }
+        ]
+    },
+    {
+        "_id": "prod-campagnola-001",
+        "name": "La Campagnola Condimentos",
+        "description": "Condimentos clásicos para realzar el sabor de tus comidas.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/campagnola-oregano.jpg",
+        "gallery_urls": [
+            "https://example.com/images/campagnola-oregano-front.jpg",
+            "https://example.com/images/campagnola-oregano-back.jpg"
+        ],
+        "brand": "La Campagnola",
+        "variants": [
+            {
+                "_id": "7790580136550",
+                "name": "La Campagnola Orégano",
+                "description": "Orégano seco La Campagnola, condimento clásico para pizzas y comidas.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/campagnola-oregano.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/campagnola-oregano-front.jpg",
+                    "https://example.com/images/campagnola-oregano-back.jpg"
+                ],
+                "brand": "La Campagnola",
+                "product_id": "prod-campagnola-001",
+                "sku": "CAMPAGNOLA-OREGANO",
+                "model_type": "Frasco",
+                "model_size": "20 g",
+                "min_stock": 30,
+                "stock": 100,
+                "price": 900,
+                "expiration_date": "2027-04-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-generica-001",
+        "name": "Genérica Condimentos",
+        "description": "Condimentos aromáticos para repostería y cocina.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/nuez-moscada.jpg",
+        "gallery_urls": [
+            "https://example.com/images/nuez-moscada-front.jpg",
+            "https://example.com/images/nuez-moscada-back.jpg"
+        ],
+        "brand": "Genérica",
+        "variants": [
+            {
+                "_id": "7790130001260",
+                "name": "Nuez Moscada Molida",
+                "description": "Nuez moscada molida, condimento aromático para repostería y cocina.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/nuez-moscada.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/nuez-moscada-front.jpg",
+                    "https://example.com/images/nuez-moscada-back.jpg"
+                ],
+                "brand": "Genérica",
+                "product_id": "prod-generica-001",
+                "sku": "NUEZ-MOLIDA",
+                "model_type": "Frasco",
+                "model_size": "30 g",
+                "min_stock": 25,
+                "stock": 90,
+                "price": 1200,
+                "expiration_date": "2027-09-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-off-001",
+        "name": "Off Repelentes",
+        "description": "Repelentes en aerosol para protección contra mosquitos y otros insectos.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/off-repelente.jpg",
+        "gallery_urls": [
+            "https://example.com/images/off-front.jpg",
+            "https://example.com/images/off-back.jpg"
+        ],
+        "brand": "Off",
+        "variants": [
+            {
+                "_id": "7798040053652",
+                "name": "Off Repelente de Insectos 170ml",
+                "description": "Repelente en aerosol para protección contra mosquitos y otros insectos.",
+                "created_at": "2025-12-23T21:00:00Z",
+                "updated_at": "2025-12-23T21:00:00Z",
+                "image_url": "/images/productExample/off-repelente.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/off-front.jpg",
+                    "https://example.com/images/off-back.jpg"
+                ],
+                "brand": "Off",
+                "product_id": "prod-off-001",
+                "sku": "OFF-REPELENTE",
+                "model_type": "Aerosol",
+                "model_size": "170 ml",
+                "min_stock": 15,
+                "stock": 60,
+                "price": 3500,
+                "expiration_date": "2028-05-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-lux-001",
+        "name": "Lux Jabones",
+        "description": "Jabones de tocador con fragancia suave y textura cremosa.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/jabon-lux.jpg",
+        "gallery_urls": [
+            "https://example.com/images/lux-front.jpg",
+            "https://example.com/images/lux-back.jpg"
+        ],
+        "brand": "Lux",
+        "variants": [
+            {
+                "_id": "64817514",
+                "name": "Jabón Lux 125g",
+                "description": "Jabón de tocador Lux con fragancia suave y textura cremosa.",
+                "created_at": "2025-12-23T21:01:00Z",
+                "updated_at": "2025-12-23T21:01:00Z",
+                "image_url": "/images/productExample/jabon-lux.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/lux-front.jpg",
+                    "https://example.com/images/lux-back.jpg"
+                ],
+                "brand": "Lux",
+                "product_id": "prod-lux-001",
+                "sku": "JABON-LUX",
+                "model_type": "Pastilla",
+                "model_size": "125 g",
+                "min_stock": 50,
+                "stock": 200,
+                "price": 800,
+                "expiration_date": "2027-03-15"
+            }
+        ]
+    },
+    {
+        "_id": "prod-higienol-001",
+        "name": "Higienol Papel Higiénico",
+        "description": "Papel higiénico doble hoja, suave y resistente, presentación familiar.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/higienol-max.jpg",
+        "gallery_urls": [
+            "https://example.com/images/higienol-front.jpg",
+            "https://example.com/images/higienol-back.jpg"
+        ],
+        "brand": "Higienol",
+        "variants": [
+            {
+                "_id": "7790250015840",
+                "name": "Higienol Max Papel Higiénico 12 unidades",
+                "description": "Papel higiénico doble hoja, suave y resistente, presentación familiar.",
+                "created_at": "2025-12-23T21:02:00Z",
+                "updated_at": "2025-12-23T21:02:00Z",
+                "image_url": "/images/productExample/higienol-max.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/higienol-front.jpg",
+                    "https://example.com/images/higienol-back.jpg"
+                ],
+                "brand": "Higienol",
+                "product_id": "prod-higienol-001",
+                "sku": "HIGIENOL-MAX",
+                "model_type": "Pack",
+                "model_size": "12 unidades",
+                "min_stock": 30,
+                "stock": 120,
+                "price": 4500,
+                "expiration_date": "2030-01-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-nescafe-001",
+        "name": "Nescafé Dolca",
+        "description": "Café instantáneo con sabor intenso y aroma clásico.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/nescafe-dolca.jpg",
+        "gallery_urls": [
+            "https://example.com/images/nescafe-front.jpg",
+            "https://example.com/images/nescafe-back.jpg"
+        ],
+        "brand": "Nescafé",
+        "variants": [
+            {
+                "_id": "8445291081895",
+                "name": "Nescafé Dolca 170g",
+                "description": "Café instantáneo Nescafé Dolca, sabor intenso y aroma clásico.",
+                "created_at": "2025-12-23T21:03:00Z",
+                "updated_at": "2025-12-23T21:03:00Z",
+                "image_url": "/images/productExample/nescafe-dolca.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/nescafe-front.jpg",
+                    "https://example.com/images/nescafe-back.jpg"
+                ],
+                "brand": "Nescafé",
+                "product_id": "prod-nescafe-001",
+                "sku": "NESCAFE-DOLCA",
+                "model_type": "Frasco",
+                "model_size": "170 g",
+                "min_stock": 20,
+                "stock": 75,
+                "price": 5200,
+                "expiration_date": "2028-11-20"
+            }
+        ]
+    },
+    {
+        "_id": "prod-morenita-001",
+        "name": "La Morenita Infusiones",
+        "description": "Infusiones naturales para el bienestar y la digestión.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/te-boldo.jpg",
+        "gallery_urls": [
+            "https://example.com/images/boldo-front.jpg",
+            "https://example.com/images/boldo-back.jpg"
+        ],
+        "brand": "La Morenita",
+        "variants": [
+            {
+                "_id": "7790170924642",
+                "name": "Té de Boldo La Morenita",
+                "description": "Infusión natural de boldo, ideal para la digestión.",
+                "created_at": "2025-12-23T21:04:00Z",
+                "updated_at": "2025-12-23T21:04:00Z",
+                "image_url": "/images/productExample/te-boldo.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/boldo-front.jpg",
+                    "https://example.com/images/boldo-back.jpg"
+                ],
+                "brand": "La Morenita",
+                "product_id": "prod-morenita-001",
+                "sku": "TE-BOLDO",
+                "model_type": "Caja",
+                "model_size": "25 unidades",
+                "min_stock": 40,
+                "stock": 150,
+                "price": 1600,
+                "expiration_date": "2027-07-10"
+            }
+        ]
+    },
+    {
+        "_id": "prod-sulleg-001",
+        "name": "Sulleg Rollos de Cocina",
+        "description": "Rollos de cocina absorbentes, resistentes y prácticos para uso diario.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/sulleg-rollos.jpg",
+        "gallery_urls": [
+            "https://example.com/images/sulleg-front.jpg",
+            "https://example.com/images/sulleg-back.jpg"
+        ],
+        "brand": "Sulleg",
+        "variants": [
+            {
+                "_id": "7793344904105",
+                "name": "Sulleg Rollos de Cocina Pack 3",
+                "description": "Rollos de cocina absorbentes, resistentes y prácticos para uso diario.",
+                "created_at": "2025-12-23T21:30:00Z",
+                "updated_at": "2025-12-23T21:30:00Z",
+                "image_url": "/images/productExample/sulleg-rollos.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/sulleg-front.jpg",
+                    "https://example.com/images/sulleg-back.jpg"
+                ],
+                "brand": "Sulleg",
+                "product_id": "prod-sulleg-001",
+                "sku": "SULLEG-ROLLOS",
+                "model_type": "Pack",
+                "model_size": "3 unidades",
+                "min_stock": 25,
+                "stock": 100,
+                "price": 2800,
+                "expiration_date": "2029-02-01"
+            }
+        ]
+    },
+    {
+        "_id": "prod-7up-001",
+        "name": "7up",
+        "description": "Gaseosa sabor lima-limón, refrescante y burbujeante.",
+        "created_at": "2025-12-23",
+        "updated_at": "2025-12-23",
+        "image_url": "/images/productExample/7up-2l-retornable.jpg",
+        "gallery_urls": [
+            "https://example.com/images/7up-front.jpg",
+            "https://example.com/images/7up-back.jpg"
+        ],
+        "brand": "7up",
+        "variants": [
+            {
+                "_id": "7791813777007",
+                "name": "7up 2L Retornable",
+                "description": "Gaseosa sabor lima-limón, refrescante y burbujeante en envase retornable de 2 litros.",
+                "created_at": "2025-12-23T21:30:00Z",
+                "updated_at": "2025-12-23T21:30:00Z",
+                "image_url": "/images/productExample/7up-2l-retornable.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/7up-front.jpg",
+                    "https://example.com/images/7up-back.jpg"
+                ],
+                "brand": "7up",
+                "product_id": "prod-7up-001",
+                "sku": "7UP-2L-RET",
+                "model_type": "Botella",
+                "model_size": "2l",
+                "min_stock": 30,
+                "stock": 120,
+                "price": 950,
+                "expiration_date": "2026-06-01"
             }
         ]
     }
