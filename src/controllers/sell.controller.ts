@@ -151,7 +151,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequest, res: Res
 
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
-
+//──────────────────────────────────────────── Modificado ✅ ───────────────────────────────────────────//
 /*══════════ 🎮 createSell ══════════╗
 ║ 📥 Entrada: products, date, seller, total ║
 ║ ⚙️ Proceso: crea venta en BD              ║
@@ -160,11 +160,11 @@ export async function getSellsByProduct (req: GetSellsByProductRequest, res: Res
 ╚══════════════════════════════════════════╝*/
 
 export async function createSell (req: CreateSellRequest, res: Response): Promise<void> {
-    const { products,purchase_date,seller_name,total_amount } = req.body;
+    const { products,purchase_date, seller_id, seller_name,total_amount, payment_method } = req.body;
 
     try{
         const _id: string = await SellModel.create({
-            products,purchase_date,seller_name,total_amount
+            products,purchase_date,seller_id,seller_name,total_amount,payment_method
         });
         res
             .status(200)
@@ -216,10 +216,10 @@ export async function deleteSell (req: DeleteSellRequest, res: Response): Promis
 
 
 export async function editSell (req: EditSellRequest, res: Response) : Promise <void> {
-    const { _id,products,purchase_date,seller_name,total_amount} = req.body;
+    const { _id,products,purchase_date,modification_date,seller_id,seller_name,total_amount,payment_method} = req.body;
 
     try{
-        await SellModel.edit({_id,products,purchase_date,seller_name,total_amount});
+        await SellModel.edit({_id,products,purchase_date,modification_date,seller_id,seller_name,total_amount,payment_method});
         res
             .status(200)
             .json({

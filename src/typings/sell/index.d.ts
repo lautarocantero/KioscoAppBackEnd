@@ -34,8 +34,11 @@ interface SellEntity {
     _id: string;
     products: ProductVariant[];
     purchase_date: string;
+    modification_date: string;
+    seller_id: string;
     seller_name: string;
     total_amount: number;
+    payment_method: string;
 }
 
 //base con las funciones de db-local
@@ -83,7 +86,7 @@ export type GetSellsByDatePayload = Pick<SellPayload, 'purchase_date'>;
 
 export type GetSellsByProductPayload = Pick<SellPayload, '_id'>;
 
-export type CreateSellPayload = Omit<SellPayload, '_id'>;
+export type CreateSellPayload = Omit<SellPayload, '_id' | 'modification_date'>;
 
 export type DeleteSellPayload = Pick<SellPayload, '_id'>;
 

@@ -15,8 +15,11 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - _id           → Identificador único de la venta (String, requerido)
 - products      → Array de productos vendidos (Array, requerido)
 - purchase_date → Fecha de la compra (String, requerido)
+- modification_date → Fecha de edicion de la venta (String, requerido)
+- seller_id   → Nombre del vendedor responsable (String, requerido)
 - seller_name   → Nombre del vendedor responsable (String, requerido)
 - total_amount  → Monto total de la venta (Number, requerido)
+- payment_method  → Metodo de pago elegido
 
 🛡️ Notas:
 - Este esquema NO reemplaza la base de datos SQL, solo actúa como fallback local.
@@ -27,6 +30,9 @@ export const SellSchema = Schema<SellSchemaType>('Sell', {
     _id: { type: String, required: true },
     products: { type: Array, required: true },
     purchase_date: { type: String, required: true },
+    modification_date: { type: String, required: false },
+    seller_id: { type: String, required: true },
     seller_name: { type: String, required: true },
     total_amount: { type: Number, required: true },
+    payment_method: { type: String, required: true },
 });

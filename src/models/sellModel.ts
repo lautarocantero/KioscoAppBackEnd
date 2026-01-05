@@ -151,12 +151,14 @@ export class SellModel {
     ║ 🛠️ Errores: validaciones fallidas                                               ║
     ╚════════════════════════════════════════════════════════════════════════════════╝*/
     static async create (data: CreateSellPayload): Promise <string> {
-        const { products,purchase_date,seller_name,total_amount } = data;
+        const { products,purchase_date,seller_id,seller_name,total_amount, payment_method } = data;
 
         const productsResult: ProductVariant[] = Validation.isVariantArray(products);
         const purchaseDateResult: string = Validation.date(purchase_date, 'purchase date');
+        const sellerIdResult: string = Validation.stringValidation(seller_id, 'seller id');
         const sellerNameResult: string = Validation.stringValidation(seller_name, 'seller name');
         const totalAmountResult: number = Validation.number(total_amount, 'total amount');
+        const paymentMethodResult: string = Validation.stringValidation(payment_method, 'payment method');
 
         const _id: string = crypto.randomUUID();
 
@@ -164,8 +166,11 @@ export class SellModel {
             _id,
             products: productsResult,
             purchase_date: purchaseDateResult,
+            modification_date: '',
+            seller_id: sellerIdResult,
             seller_name: sellerNameResult,
             total_amount: totalAmountResult,
+            payment_method: paymentMethodResult,
         }).save();
 
         return _id as string;
