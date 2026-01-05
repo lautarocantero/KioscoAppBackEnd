@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ProductVariantModel } from "../models/productVariantModel";
-import { CreateProductVariantRequest, DeleteProductVariantRequest, EditProductVariantRequest, GetProductVariantByBrandRequest, GetProductVariantByIdRequest, GetProductVariantByPresentationRequest, GetProductVariantByPriceRequest, GetProductVariantByProductIdRequest, GetProductVariantBySizeRequest, GetProductVariantByStockRequest, ProductVariant } from "../typings/product-variant/productVariantTypes";
+import { CreateProductVariantRequest, DeleteProductVariantRequest, EditProductVariantRequest, GetProductVariantByBrandRequest, GetProductVariantByIdRequest, GetProductVariantByPresentationRequest, GetProductVariantByPriceRequest, GetProductVariantByProductIdRequest, GetProductVariantBySizeRequest, GetProductVariantByStockRequest, ProductVariant } from "@typings/productVariant";
 import { handleControllerError } from "../utils/handleControllerError";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

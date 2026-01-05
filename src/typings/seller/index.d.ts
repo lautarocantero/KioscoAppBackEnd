@@ -23,7 +23,7 @@ Incluye entidad principal, repositorio local (db-local), payloads y requests.
 
 import { SellerRol, SellerStatus } from "./sellerEnums";
 
-declare module 'seller' {
+declare module '@typings/seller' {
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║

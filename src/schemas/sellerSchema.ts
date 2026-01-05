@@ -1,5 +1,5 @@
 import DBLocal from "db-local";
-import { SellerSchemaType } from "../typings/seller/sellerTypes";
+import { SellerSchemaType } from "@typings/seller";
 
 const { Schema } = new DBLocal({ path: './db'});
 

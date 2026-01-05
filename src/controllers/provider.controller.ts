@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { handleControllerError } from "../utils/handleControllerError";
 import { ProviderModel } from "../models/providerModel";
-import { CreateProviderRequest, DeleteProviderRequest, EditProviderRequest, GetProviderByIdRequest, Provider } from "../typings/provider/providerTypes";
+import { CreateProviderRequest, DeleteProviderRequest, EditProviderRequest, GetProviderByIdRequest, Provider } from "@typings/provider";
       
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con proveedores 🕹️                                                               ║

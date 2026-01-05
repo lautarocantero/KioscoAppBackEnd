@@ -21,7 +21,7 @@ Incluye entidad principal, repositorio local (db-local), payloads y requests.
 [Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
 ──────────────────────────────*/
 
-declare module 'productVariant' {
+declare module '@typings/productVariant' {
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║

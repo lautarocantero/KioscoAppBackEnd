@@ -5,7 +5,7 @@ import {
     EditProviderPayload, 
     Provider, 
     ProviderModelType 
-} from "../typings/provider/providerTypes";
+} from "@typings/provider";
 import { Validation } from "./validation";
 
 /*──────────────────────────────

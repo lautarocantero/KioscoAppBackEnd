@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { handleControllerError } from "../utils/handleControllerError";
-import { CreateSellerRequest, DeleteSellerRequest, EditSellerRequest, GetSellerByEmailRequest, GetSellerByIdRequest, GetSellerByNameRequest, GetSellerByRolRequest, Seller } from "../typings/seller/sellerTypes";
+import { CreateSellerRequest, DeleteSellerRequest, EditSellerRequest, GetSellerByEmailRequest, GetSellerByIdRequest, GetSellerByNameRequest, GetSellerByRolRequest, Seller } from "@typings/seller";
 import { SellerModel } from "../models/sellerModel";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

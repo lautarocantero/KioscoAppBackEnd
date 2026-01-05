@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateSellRequest, DeleteSellRequest, EditSellRequest, GetSellByIdRequest, GetSellsByDateRequest, GetSellsByProductRequest, GetSellsBySellerRequest, Sell } from "../typings/sell/sellTypes";
+import { CreateSellRequest, DeleteSellRequest, EditSellRequest, GetSellByIdRequest, GetSellsByDateRequest, GetSellsByProductRequest, GetSellsBySellerRequest, Sell } from "@typings/sell";
 import { SellModel } from "../models/sellModel";
 import { handleControllerError } from "../utils/handleControllerError";
 

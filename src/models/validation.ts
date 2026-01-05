@@ -1,4 +1,3 @@
-import { ProductVariant } from "../typings/product-variant/productVariantTypes";
 
 /*──────────────────────────────
 🛡️ Validation
@@ -32,6 +31,8 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 🌀 Flujo estándar:
 [Input] → [Validation.*] → [Error o valor validado] → [Modelo/Controlador]
 ──────────────────────────────*/
+
+import { ProductVariant } from "@typings/productVariant";
 
 const isString = (string: unknown): boolean => typeof string === 'string';
 const isNumber = (number: unknown): boolean => typeof number === 'number';

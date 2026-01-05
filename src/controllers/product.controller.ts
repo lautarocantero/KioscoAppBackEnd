@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { ProductModel } from "../models/productModel";
-import { CreateProductRequest, DeleteProductRequest, EditProductRequest, GetProductByBrandRequest, GetProductByIdRequest, GetProductByNameRequest, Product } from "../typings/product/productTypes";
+import { CreateProductRequest, DeleteProductRequest, EditProductRequest, GetProductByBrandRequest, GetProductByIdRequest, GetProductByNameRequest, Product } from "@typings/product";
 import { handleControllerError } from "../utils/handleControllerError";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

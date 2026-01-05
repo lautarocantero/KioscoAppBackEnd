@@ -5,7 +5,7 @@ import {
     GetProductVariantByIdPayload, 
     ProductVariant, 
     ProductVariantModelType 
-} from '../typings/product-variant/productVariantTypes';
+} from '@typings/productVariant';
 import { Validation } from './validation';
 
 /*──────────────────────────────

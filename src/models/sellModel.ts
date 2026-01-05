@@ -1,5 +1,5 @@
 import { SellSchema } from "../schemas/sellSchema";
-import { ProductVariant } from "../typings/product-variant/productVariantTypes";
+import { ProductVariant } from "@typings/productVariant";
 import { 
     CreateSellPayload, 
     DeleteSellPayload, 
@@ -7,7 +7,7 @@ import {
     GetSellsByProductPayload, 
     Sell, 
     SellModelType 
-} from "../typings/sell/sellTypes";
+} from "@typings/sell";
 import { Validation } from "./validation";
 
 /*──────────────────────────────

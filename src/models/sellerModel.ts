@@ -6,7 +6,7 @@ import {
     EditSellerPayload, 
     Seller, 
     SellerModelType 
-} from "../typings/seller/sellerTypes";
+} from "@typings/seller";
 import { Validation } from "./validation";
 
 /*──────────────────────────────

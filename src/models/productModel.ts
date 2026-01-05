@@ -1,6 +1,6 @@
 import { ProductSchema } from "../schemas/productSchema";
-import { ProductVariant } from "../typings/product-variant/productVariantTypes";
-import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product, ProductModelType } from "../typings/product/productTypes";
+import { ProductVariant } from "@typings/productVariant";
+import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product, ProductModelType } from "@typings/product";
 import { Validation } from "./validation";
 
 /*──────────────────────────────
