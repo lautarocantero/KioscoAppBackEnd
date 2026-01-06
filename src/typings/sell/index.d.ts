@@ -31,14 +31,17 @@ declare module '@typings/sell' {
 
 //base
 interface SellEntity {
-    _id: string;
-    products: ProductVariant[];
+    ticket_id: string;
     purchase_date: string;
     modification_date: string;
     seller_id: string;
     seller_name: string;
-    total_amount: number;
     payment_method: string;
+    products: ProductVariant[];
+    sub_total: number;
+    iva: number;
+    total_amount: number;
+    currency: string;
 }
 
 //base con las funciones de db-local
@@ -78,17 +81,17 @@ export type SellSchemaType = Sell;
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type GetSellByIdPayload = Pick<SellPayload, '_id'>;
+export type GetSellByIdPayload = Pick<SellPayload, 'ticket_id'>;
 
 export type GetSellsBySellerPayload = Pick<SellPayload, 'seller_name'>;
 
 export type GetSellsByDatePayload = Pick<SellPayload, 'purchase_date'>;
 
-export type GetSellsByProductPayload = Pick<SellPayload, '_id'>;
+export type GetSellsByProductPayload = Pick<SellPayload, 'ticket_id'>;
 
-export type CreateSellPayload = Omit<SellPayload, '_id' | 'modification_date'>;
+export type CreateSellPayload = Omit<SellPayload, 'ticket_id' | 'modification_date'>;
 
-export type DeleteSellPayload = Pick<SellPayload, '_id'>;
+export type DeleteSellPayload = Pick<SellPayload, 'ticket_id'>;
 
 export type EditSellPayload = SellPayload;
 
@@ -109,5 +112,23 @@ export type CreateSellRequest = Request<SellParams, unknown, CreateSellPayload>;
 export type DeleteSellRequest = Request<SellParams, unknown, DeleteSellPayload>;
 
 export type EditSellRequest = Request<SellParams, unknown, EditSellPayload>;
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🔖 TICKET 🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+export type ProductTicket = {
+    "_id": string,
+    "name": string,
+    "description": string,
+    "image_url": string,
+    "brand": string,
+    "product_id": string,
+    "sku": string,
+    "model_type": string,
+    "model_size": string,
+    "price": number,
+    "expiration_date": string,
+    "stock_required": number
+}
 
 }

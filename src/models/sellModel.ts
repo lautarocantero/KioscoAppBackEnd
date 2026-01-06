@@ -1,14 +1,3 @@
-import { SellSchema } from "../schemas/sellSchema";
-import { ProductVariant } from "@typings/productVariant";
-import { 
-    CreateSellPayload, 
-    DeleteSellPayload, 
-    EditSellPayload, 
-    GetSellsByProductPayload, 
-    Sell, 
-    SellModelType 
-} from "@typings/sell";
-import { Validation } from "./validation";
 
 /*──────────────────────────────
 💰 SellModel
@@ -51,9 +40,21 @@ import { Validation } from "./validation";
 [getSellsByField] → busca ventas por campo validado
 [getSellsByProduct] → busca ventas que incluyan un producto específico
 [create] → valida campos, guarda venta
-[delete] → elimina venta por _id
+[delete] → elimina venta por ticket_id
 [edit] → actualiza datos validados de venta
 ──────────────────────────────*/
+
+import { SellSchema } from "../schemas/sellSchema";
+import { ProductVariant } from "@typings/productVariant";
+import { 
+    CreateSellPayload, 
+    DeleteSellPayload, 
+    EditSellPayload, 
+    GetSellsByProductPayload, 
+    Sell, 
+    SellModelType 
+} from "@typings/sell";
+import { Validation } from "./validation";
 
 export class SellModel {
 
@@ -109,23 +110,23 @@ export class SellModel {
     }
 
     /*══════════ 🎮 getSellsByProduct ══════════╗
-    ║ 📥 Entrada: GetSellsByProductPayload {_id} ║
+    ║ 📥 Entrada: GetSellsByProductPayload {ticket_id} ║
     ║ ⚙️ Proceso: valida id y busca ventas que incluyan ese producto ║
     ║ 📤 Salida: Sell[]                                               ║
     ║ 🛠️ Errores: ninguno explícito                                   ║
     ╚════════════════════════════════════════════════════════════════╝*/
     static async getSellsByProduct (data: GetSellsByProductPayload) : Promise <Sell[]> {
-        const { _id } = data;
+        const { ticket_id } = data;
         let count = 0;
         const results: Sell[] = [];
 
-        const _idResult: string = Validation.stringValidation(_id, '_id');
+        const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
 
         SellSchema.find((item: Sell) => {
             if (count >= 100) return false;
 
             const hasProduct = item.products?.some(
-                (product) => product._id === _idResult
+                (product) => product.ticket_id === _idResult
             );
 
             if (hasProduct) {
@@ -146,34 +147,50 @@ export class SellModel {
 
     /*══════════ 🎮 create ══════════╗
     ║ 📥 Entrada: CreateSellPayload {products,purchase_date,seller_name,total_amount} ║
-    ║ ⚙️ Proceso: valida campos, genera _id y guarda venta                            ║
-    ║ 📤 Salida: string _id generado                                                  ║
+    ║ ⚙️ Proceso: valida campos, genera ticket_id y guarda venta                            ║
+    ║ 📤 Salida: string ticket_id generado                                                  ║
     ║ 🛠️ Errores: validaciones fallidas                                               ║
     ╚════════════════════════════════════════════════════════════════════════════════╝*/
     static async create (data: CreateSellPayload): Promise <string> {
-        const { products,purchase_date,seller_id,seller_name,total_amount, payment_method } = data;
+        const { 
+            purchase_date,
+            seller_id,
+            seller_name,
+            payment_method,
+            products,
+            sub_total,
+            iva,
+            total_amount,
+            currency,
+         } = data;
 
         const productsResult: ProductVariant[] = Validation.isVariantArray(products);
         const purchaseDateResult: string = Validation.date(purchase_date, 'purchase date');
         const sellerIdResult: string = Validation.stringValidation(seller_id, 'seller id');
         const sellerNameResult: string = Validation.stringValidation(seller_name, 'seller name');
+        const subTotalResult: number = Validation.number(sub_total, 'sub total');
+        const ivaResult: number = Validation.number(iva, 'iva', true);
         const totalAmountResult: number = Validation.number(total_amount, 'total amount');
         const paymentMethodResult: string = Validation.stringValidation(payment_method, 'payment method');
+        const currencyResult: string = Validation.stringValidation(currency, 'currency');
 
-        const _id: string = crypto.randomUUID();
+        const ticket_id: string = crypto.randomUUID();
 
         SellSchema.create({
-            _id,
-            products: productsResult,
+            ticket_id: ticket_id,
             purchase_date: purchaseDateResult,
             modification_date: '',
             seller_id: sellerIdResult,
             seller_name: sellerNameResult,
-            total_amount: totalAmountResult,
             payment_method: paymentMethodResult,
+            products: productsResult,
+            sub_total: subTotalResult,
+            iva: ivaResult, 
+            total_amount: totalAmountResult,
+            currency: currencyResult,
         }).save();
 
-        return _id as string;
+        return ticket_id as string;
     }
 
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
@@ -181,15 +198,15 @@ export class SellModel {
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
     /*══════════ 🎮 delete ══════════╗
-    ║ 📥 Entrada: DeleteSellPayload {_id} ║
+    ║ 📥 Entrada: DeleteSellPayload {ticket_id} ║
     ║ ⚙️ Proceso: valida id y elimina venta ║
     ║ 📤 Salida: void                        ║
     ║ 🛠️ Errores: venta no encontrada        ║
     ╚═══════════════════════════════════════╝*/
     static async delete ( data: DeleteSellPayload ) : Promise<void> {
-        const { _id } = data;
-        const _idResult: string = Validation.stringValidation(_id, '_id');
-        const SellObject: SellModelType = SellSchema.findOne({ _id: _idResult });
+        const { ticket_id } = data;
+        const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
+        const SellObject: SellModelType = SellSchema.findOne({ ticket_id: _idResult });
 
         if(!SellObject) throw new Error('There is not any sell with that id');
 
@@ -201,21 +218,21 @@ export class SellModel {
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
     /*══════════ 🎮 edit ══════════╗
-    ║ 📥 Entrada: EditSellPayload {_id,products,purchase_date,seller_name,total_amount} ║
+    ║ 📥 Entrada: EditSellPayload {ticket_id,products,purchase_date,seller_name,total_amount} ║
     ║ ⚙️ Proceso: valida campos y actualiza venta                                       ║
     ║ 📤 Salida: void                                                                   ║
     ║ 🛠️ Errores: venta no encontrada, validaciones fallidas                            ║
     ╚═════════════════════════════════════════════════════════════════════════════════╝*/
     static async edit (data: EditSellPayload) : Promise <void> {
-        const { _id,products,purchase_date,seller_name,total_amount} = data;
+        const { ticket_id,products,purchase_date,seller_name,total_amount} = data;
 
-        const _idResult: string = Validation.stringValidation(_id, '_id');
+        const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
         const productsResult: ProductVariant[] = Validation.isVariantArray(products);
         const purchaseDateResult: string = Validation.date(purchase_date, 'purchase_date');
         const sellerNameResult: string = Validation.stringValidation(seller_name, 'seller_name');
         const totalAmountResult: number = Validation.number(total_amount, 'total_amount');
 
-        const SellObject: SellModelType = SellSchema.findOne({ _id: _idResult });
+        const SellObject: SellModelType = SellSchema.findOne({ ticket_id: _idResult });
         if(!SellObject) throw new Error('There is not any sell with that id');
 
         SellObject.products = productsResult;

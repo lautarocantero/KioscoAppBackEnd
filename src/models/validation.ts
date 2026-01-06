@@ -33,6 +33,7 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 ──────────────────────────────*/
 
 import { ProductVariant } from "@typings/productVariant";
+import { ProductTicket } from "@typings/sell";
 
 const isString = (string: unknown): boolean => typeof string === 'string';
 const isNumber = (number: unknown): boolean => typeof number === 'number';
@@ -59,26 +60,22 @@ const isLongString = (string: string): boolean => string.length > 30;
 const isSKU = (value: string): boolean => /^[A-Z0-9_-]+$/i.test(value);
 const isZero = (value: number): boolean => value === 0;
 const isBarcode = (value: string): boolean => /^\d{13}$/.test(value);
-const isVariant = (value: ProductVariant): boolean => {
+const isTicket = (value: ProductTicket): boolean => {
   if (typeof value !== "object" || value === null) return false;
-  const v = value as Partial<ProductVariant>;
+  const v = value as ProductTicket;
   return (
     typeof v._id === "string" &&
     typeof v.name === "string" &&
     typeof v.description === "string" &&
-    typeof v.created_at === "string" &&
-    typeof v.updated_at === "string" &&
     typeof v.image_url === "string" &&
-    Array.isArray(v.gallery_urls) && v.gallery_urls.every(url => typeof url === "string") &&
     typeof v.brand === "string" &&
     typeof v.product_id === "string" &&
     typeof v.sku === "string" &&
     typeof v.model_type === "string" &&
     typeof v.model_size === "string" &&
-    typeof v.min_stock === "number" &&
-    typeof v.stock === "number" &&
     typeof v.price === "number" &&
-    typeof v.expiration_date === "string"
+    typeof v.expiration_date === "string" &&
+    typeof v.stock_required === "number"
   );
 };
 
@@ -153,14 +150,14 @@ static sku(sku: unknown): string {
 
 /*══════════ 🎮 number ══════════╗
 ║ 📥 Entrada: digit (unknown), title ║
-║ ⚙️ Proceso: valida que sea número > 0 ║
+║ ⚙️ Proceso: valida que sea número > 0 si isZeroValid es false ║
 ║ 📤 Salida: number validado          ║
 ║ 🛠️ Errores: no provisto, no número, igual a 0 ║
 ╚════════════════════════════════════╝*/
-static number(digit: unknown, title: string): number {
-  if (!digit) throw new Error('No number provided');
-  if (!isNumber(digit)) throw new Error(`${title} is not a number`);
-  if (isZero(digit as number)) throw new Error(`${title} must be greater than 0`);
+static number(digit: unknown, title: string, isZeroValid?: boolean): number {
+  if (!digit && !isZeroValid) throw new Error(`No number provided for ${title}`);
+  if (!isNumber(digit) && !isZeroValid) throw new Error(`${title} is not a number`);
+  if (isZero(digit as number) && !isZeroValid) throw new Error(`${title} must be greater than 0`);
   return digit as number;
 }
 
@@ -228,8 +225,9 @@ static barcode(barcode: unknown): string {
 static isVariantArray(variants: unknown): ProductVariant[] {
   if (!variants) throw new Error("No variants provided");
   if (!Array.isArray(variants)) throw new Error("variants must be an array");
+  {/*─────────────────── 🔎 No son variantes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/}
   variants.forEach((variant, index) => {
-    if (!isVariant(variant)) throw new Error(`Variant Product at index ${index} is not a variant product`);
+    if (!isTicket(variant)) throw new Error(`Variant Product at index ${index} is not a variant product`);
   });
   return variants as ProductVariant[];
 }

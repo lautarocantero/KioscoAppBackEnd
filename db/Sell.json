@@ -1,1 +1,271 @@
-[{"_id":"7543e0ae-0f85-44c8-bbce-3a946e6495b2","products":[{"_id":"f7c7cd79-02fd-4fb6-9607-8894e55a55cc","name":"Coca Cola Light 500ml","description":"Bebida gaseosa sabor cola en envase descartable PET de 500ml, versión Light con menos calorías.","created_at":"2025-11-26T00:03:00Z","updated_at":"2025-11-26T00:03:00Z","image_url":"https://example.com/images/coca-cola-light-500ml.jpg","gallery_urls":["https://example.com/images/coca-cola-light-500ml-front.jpg","https://example.com/images/coca-cola-light-500ml-back.jpg","https://example.com/images/coca-cola-light-500ml-side.jpg"],"brand":"Coca Cola","product_id":"PROD-CC-500ML","sku":"CC500LIGHTPET","model_type":"Descartable PET","model_size":"500ml","min_stock":20,"stock":150,"price":1.65,"expiration_date":"2026-05-15"}],"purchase_date":"2026-05-15","seller_name":"Claudia","total_amount":3500}]
+[
+    {
+        "ticket_id": "venta-001",
+        "purchase_date": "06/01/2026",
+        "modification_date": "",
+        "seller_id": "0123",
+        "seller_name": "Claudia",
+        "payment_method": "Débito",
+        "products": [
+            {
+                "_id": "7798422620014",
+                "name": "Monster",
+                "description": "Bebida energética Monster en lata de 473ml.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "/images/productExample/monster.png",
+                "gallery_urls": [
+                    "https://example.com/images/monster-473ml-front.jpg",
+                    "https://example.com/images/monster-473ml-back.jpg",
+                    "https://example.com/images/monster-473ml-side.jpg"
+                ],
+                "brand": "Monster",
+                "product_id": "prod-monster-001",
+                "sku": "MON473ML",
+                "model_type": "Lata",
+                "model_size": "473ml",
+                "min_stock": 25,
+                "stock": 80,
+                "price": 3500,
+                "expiration_date": "2026-05-15",
+                "stock_required": 2
+            }
+        ],
+        "sub_total": 7000,
+        "iva": 0,
+        "total_amount": 7000,
+        "currency": "ars",
+        "_id": "695caf024fb3f8d9df1dac96"
+    },
+    {
+        "ticket_id": "venta-002",
+        "purchase_date": "07/01/2026",
+        "modification_date": "",
+        "seller_id": "0456",
+        "seller_name": "Fernanda",
+        "payment_method": "Transferencia",
+        "products": [
+            {
+                "_id": "7791813888468",
+                "name": "Pepsi 2l",
+                "description": "Bebida gaseosa Pepsi sabor cola en botella plástica de 2 litros.",
+                "created_at": "2025-11-22T14:35:00Z",
+                "updated_at": "2025-11-22T14:35:00Z",
+                "image_url": "/images/productExample/pepsi.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/pepsi-2l-front.jpg",
+                    "https://example.com/images/pepsi-2l-back.jpg",
+                    "https://example.com/images/pepsi-2l-side.jpg"
+                ],
+                "brand": "Pepsi",
+                "product_id": "prod-pepsi-001",
+                "sku": "PEPSI2L",
+                "model_type": "Botella plástica",
+                "model_size": "2l",
+                "min_stock": 25,
+                "stock": 90,
+                "price": 2000,
+                "expiration_date": "2026-05-15",
+                "stock_required": 1
+            },
+            {
+                "_id": "7798096059257",
+                "name": "Perfume Aromatizador Estilo Spa Maracuyá",
+                "description": "Aromatizador estilo spa con fragancia maracuyá, ideal para ambientes relajantes.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/spa-maracuya.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/spa-maracuya-front.jpg",
+                    "https://example.com/images/spa-maracuya-back.jpg"
+                ],
+                "brand": "Spa",
+                "product_id": "prod-spa-001",
+                "sku": "SPA-MARACUYA",
+                "model_type": "Spray",
+                "model_size": "250 ml",
+                "min_stock": 10,
+                "stock": 40,
+                "price": 2200,
+                "expiration_date": "2027-08-20",
+                "stock_required": 1
+            }
+        ],
+        "sub_total": 4200,
+        "iva": 0,
+        "total_amount": 4200,
+        "currency": "ars",
+        "_id": "695caf024fb3f8d9df1dac97"
+    },
+    {
+        "ticket_id": "venta-003",
+        "purchase_date": "08/01/2026",
+        "modification_date": "",
+        "seller_id": "0789",
+        "seller_name": "Claudia",
+        "payment_method": "Crédito",
+        "products": [
+            {
+                "_id": "7790387015324",
+                "name": "Yerba Mate Mañanita",
+                "description": "Yerba mate Mañanita con sabor tradicional, ideal para el consumo diario.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/yerba-mananita.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/yerba-mananita-front.jpg",
+                    "https://example.com/images/yerba-mananita-back.jpg"
+                ],
+                "brand": "Mañanita",
+                "product_id": "prod-yerba-001",
+                "sku": "YERBA-MANANITA",
+                "model_type": "Paquete",
+                "model_size": "1 kg",
+                "min_stock": 50,
+                "stock": 200,
+                "price": 3500,
+                "expiration_date": "2027-12-01",
+                "stock_required": 2
+            }
+        ],
+        "sub_total": 7000,
+        "iva": 0,
+        "total_amount": 7000,
+        "currency": "ars",
+        "_id": "695caf024fb3f8d9df1dac98"
+    },
+    {
+        "ticket_id": "venta-004",
+        "purchase_date": "09/01/2026",
+        "modification_date": "",
+        "seller_id": "0999",
+        "seller_name": "Claudia",
+        "payment_method": "Efectivo",
+        "products": [
+            {
+                "_id": "7790250000358",
+                "name": "Pañuelos Elite Folha Tripla",
+                "description": "Pañuelos Elite de folha tripla con máxima suavidad, ideales para el cuidado personal.",
+                "created_at": "2025-12-23T20:45:00Z",
+                "updated_at": "2025-12-23T20:45:00Z",
+                "image_url": "/images/productExample/panuelos_elite.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/panuelos-elite-front.jpg",
+                    "https://example.com/images/panuelos-elite-back.jpg",
+                    "https://example.com/images/panuelos-elite-side.jpg"
+                ],
+                "brand": "Elite",
+                "product_id": "prod-elite-001",
+                "sku": "ELITE-TRIPLE-SOFT",
+                "model_type": "Caja",
+                "model_size": "50 unidades",
+                "min_stock": 30,
+                "stock": 120,
+                "price": 1500,
+                "expiration_date": "2027-01-01",
+                "stock_required": 3
+            }
+        ],
+        "sub_total": 4500,
+        "iva": 0,
+        "total_amount": 4500,
+        "currency": "ars",
+        "_id": "venta004"
+    },
+    {
+        "ticket_id": "venta-005",
+        "purchase_date": "10/01/2026",
+        "modification_date": "",
+        "seller_id": "0456",
+        "seller_name": "Fernanda",
+        "payment_method": "Crédito",
+        "products": [
+            {
+                "_id": "7798096059233",
+                "name": "Perfume Aromatizador Estilo Spa Pomelo",
+                "description": "Aromatizador estilo spa con fragancia pomelo, refrescante y energizante.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/spa-pomelo.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/spa-pomelo-front.jpg",
+                    "https://example.com/images/spa-pomelo-back.jpg"
+                ],
+                "brand": "Spa",
+                "product_id": "prod-spa-001",
+                "sku": "SPA-POMELO",
+                "model_type": "Spray",
+                "model_size": "250 ml",
+                "min_stock": 10,
+                "stock": 35,
+                "price": 2200,
+                "expiration_date": "2027-08-20",
+                "stock_required": 2
+            },
+            {
+                "_id": "7790150413005",
+                "name": "Alicante Albahaca",
+                "description": "Albahaca seca Alicante, ideal para condimentar comidas.",
+                "created_at": "2025-12-23T20:57:00Z",
+                "updated_at": "2025-12-23T20:57:00Z",
+                "image_url": "/images/productExample/alicante-albahaca.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/alicante-albahaca-front.jpg",
+                    "https://example.com/images/alicante-albahaca-back.jpg"
+                ],
+                "brand": "Alicante",
+                "product_id": "prod-alicante-001",
+                "sku": "ALICANTE-ALBAHACA",
+                "model_type": "Sobre",
+                "model_size": "15 g",
+                "min_stock": 40,
+                "stock": 160,
+                "price": 700,
+                "expiration_date": "2027-05-10",
+                "stock_required": 1
+            }
+        ],
+        "sub_total": 5100,
+        "iva": 0,
+        "total_amount": 5100,
+        "currency": "ars",
+        "_id": "venta005"
+    },
+    {
+        "ticket_id": "venta-006",
+        "purchase_date": "11/01/2026",
+        "modification_date": "",
+        "seller_id": "0789",
+        "seller_name": "Claudia",
+        "payment_method": "Transferencia",
+        "products": [
+            {
+                "_id": "7798040053652",
+                "name": "Off Repelente de Insectos",
+                "description": "Repelente en aerosol para protección contra mosquitos y otros insectos.",
+                "created_at": "2025-12-23T21:00:00Z",
+                "updated_at": "2025-12-23T21:00:00Z",
+                "image_url": "/images/productExample/off-repelente.jpg",
+                "gallery_urls": [
+                    "https://example.com/images/off-front.jpg",
+                    "https://example.com/images/off-back.jpg"
+                ],
+                "brand": "Off",
+                "product_id": "prod-off-001",
+                "sku": "OFF-REPELENTE",
+                "model_type": "Aerosol",
+                "model_size": "170 ml",
+                "min_stock": 15,
+                "stock": 60,
+                "price": 3500,
+                "expiration_date": "2028-05-01",
+                "stock_required": 1
+            }
+        ],
+        "sub_total": 3500,
+        "iva": 0,
+        "total_amount": 3500,
+        "currency": "ars",
+        "_id": "venta006"
+    }
+]
