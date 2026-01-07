@@ -75,7 +75,7 @@ export async function getSells(_req: Request, res: Response): Promise<void> {
 
 
 export async function getSellById (req: GetSellByIdRequest, res: Response): Promise<void> {
-    const { ticket_id } = req.body;
+    const { ticket_id } = req.params;
 
     try {
         // pese a ser un array de sell[], siempre devolvera uno solo.
@@ -198,7 +198,7 @@ export async function createSell (req: CreateSellRequest, res: Response): Promis
 
 
 export async function deleteSell (req: DeleteSellRequest, res: Response): Promise<void> {
-    const { ticket_id } = req.body;
+    const { ticket_id } = req.params;
 
     try{
         await SellModel.delete({ ticket_id });
