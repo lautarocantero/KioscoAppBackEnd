@@ -5,21 +5,22 @@
  Este archivo contiene únicamente los tipos.
 ───────────────────────────────────────────────*/
 
-import { ProductVariant } from "../product-variant/productVariantTypes";
+import { ProductVariant } from "@typings/productVariant";
+
 
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
 interface SellEntityInterface {
     currency: string;
-    iva: number;
-    modification_date: string;
-    payment_method: string;
-    products: ProductVariant[];
-    purchase_date: string;
-    seller_id: string;
+    iva: number; 
+    modification_date: string; 
+    payment_method: string; 
+    products: ProductVariant[]; 
+    purchase_date: string; 
+    seller_id: string; 
     seller_name: string;
-    sub_total: number;
-    ticket_id: string;
+    sub_total: number; 
+    ticket_id: string; 
     total_amount: number;
 }
 

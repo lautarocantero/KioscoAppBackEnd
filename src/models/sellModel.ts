@@ -119,7 +119,7 @@ export class SellModel {
             if (count >= 100) return false;
 
             const hasProduct = item.products?.some(
-                (product) => product.ticket_id === _idResult
+                (product) => product.product_id === _idResult
             );
 
             if (hasProduct) {

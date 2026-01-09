@@ -162,15 +162,15 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
 
 export async function createSell (req: CreateSellRequestType, res: Response): Promise<void> {
     const { 
+        currency,
+        iva,
+        payment_method,
+        products,
         purchase_date, 
         seller_id, 
         seller_name,
-        payment_method,
-        products,
         sub_total,
-        iva,
         total_amount, 
-        currency,
     } = req.body;
 
     try{

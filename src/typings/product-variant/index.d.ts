@@ -29,21 +29,21 @@ declare module '@typings/productVariant' {
 //base
 interface ProductVariantEntity {
     _id: string;
-    name: string;
-    description: string;
-    created_at: string;
-    updated_at: string;
-    image_url: string;
-    gallery_urls: string[];
     brand: string;
+    created_at: string;
+    description: string;
+    expiration_date: string;
+    gallery_urls: string[];
+    image_url: string;
+    min_stock: number;
+    model_size: string;
+    model_type: string;
+    name: string;
+    price: number;
     product_id: string;
     sku: string;
-    model_type: string;
-    model_size: string;
-    min_stock: number;
     stock: number;
-    price: number;
-    expiration_date: string;
+    updated_at: string;
 }
 
 //base con las funciones de db-local
