@@ -46,15 +46,8 @@
 
 import { SellSchema } from "../schemas/sellSchema";
 import { ProductVariant } from "@typings/productVariant";
-import { 
-    CreateSellPayload, 
-    DeleteSellPayload, 
-    EditSellPayload, 
-    GetSellsByProductPayload, 
-    Sell, 
-    SellModelType 
-} from "@typings/sell";
 import { Validation } from "./validation";
+import { CreateSellPayloadType, DeleteSellPayloadType, EditSellPayloadType, GetSellsByProductPayloadType, SellModelType, SellType } from "@typings/sell";
 
 export class SellModel {
 
@@ -66,11 +59,11 @@ export class SellModel {
     ║ 📤 Salida: Sell[]                    ║
     ║ 🛠️ Errores: ninguno explícito        ║
     ╚═════════════════════════════════════╝*/
-    static async getSells () : Promise <Sell[]> {
+    static async getSells () : Promise <SellType[]> {
         let count = 0;
-        const results: Sell[] = [];
+        const results: SellType[] = [];
 
-        SellSchema.find((item: Sell ) => {
+        SellSchema.find((item: SellType ) => {
             if(count < 100) {
                 results.push(item);
                 count++;
@@ -79,7 +72,7 @@ export class SellModel {
             return false;
         });
 
-        return results as Sell[];
+        return results as SellType[];
     }
 
     /*══════════ 🎮 getSellsByField ══════════╗
@@ -88,17 +81,17 @@ export class SellModel {
     ║ 📤 Salida: Sell[]                                  ║
     ║ 🛠️ Errores: tipo no soportado, validaciones fallidas ║
     ╚════════════════════════════════════════════════════╝*/
-    static async getSellsByField<T extends keyof Sell>(
+    static async getSellsByField<T extends keyof SellType>(
         field: T,
-        value: Sell[T],
+        value: SellType[T],
         type: 'string' | 'number',
-    ): Promise<Sell[]> {
+    ): Promise<SellType[]> {
         if (type !== 'string' && type !== 'number') throw new Error(`Unsupported field type for ${String(field)}`);
         if (type === 'string') Validation.stringValidation(value, field as string);
         if (type === 'number') Validation.number(value, field as string);
 
-        const results: Sell[] = [];
-        SellSchema.find((item: Sell) => {
+        const results: SellType[] = [];
+        SellSchema.find((item: SellType) => {
             if (item?.[field] === value) {
                 results.push(item);
                 return true;
@@ -106,7 +99,7 @@ export class SellModel {
             return false;
         });
 
-        return results as Sell[];
+        return results as SellType[];
     }
 
     /*══════════ 🎮 getSellsByProduct ══════════╗
@@ -115,14 +108,14 @@ export class SellModel {
     ║ 📤 Salida: Sell[]                                               ║
     ║ 🛠️ Errores: ninguno explícito                                   ║
     ╚════════════════════════════════════════════════════════════════╝*/
-    static async getSellsByProduct (data: GetSellsByProductPayload) : Promise <Sell[]> {
+    static async getSellsByProduct (data: GetSellsByProductPayloadType) : Promise <SellType[]> {
         const { ticket_id } = data;
         let count = 0;
-        const results: Sell[] = [];
+        const results: SellType [] = [];
 
         const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
 
-        SellSchema.find((item: Sell) => {
+        SellSchema.find((item: SellType) => {
             if (count >= 100) return false;
 
             const hasProduct = item.products?.some(
@@ -138,7 +131,7 @@ export class SellModel {
             return false;
         });
 
-        return results as Sell[];
+        return results as SellType[];
     }
 
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
@@ -151,7 +144,7 @@ export class SellModel {
     ║ 📤 Salida: string ticket_id generado                                                  ║
     ║ 🛠️ Errores: validaciones fallidas                                               ║
     ╚════════════════════════════════════════════════════════════════════════════════╝*/
-    static async create (data: CreateSellPayload): Promise <string> {
+    static async create (data: CreateSellPayloadType): Promise <string> {
         const { 
             purchase_date,
             seller_id,
@@ -203,7 +196,7 @@ export class SellModel {
     ║ 📤 Salida: void                        ║
     ║ 🛠️ Errores: venta no encontrada        ║
     ╚═══════════════════════════════════════╝*/
-    static async delete ( data: DeleteSellPayload ) : Promise<void> {
+    static async delete ( data: DeleteSellPayloadType ) : Promise<void> {
         const { ticket_id } = data;
         const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
         const SellObject: SellModelType = SellSchema.findOne({ ticket_id: _idResult });
@@ -223,7 +216,7 @@ export class SellModel {
     ║ 📤 Salida: void                                                                   ║
     ║ 🛠️ Errores: venta no encontrada, validaciones fallidas                            ║
     ╚═════════════════════════════════════════════════════════════════════════════════╝*/
-    static async edit (data: EditSellPayload) : Promise <void> {
+    static async edit (data: EditSellPayloadType) : Promise <void> {
         const { ticket_id,products,purchase_date,seller_name,total_amount} = data;
 
         const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');

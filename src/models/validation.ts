@@ -32,8 +32,8 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 [Input] → [Validation.*] → [Error o valor validado] → [Modelo/Controlador]
 ──────────────────────────────*/
 
+import { ProductTicket } from "@typings/product";
 import { ProductVariant } from "@typings/productVariant";
-import { ProductTicket } from "@typings/sell";
 
 const isString = (string: unknown): boolean => typeof string === 'string';
 const isNumber = (number: unknown): boolean => typeof number === 'number';

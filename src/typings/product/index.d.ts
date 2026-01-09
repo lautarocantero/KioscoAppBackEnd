@@ -102,4 +102,22 @@ export type DeleteProductRequest = Request<ProductParams, unknown, DeleteProduct
 
 export type EditProductRequest = Request<ProductParams, unknown, EditProductPayload>;
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🔖 TICKET 🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖                     ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+export type ProductTicket = {
+    "_id": string,
+    "name": string,
+    "description": string,
+    "image_url": string,
+    "brand": string,
+    "product_id": string,
+    "sku": string,
+    "model_type": string,
+    "model_size": string,
+    "price": number,
+    "expiration_date": string,
+    "stock_required": number
+}
+
 }

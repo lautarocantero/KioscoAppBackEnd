@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { CreateSellRequest, DeleteSellRequest, EditSellRequest, GetSellByIdRequest, GetSellsByDateRequest, GetSellsByProductRequest, GetSellsBySellerRequest, Sell } from "@typings/sell";
 import { SellModel } from "../models/sellModel";
 import { handleControllerError } from "../utils/handleControllerError";
+import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, SellType } from "@typings/sell";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con ventas 🕹️                                                                    ║
@@ -57,7 +57,7 @@ export async function home(_req: Request, res: Response): Promise<void> {
 export async function getSells(_req: Request, res: Response): Promise<void> {
     
     try{
-        const sells: Sell[] = await SellModel.getSells();
+        const sells: SellType[] = await SellModel.getSells();
         res
             .status(200)
             .json(sells);
@@ -74,12 +74,12 @@ export async function getSells(_req: Request, res: Response): Promise<void> {
 ╚════════════════════════════════════╝*/
 
 
-export async function getSellById (req: GetSellByIdRequest, res: Response): Promise<void> {
+export async function getSellById (req: GetSellByIdRequestType, res: Response): Promise<void> {
     const { ticket_id } = req.params;
 
     try {
         // pese a ser un array de sell[], siempre devolvera uno solo.
-        const SellObject: Sell[] = await SellModel.getSellsByField('ticket_id',ticket_id,'string');
+        const SellObject: SellType[] = await SellModel.getSellsByField('ticket_id',ticket_id,'string');
         res
             .status(200)
             .json(SellObject);
@@ -96,11 +96,11 @@ export async function getSellById (req: GetSellByIdRequest, res: Response): Prom
 ╚═════════════════════════════════════════╝*/
 
 
-export async function getSellsBySeller (req: GetSellsBySellerRequest, res: Response): Promise<void> {
+export async function getSellsBySeller (req: GetSellsBySellerRequestType, res: Response): Promise<void> {
     const { seller_name } = req.body;
 
     try {
-        const SellObject: Sell[] = await SellModel.getSellsByField('seller_name',seller_name,'string');
+        const SellObject: SellType[] = await SellModel.getSellsByField('seller_name',seller_name,'string');
         res
             .status(200)
             .json(SellObject);
@@ -117,11 +117,11 @@ export async function getSellsBySeller (req: GetSellsBySellerRequest, res: Respo
 ╚═══════════════════════════════════════╝*/
 
 
-export async function getSellsByDate (req: GetSellsByDateRequest, res: Response): Promise<void> {
+export async function getSellsByDate (req: GetSellsByDateRequestType, res: Response): Promise<void> {
     const { purchase_date } = req.body;
 
     try {
-        const SellObject: Sell[] = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
+        const SellObject: SellType[] = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
         res
             .status(200)
             .json(SellObject);
@@ -137,11 +137,11 @@ export async function getSellsByDate (req: GetSellsByDateRequest, res: Response)
 ║ 🛠️ Errores: handleControllerError         ║
 ╚══════════════════════════════════════════╝*/
 
-export async function getSellsByProduct (req: GetSellsByProductRequest, res: Response): Promise<void> {
+export async function getSellsByProduct (req: GetSellsByProductRequestType, res: Response): Promise<void> {
     const { ticket_id } = req.body;
 
     try {
-        const SellObject: Sell[] = await SellModel.getSellsByProduct({ticket_id});
+        const SellObject: SellType[] = await SellModel.getSellsByProduct({ticket_id});
         res
             .status(200)
             .json(SellObject);
@@ -160,7 +160,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequest, res: Res
 ║ 🛠️ Errores: handleControllerError         ║
 ╚══════════════════════════════════════════╝*/
 
-export async function createSell (req: CreateSellRequest, res: Response): Promise<void> {
+export async function createSell (req: CreateSellRequestType, res: Response): Promise<void> {
     const { 
         purchase_date, 
         seller_id, 
@@ -197,7 +197,7 @@ export async function createSell (req: CreateSellRequest, res: Response): Promis
 ╚═══════════════════════════════════╝*/
 
 
-export async function deleteSell (req: DeleteSellRequest, res: Response): Promise<void> {
+export async function deleteSell (req: DeleteSellRequestType, res: Response): Promise<void> {
     const { ticket_id } = req.params;
 
     try{
@@ -224,7 +224,7 @@ export async function deleteSell (req: DeleteSellRequest, res: Response): Promis
 ╚═══════════════════════════════════════════════╝*/
 
 
-export async function editSell (req: EditSellRequest, res: Response) : Promise <void> {
+export async function editSell (req: EditSellRequestType, res: Response) : Promise <void> {
     const { ticket_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency } = req.body;
 
     try{

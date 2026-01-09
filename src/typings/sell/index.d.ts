@@ -1,134 +1,89 @@
-
-/*──────────────────────────────
-📘 SellTypes
-──────────────────────────────
-📜 Propósito:
-Definir tipados base y derivados para ventas.  
-Incluye entidad principal, repositorio local (db-local), payloads y requests.
-
-🧩 Derivaciones:
-- SellEntity → Sell → SellSchemaType
-- SellEntity → SellRepository → SellModelType
-- SellEntity → SellPayloadUnknown → SellPayload
-- SellPayload → Payloads específicos (Get, Create, Edit, Delete)
-- Payloads → Requests tipados para controladores
-
-🛡️ Seguridad:
-- Usar SellPublic para exponer datos sin campos sensibles.
-- Validar siempre los payloads antes de persistir o responder.
-
-🌀 Flujo estándar:
-[Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
-──────────────────────────────*/
-
+/*───────────────────────────────────────────────
+ 📄 Nota:
+ La documentación completa de las entidades 
+ de ventas está en `src/typings/sell/sellDocs.md`.
+ Este archivo contiene únicamente los tipos.
+───────────────────────────────────────────────*/
 
 import { ProductVariant } from "../product-variant/productVariantTypes";
 
-declare module '@typings/sell' {
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+//──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
-//base
-interface SellEntity {
-    ticket_id: string;
-    purchase_date: string;
+interface SellEntityInterface {
+    currency: string;
+    iva: number;
     modification_date: string;
-    seller_id: string;
-    seller_name: string;
     payment_method: string;
     products: ProductVariant[];
+    purchase_date: string;
+    seller_id: string;
+    seller_name: string;
     sub_total: number;
-    iva: number;
+    ticket_id: string;
     total_amount: number;
-    currency: string;
 }
 
-//base con las funciones de db-local
-interface SellRepository extends SellEntity {
-  find(query: Partial<SellEntity>): Promise<SellEntity[]>;
-  findOne(query: Partial<SellEntity>): Promise<SellEntity | null>;
-  save(query?: Partial<SellEntity>, data?: Partial<SellEntity>): Promise<void>;
-  remove(query?: Partial<SellEntity>): Promise<void>;
+//──────────────────────────────────────────── 🌐 BASE API 🌐 ───────────────────────────────────────────//
+
+interface SellRepositoryInterface extends SellEntityInterface {
+  find(query: Partial<SellEntityInterface>): Promise<SellEntityInterface[]>;
+  findOne(query: Partial<SellEntityInterface>): Promise<SellEntityInterface | null>;
+  save(query?: Partial<SellEntityInterface>, data?: Partial<SellEntityInterface>): Promise<void>;
+  remove(query?: Partial<SellEntityInterface>): Promise<void>;
 }
 
-//base para payloads
-type SellPayloadUnknown = Record<keyof SellEntity, unknown>;
+type SellRawPayloadType = Record<keyof SellEntityInterface, unknown>;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🧩 DERIVADOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩                ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+declare module '@typings/sell' {
 
-// derivado para no utilizar directamente el SellEntity
-export type Sell = SellEntity;
+  //──────────────────────────────────────────── 🧩 DERIVADOS 🧩 ───────────────────────────────────────────//
 
-// derivado para los datos publicos
-export type SellPublic = Omit<SellEntity ,''>;
+  export type SellType = SellEntityInterface;
 
-//derivado para acceder a los metodos de Sell 
-export type SellModelType = SellRepository;
+  export type SellPublicType = Omit<SellEntityInterface ,'iva' | 'modification_date' | 'seller_id' | 'ticket_id'>;
 
-//derivado para data de payloads y posterior validacion
-export type SellPayload = SellPayloadUnknown;
+  export type SellModelType = SellRepositoryInterface;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+  export type SellPayloadType = SellRawPayloadType;
 
-export type SellSchemaType = Sell;
+  //──────────────────────────────────────────── 🗂️ SCHEMA 🗂️ ───────────────────────────────────────────//
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+  export type SellSchemaType = SellType;
 
-export type GetSellByIdPayload = Pick<SellPayload, 'ticket_id'>;
+  //──────────────────────────────────────────── 📦 PAYLOAD 📦 ───────────────────────────────────────────//
 
-export type GetSellsBySellerPayload = Pick<SellPayload, 'seller_name'>;
+  export type GetSellByIdPayloadType = Pick<SellPayloadType, 'ticket_id'>;
 
-export type GetSellsByDatePayload = Pick<SellPayload, 'purchase_date'>;
+  export type GetSellsBySellerPayloadType = Pick<SellPayloadType, 'seller_name'>;
 
-export type GetSellsByProductPayload = Pick<SellPayload, 'ticket_id'>;
+  export type GetSellsByDatePayloadType = Pick<SellPayloadType, 'purchase_date'>;
 
-export type CreateSellPayload = Omit<SellPayload, 'ticket_id' | 'modification_date'>;
+  export type GetSellsByProductPayloadType = Pick<SellPayloadType, 'ticket_id'>;
 
-export type DeleteSellPayload = Pick<SellPayload, 'ticket_id'>;
+  export type CreateSellPayloadType = Omit<SellPayloadType, 'ticket_id' | 'modification_date'>;
 
-export type EditSellPayload = SellPayload;
+  export type DeleteSellPayloadType = Pick<SellPayloadType, 'ticket_id'>;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+  export type EditSellPayloadType = SellPayloadType;
 
-export type GetSellByIdRequest = Request<SellParams, unknown, GetSellByIdPayload>;
+  //──────────────────────────────────────────── 🔗 REQUEST 🔗 ───────────────────────────────────────────//
+  
+  type SellParamsType = {
+    ticket_id?: string;
+  };
 
-export type GetSellsBySellerRequest = Request<SellParams, unknown, GetSellsBySellerPayload>;
+  export type GetSellByIdRequestType = Request<SellParamsType, unknown, GetSellByIdPayloadType>;
 
-export type GetSellsByDateRequest = Request<SellParams, unknown, GetSellsByDatePayload>;
+  export type GetSellsBySellerRequestType = Request<Record<string, never>, unknown, GetSellsBySellerPayloadType>;
 
-export type GetSellsByProductRequest = Request<SellParams, unknown, GetSellsByProductPayload>;
+  export type GetSellsByDateRequestType = Request<Record<string, never>, unknown, GetSellsByDatePayloadType>;
 
-export type CreateSellRequest = Request<SellParams, unknown, CreateSellPayload>;
+  export type GetSellsByProductRequestType = Request<Record<string, never>, unknown, GetSellsByProductPayloadType>;
 
-export type DeleteSellRequest = Request<SellParams, unknown, DeleteSellPayload>;
+  export type CreateSellRequestType = Request<Record<string, never>, unknown, CreateSellPayloadType>;
 
-export type EditSellRequest = Request<SellParams, unknown, EditSellPayload>;
+  export type DeleteSellRequestType = Request<SellParamsType, unknown, DeleteSellPayloadType>;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🔖 TICKET 🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖🔖                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
-export type ProductTicket = {
-    "_id": string,
-    "name": string,
-    "description": string,
-    "image_url": string,
-    "brand": string,
-    "product_id": string,
-    "sku": string,
-    "model_type": string,
-    "model_size": string,
-    "price": number,
-    "expiration_date": string,
-    "stock_required": number
-}
+  export type EditSellRequestType = Request<Record<string, never>, unknown, EditSellPayloadType>;
 
 }
