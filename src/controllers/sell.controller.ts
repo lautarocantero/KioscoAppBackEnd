@@ -150,9 +150,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
     }
 }
 
-//──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
-//──────────────────────────────────────────── Modificado ✅ ───────────────────────────────────────────//
 /*══════════ 🎮 createSell ══════════╗
 ║ 📥 Entrada: products, date, seller, total ║
 ║ ⚙️ Proceso: crea venta en BD              ║
@@ -186,7 +184,6 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
     }
 }
 
-//──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
 /*══════════ 🎮 deleteSell ══════════╗
@@ -213,7 +210,6 @@ export async function deleteSell (req: DeleteSellRequestType, res: Response): Pr
     }
 }
 
-//──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
 /*══════════ 🎮 editSell ══════════╗
@@ -239,5 +235,3 @@ export async function editSell (req: EditSellRequestType, res: Response) : Promi
         handleControllerError(res, error);
     }
 }
-
-//──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
