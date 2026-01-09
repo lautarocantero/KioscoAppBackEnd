@@ -36,18 +36,44 @@ const router = express.Router();
  * @openapi
  * /sell/get-sells:
  *   get:
- *     summary: Obtener todas las ventas
- *     description: Devuelve hasta 100 ventas almacenadas en el sistema. 
+ *     summary: Obtener ventas con paginación
+ *     description: Devuelve un bloque de ventas según los parámetros `limit` y `offset`.
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *         description: Número máximo de ventas a devolver
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Número de registros a saltar antes de empezar a devolver resultados
  *     responses:
  *       200:
- *         description: Listado de ventas
+ *         description: Listado de ventas con metadata de paginación
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Sell'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Sell'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     count:
+ *                       type: integer
  */
+
 
 /**
  * @openapi
