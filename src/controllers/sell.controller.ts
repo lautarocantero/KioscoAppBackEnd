@@ -8,17 +8,17 @@ import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetS
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║ 📤 Métodos soportados (nombres verificados)                                                                               ║
 ║                                                                                                                           ║
-║ Tipo   | Link                   | Función            | Descripción                    | Params                         | Return         | Auth Req | Status       ║
-║--------|------------------------|--------------------|--------------------------------|--------------------------------|----------------|----------|--------------║
-║ GET    | /get-sells             | getSells           | Obtener todas las ventas       | -                              | JSON [Sell]    | Sí       | 200,500      ║
-║ GET    | /get-sell-by-id        | getSellById        | Obtener venta por ID           | body: { ticket_id: string }    | JSON [Sell]    | Sí       | 200,404,500  ║
-║ GET    | /get-sells-by-seller   | getSellsBySeller   | Ventas por vendedor            | body: { seller_name: string }  | JSON [Sell]    | Sí       | 200,404,500  ║
-║ GET    | /get-sells-by-date     | getSellsByDate     | Ventas por fecha               | body: { purchase_date: string }| JSON [Sell]    | Sí       | 200,404,500  ║
-║ GET    | /get-sells-by-product  | getSellsByProduct  | Ventas por producto            | body: { ticket_id: string }    | JSON [Sell]    | Sí       | 200,404,500  ║
-║ POST   | /create-sell           | createSell         | Crear nueva venta              | body: {...venta}               | JSON {id,msg}  | Sí       | 200,400,500  ║
-║ PUT    | /edit-sell             | editSell           | Editar venta existente         | body: {id, campos}             | JSON {id,msg}  | Sí       | 200,400,404,500 ║
-║ DELETE | /delete-sell           | deleteSell         | Eliminar venta                 | body: { ticket_id: string }    | JSON {id,msg}  | Sí       | 200,404,500  ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+║ Tipo   | Link                   | Función            | Descripción                    | Params                         | Return           | Auth Req | Status            ║
+║--------|------------------------|--------------------|--------------------------------|--------------------------------|------------------|----------|-------------------║
+║ GET    | /get-sells             | getSells           | Obtener todas las ventas       | -                              | {Sell[]}         | Sí       | 200,500         ║
+║ GET    | /get-sell-by-id        | getSellById        | Obtener venta por ID           | params: { ticket_id: string }  | {Sell}           | Sí       | 200,404,500     ║
+║ GET    | /get-sells-by-seller   | getSellsBySeller   | Ventas por vendedor            | body: { seller_name: string }  | {Sell[]}         | Sí       | 200,404,500     ║
+║ GET    | /get-sells-by-date     | getSellsByDate     | Ventas por fecha               | body: { purchase_date: string }| {Sell[]}         | Sí       | 200,404,500     ║
+║ GET    | /get-sells-by-product  | getSellsByProduct  | Ventas por producto            | body: { ticket_id: string }    | {Sell[]}         | Sí       | 200,404,500     ║
+║ POST   | /create-sell           | createSell         | Crear nueva venta              | body: {...venta}               | {ticket_id,msg}  | Sí       | 200,400,500     ║
+║ PUT    | /edit-sell             | editSell           | Editar venta existente         | body: {id, campos}             | {ticket_id,msg}  | Sí       | 200,400,404,500 ║
+║ DELETE | /delete-sell           | deleteSell         | Eliminar venta                 | body: { ticket_id: string }    | {ticket_id,msg}  | Sí       | 200,404,500     ║
+╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
@@ -31,36 +31,46 @@ import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetS
 ╚════════════════════════════════╝*/
 
 export async function home(_req: Request, res: Response): Promise<void> {
-    res
-        .status(200)
-        .send(`
-          Estas en sell<br>
-          Endpoints =><br>
-          ----Get: /get-sells<br>
-          ----Get: /get-sell-by-id<br>
-          ----Get: /get-sells-by-seller<br>
-          ----Get: /get-sells-by-date<br>
-          ----Get: /get-sells-by-product<br>
-          ----Post: /create-sell<br>
-          ----Delete: /delete-sell<br>
-          ----Put: /edit-sell<br>
-        `);
+    res.status(200).send(` 
+        <h2>📊 API de Ventas de Kiosco</h2> 
+        <p>Este endpoint principal describe los recursos disponibles para gestionar las ventas.</p> 
+        <h3>Endpoints disponibles:</h3> 
+        <ul> 
+            <li><strong>GET</strong> – Obtener todas las ventas → <code>/sell/get-sells</code></li> 
+            <li><strong>GET</strong> – Obtener venta por ID → <code>/sell/get-sell-by-id</code></li> 
+            <li><strong>GET</strong> – Ventas por vendedor → <code>/sell/get-sells-by-seller</code></li> 
+            <li><strong>GET</strong> – Ventas por fecha → <code>/sell/get-sells-by-date</code></li> 
+            <li><strong>GET</strong> – Ventas por producto → <code>/sell/get-sells-by-product</code>
+            </li> <li><strong>POST</strong> – Crear nueva venta → <code>/sell/create-sell</code></li> 
+            <li><strong>DELETE</strong> – Eliminar venta → <code>/sell/delete-sell</code></li> 
+            <li><strong>PUT</strong> – Editar venta → <code>/sell/edit-sell</code></li> 
+        </ul> 
+    `);
 }
 
 /*══════════ 🎮 getSells ══════════╗
 ║ 📥 Entrada: -                    ║
 ║ ⚙️ Proceso: obtiene ventas       ║
-║ 📤 Salida: JSON [Sell[]]         ║
+║ 📤 Salida: {Sell[]}               ║
 ║ 🛠️ Errores: handleControllerError║
 ╚═════════════════════════════════╝*/
 
 export async function getSells(_req: Request, res: Response): Promise<void> {
-    
+    const limit = Number(_req.query.limit) || 100; 
+    const offset = Number(_req.query.offset) || 0;
+
     try{
-        const sells: SellType[] = await SellModel.getSells();
+        const sells: SellType[] = await SellModel.getSells(limit, offset);
         res
             .status(200)
-            .json(sells);
+            .json({
+                data: sells,
+                pagination: {
+                    limit, 
+                    offset,
+                    count: sells.length,
+                }
+            });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -69,13 +79,13 @@ export async function getSells(_req: Request, res: Response): Promise<void> {
 /*══════════ 🎮 getSellById ══════════╗
 ║ 📥 Entrada: req.body.ticket_id (string)   ║
 ║ ⚙️ Proceso: busca venta por ticket_id     ║
-║ 📤 Salida: JSON {Sell}              ║
+║ 📤 Salida: {Sell}                     ║
 ║ 🛠️ Errores: handleControllerError   ║
 ╚════════════════════════════════════╝*/
 
 
 export async function getSellById (req: GetSellByIdRequestType, res: Response): Promise<void> {
-    const { ticket_id } = req.params;
+    const { ticket_id } : { ticket_id : unknown } = req.params;
 
     try {
         // pese a ser un array de sell[], siempre devolvera uno solo.
@@ -91,13 +101,13 @@ export async function getSellById (req: GetSellByIdRequestType, res: Response): 
 /*══════════ 🎮 getSellsBySeller ══════════╗
 ║ 📥 Entrada: req.body.seller_name (string)║
 ║ ⚙️ Proceso: filtra ventas por vendedor   ║
-║ 📤 Salida: JSON [Sell[]]                 ║
+║ 📤 Salida: {Sell[]}                        ║
 ║ 🛠️ Errores: handleControllerError        ║
 ╚═════════════════════════════════════════╝*/
 
 
 export async function getSellsBySeller (req: GetSellsBySellerRequestType, res: Response): Promise<void> {
-    const { seller_name } = req.body;
+    const { seller_name } : { seller_name : unknown } = req.body;
 
     try {
         const SellObject: SellType[] = await SellModel.getSellsByField('seller_name',seller_name,'string');
@@ -112,13 +122,13 @@ export async function getSellsBySeller (req: GetSellsBySellerRequestType, res: R
 /*══════════ 🎮 getSellsByDate ══════════╗
 ║ 📥 Entrada: req.body.purchase_date     ║
 ║ ⚙️ Proceso: filtra ventas por fecha    ║
-║ 📤 Salida: JSON [Sell[]]               ║
+║ 📤 Salida: {Sell[]}                   ║
 ║ 🛠️ Errores: handleControllerError      ║
 ╚═══════════════════════════════════════╝*/
 
 
 export async function getSellsByDate (req: GetSellsByDateRequestType, res: Response): Promise<void> {
-    const { purchase_date } = req.body;
+    const { purchase_date } : { purchase_date : unknown } = req.body;
 
     try {
         const SellObject: SellType[] = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
@@ -133,12 +143,12 @@ export async function getSellsByDate (req: GetSellsByDateRequestType, res: Respo
 /*══════════ 🎮 getSellsByProduct ══════════╗
 ║ 📥 Entrada: req.body.ticket_id (string)         ║
 ║ ⚙️ Proceso: ventas por producto específico ║
-║ 📤 Salida: JSON [Sell[]]                  ║
+║ 📤 Salida: {Sell[]}                       ║
 ║ 🛠️ Errores: handleControllerError         ║
 ╚══════════════════════════════════════════╝*/
 
 export async function getSellsByProduct (req: GetSellsByProductRequestType, res: Response): Promise<void> {
-    const { ticket_id } = req.body;
+    const { ticket_id } : { ticket_id : unknown } = req.body;
 
     try {
         const SellObject: SellType[] = await SellModel.getSellsByProduct({ticket_id});
@@ -154,7 +164,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
 /*══════════ 🎮 createSell ══════════╗
 ║ 📥 Entrada: products, date, seller, total ║
 ║ ⚙️ Proceso: crea venta en BD              ║
-║ 📤 Salida: JSON {ticket_id, confirmación}       ║
+║ 📤 Salida: {ticket_id, message}            ║
 ║ 🛠️ Errores: handleControllerError         ║
 ╚══════════════════════════════════════════╝*/
 
@@ -189,13 +199,13 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
 /*══════════ 🎮 deleteSell ══════════╗
 ║ 📥 Entrada: req.body.ticket_id (string)  ║
 ║ ⚙️ Proceso: elimina venta por ticket_id  ║
-║ 📤 Salida: JSON {confirmación}     ║
+║ 📤 Salida: {ticket_id, message}     ║
 ║ 🛠️ Errores: handleControllerError  ║
 ╚═══════════════════════════════════╝*/
 
 
 export async function deleteSell (req: DeleteSellRequestType, res: Response): Promise<void> {
-    const { ticket_id } = req.params;
+    const { ticket_id } : { ticket_id : unknown } = req.params;
 
     try{
         await SellModel.delete({ ticket_id });
@@ -215,13 +225,17 @@ export async function deleteSell (req: DeleteSellRequestType, res: Response): Pr
 /*══════════ 🎮 editSell ══════════╗
 ║ 📥 Entrada: ticket_id, products, date, seller, total ║
 ║ ⚙️ Proceso: edita venta existente              ║
-║ 📤 Salida: JSON {confirmación}                 ║
+║ 📤 Salida: {ticket_id, message}                 ║
 ║ 🛠️ Errores: handleControllerError              ║
 ╚═══════════════════════════════════════════════╝*/
 
 
 export async function editSell (req: EditSellRequestType, res: Response) : Promise <void> {
-    const { ticket_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency } = req.body;
+    const { 
+        ticket_id,purchase_date,modification_date,
+        seller_id,seller_name,payment_method, 
+        products,sub_total, iva, total_amount, 
+        currency } = req.body;
 
     try{
         await SellModel.edit({ticket_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency});

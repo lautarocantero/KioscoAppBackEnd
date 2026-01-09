@@ -7,7 +7,6 @@
 
 import { ProductVariant } from "@typings/productVariant";
 
-
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
 interface SellEntityInterface {
@@ -27,7 +26,7 @@ interface SellEntityInterface {
 //──────────────────────────────────────────── 🌐 BASE API 🌐 ───────────────────────────────────────────//
 
 interface SellRepositoryInterface extends SellEntityInterface {
-  find(query: Partial<SellEntityInterface>): Promise<SellEntityInterface[]>;
+  find(query: Partial<SellEntityInterface> | ((item: SellEntityInterface, index: number) => boolean)): Promise<SellEntityInterface[]>;
   findOne(query: Partial<SellEntityInterface>): Promise<SellEntityInterface | null>;
   save(query?: Partial<SellEntityInterface>, data?: Partial<SellEntityInterface>): Promise<void>;
   remove(query?: Partial<SellEntityInterface>): Promise<void>;

@@ -12,14 +12,14 @@
 ──────────────────────────────*/
 
 /*──────────────────────────────
-📚 Tipos usados en Sell
+📚 Tipos usados en SellType
 ──────────────────────────────
-- Sell: entidad principal de venta
+- SellType: entidad principal de venta
 - SellModelType: instancia del modelo en BD
-- CreateSellPayload: payload para crear venta
-- DeleteSellPayload: payload para eliminar venta
-- EditSellPayload: payload para editar venta
-- GetSellsByProductPayload: payload para obtener ventas por producto
+- CreateSellPayloadType: payload para crear venta
+- DeleteSellPayloadType: payload para eliminar venta
+- EditSellPayloadType: payload para editar venta
+- GetSellsByProductPayloadType: payload para obtener ventas por producto
 - ProductVariant: variantes de producto incluidas en la venta
 ──────────────────────────────*/
 
@@ -44,53 +44,64 @@
 [edit] → actualiza datos validados de venta
 ──────────────────────────────*/
 
-import { SellSchema } from "../schemas/sellSchema";
 import { ProductVariant } from "@typings/productVariant";
+import {
+    CreateSellPayloadType,
+    DeleteSellPayloadType,
+    EditSellPayloadType,
+    GetSellsByProductPayloadType,
+    SellModelType,
+    SellRawPayloadType,
+    SellType
+} from "@typings/sell";
+import { SellSchema } from "../schemas/sellSchema";
 import { Validation } from "./validation";
-import { CreateSellPayloadType, DeleteSellPayloadType, EditSellPayloadType, GetSellsByProductPayloadType, SellModelType, SellType } from "@typings/sell";
 
 export class SellModel {
 
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-    /*══════════ 🎮 getSells ══════════╗
-    ║ 📥 Entrada: ninguna                  ║
+    /*══════════ 🎮 getSells ══════════════════════════════╗
+    ║ 📥 Entrada: ninguna                                 ║
     ║ ⚙️ Proceso: obtiene hasta 100 ventas de SellSchema ║
-    ║ 📤 Salida: Sell[]                    ║
-    ║ 🛠️ Errores: ninguno explícito        ║
-    ╚═════════════════════════════════════╝*/
-    static async getSells () : Promise <SellType[]> {
-        let count = 0;
-        const results: SellType[] = [];
+    ║ 📤 Salida: SellType[]                             ║
+    ║ 🛠️ Errores: ninguno explícito                     ║
+    ╚══════════════════════════════════════════════════╝*/
 
-        SellSchema.find((item: SellType ) => {
-            if(count < 100) {
-                results.push(item);
-                count++;
-                return true;
-            }
-            return false;
-        });
-
-        return results as SellType[];
+    static async getSells(limit = 100, offset = 0): Promise<SellType[]> {
+      const results: SellType[] = [];
+      let index = 0;
+        
+      SellSchema.find((item: SellType) => {
+        if (index >= offset && results.length < limit) {
+          results.push(item);
+        }
+        index++;
+        return results.length < limit;
+      });
+  
+      return results;
     }
+
 
     /*══════════ 🎮 getSellsByField ══════════╗
     ║ 📥 Entrada: field, value, type ('string'|'number') ║
     ║ ⚙️ Proceso: valida tipo y busca ventas por campo   ║
-    ║ 📤 Salida: Sell[]                                  ║
+    ║ 📤 Salida: SellType[]                                  ║
     ║ 🛠️ Errores: tipo no soportado, validaciones fallidas ║
     ╚════════════════════════════════════════════════════╝*/
-    static async getSellsByField<T extends keyof SellType>(
-        field: T,
-        value: SellType[T],
-        type: 'string' | 'number',
-    ): Promise<SellType[]> {
+
+    /*─────────────────── 🔎 cambiar por sellType si no funciona🔎 ───────────────────*/
+
+    static async getSellsByField<T extends keyof SellRawPayloadType>(field: T,value: SellRawPayloadType[T],type: 'string' | 'number',)
+    : Promise<SellType[]> {
+
         if (type !== 'string' && type !== 'number') throw new Error(`Unsupported field type for ${String(field)}`);
         if (type === 'string') Validation.stringValidation(value, field as string);
         if (type === 'number') Validation.number(value, field as string);
 
         const results: SellType[] = [];
+
         SellSchema.find((item: SellType) => {
             if (item?.[field] === value) {
                 results.push(item);
@@ -102,16 +113,19 @@ export class SellModel {
         return results as SellType[];
     }
 
-    /*══════════ 🎮 getSellsByProduct ══════════╗
-    ║ 📥 Entrada: GetSellsByProductPayload {ticket_id} ║
-    ║ ⚙️ Proceso: valida id y busca ventas que incluyan ese producto ║
-    ║ 📤 Salida: Sell[]                                               ║
-    ║ 🛠️ Errores: ninguno explícito                                   ║
-    ╚════════════════════════════════════════════════════════════════╝*/
+    /*══════════ 🎮 getSellsByProduct ═══════════════════════════════════════════════════════════╗
+    ║ 📥 Entrada: GetSellsByProductPayloadType {ticket_id}                                      ║
+    ║ ⚙️ Proceso: valida id y busca ventas que incluyan ese producto, no utiliza getSellsByField║
+    ║  debido a que los productos estan por dentro del campo products                           ║
+    ║ 📤 Salida: SellType[]                                                                     ║
+    ║ 🛠️ Errores: ninguno explícito                                                             ║
+    ╚══════════════════════════════════════════════════════════════════════════════════════════╝*/
+
     static async getSellsByProduct (data: GetSellsByProductPayloadType) : Promise <SellType[]> {
-        const { ticket_id } = data;
+        const { ticket_id }: {ticket_id: unknown} = data;
+
         let count = 0;
-        const results: SellType [] = [];
+        const results: SellType[] = [];
 
         const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
 
@@ -133,28 +147,26 @@ export class SellModel {
 
         return results as SellType[];
     }
-
-    //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
     
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
     /*══════════ 🎮 create ══════════╗
-    ║ 📥 Entrada: CreateSellPayload {products,purchase_date,seller_name,total_amount} ║
+    ║ 📥 Entrada: CreateSellPayloadType {products,purchase_date,seller_name,total_amount} ║
     ║ ⚙️ Proceso: valida campos, genera ticket_id y guarda venta                            ║
     ║ 📤 Salida: string ticket_id generado                                                  ║
     ║ 🛠️ Errores: validaciones fallidas                                               ║
     ╚════════════════════════════════════════════════════════════════════════════════╝*/
     static async create (data: CreateSellPayloadType): Promise <string> {
         const { 
+            currency,
+            iva,
+            payment_method,
+            products,
             purchase_date,
             seller_id,
             seller_name,
-            payment_method,
-            products,
             sub_total,
-            iva,
             total_amount,
-            currency,
          } = data;
 
         const productsResult: ProductVariant[] = Validation.isVariantArray(products);
@@ -185,37 +197,35 @@ export class SellModel {
 
         return ticket_id as string;
     }
-
-    //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
     
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
     /*══════════ 🎮 delete ══════════╗
-    ║ 📥 Entrada: DeleteSellPayload {ticket_id} ║
+    ║ 📥 Entrada: DeleteSellPayloadType {ticket_id} ║
     ║ ⚙️ Proceso: valida id y elimina venta ║
     ║ 📤 Salida: void                        ║
     ║ 🛠️ Errores: venta no encontrada        ║
     ╚═══════════════════════════════════════╝*/
     static async delete ( data: DeleteSellPayloadType ) : Promise<void> {
-        const { ticket_id } = data;
+        const { ticket_id } : { ticket_id : unknown }  = data;
+
         const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
         const SellObject: SellModelType = SellSchema.findOne({ ticket_id: _idResult });
 
-        if(!SellObject) throw new Error('There is not any sell with that id');
+        if(!SellObject) throw new Error(`There is not any sell with that id ${ticket_id}`);
 
         SellObject.remove();
     }
-
-    //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
     
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
-    /*══════════ 🎮 edit ══════════╗
-    ║ 📥 Entrada: EditSellPayload {ticket_id,products,purchase_date,seller_name,total_amount} ║
-    ║ ⚙️ Proceso: valida campos y actualiza venta                                       ║
-    ║ 📤 Salida: void                                                                   ║
-    ║ 🛠️ Errores: venta no encontrada, validaciones fallidas                            ║
-    ╚═════════════════════════════════════════════════════════════════════════════════╝*/
+    /*══════════ 🎮 edit ═════════════════════════════════════════════════════════════════════════╗
+    ║ 📥 Entrada: EditSellPayloadType {ticket_id,products,purchase_date,seller_name,total_amount} ║
+    ║ ⚙️ Proceso: valida campos y actualiza venta                                                 ║
+    ║ 📤 Salida: void                                                                             ║
+    ║ 🛠️ Errores: venta no encontrada, validaciones fallidas                                      ║
+    ╚════════════════════════════════════════════════════════════════════════════════════════════╝*/
+
     static async edit (data: EditSellPayloadType) : Promise <void> {
         const { ticket_id,products,purchase_date,seller_name,total_amount} = data;
 
@@ -226,7 +236,7 @@ export class SellModel {
         const totalAmountResult: number = Validation.number(total_amount, 'total_amount');
 
         const SellObject: SellModelType = SellSchema.findOne({ ticket_id: _idResult });
-        if(!SellObject) throw new Error('There is not any sell with that id');
+        if(!SellObject) throw new Error(`There is not any sell with that id ${ticket_id}`);
 
         SellObject.products = productsResult;
         SellObject.purchase_date = purchaseDateResult;
@@ -235,7 +245,5 @@ export class SellModel {
 
         SellObject.save();
     }
-
-    //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
     
 }
