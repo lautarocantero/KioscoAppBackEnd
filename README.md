@@ -76,3 +76,10 @@ El sistema de autenticación incluye:
 
 - Node.js v18+
 - npm o yarn
+
+## 🐛 Trouble Shouting
+
+- Error de CORS
+    El caso más normal donde tengo un error de CORS en los endpoints, se debe a que trato de acceder a los endpoints desde una ruta que no
+    esta incluida en los cors.
+    En Index.ts agregar la ruta que utilizo en el FrontEnd a allowedOrigins

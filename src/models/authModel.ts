@@ -144,16 +144,17 @@ export class AuthModel {
 
         const hashedPassword: string = await bcrypt.hash(passwordResult, SALT_ROUNDS);
 
-        AuthSchema.create({
+        const newUser = AuthSchema.create({
             _id,
             username: usernameResult,
             email: emailResult,
-            password: hashedPassword as string,
-            refreshToken: '' as string,
-            profilePhoto: profileResult as string,
-        }).save(); //save hace que se guarde en la dblocal
+            password: hashedPassword,
+            refreshToken: '',
+            profilePhoto: profileResult,
+        });
+        newUser.save();
 
-        return _id as string;
+        return _id;
     }
 
     /*══════════ 🎮 login ══════════╗
@@ -163,21 +164,21 @@ export class AuthModel {
      🛠️ Errores: email inexistente, password inválido ║
     ═══════════════════════════════════════════════╝*/
 
-    static async login (data: AuthLoginPayload) : Promise<AuthPublic> {
+    static async login(data: AuthLoginPayload): Promise<AuthPublic> {
         const { email, password } = data;
-
-        const emailResult: string = Validation.email(email);
-        const passwordResult: string = Validation.password(password);
         
-        const authObject: AuthSchemaType = AuthSchema.findOne({email: emailResult});
-        if(!authObject) throw new Error('email does not exist');
+        const emailResult: string = Validation.email(email);
+        
+        const authObject: AuthSchemaType = AuthSchema.findOne({ email: emailResult }); // sin await
+        if (!authObject) throw new Error('email does not exist');
 
-        const isValid = await bcrypt.compare(passwordResult, authObject.password as string);
-        if(!isValid) throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
-
+        
+        const isValid = await bcrypt.compare(password as string, authObject.password as string);
+        
+        if (!isValid) throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
+        
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password:_password ,refreshToken:_refreshToken, ...publicUser  } = authObject as AuthSchemaType;
-
+        const { password: _password, refreshToken: _refreshToken, ...publicUser } = authObject as AuthSchemaType;
         return publicUser as AuthPublic;
     }
 

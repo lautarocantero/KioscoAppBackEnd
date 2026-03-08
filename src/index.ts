@@ -32,7 +32,7 @@ const app = express();
  * - Cookies: permite lectura y escritura de cookies.
  */
 
-const allowedOrigins = [ 'http://localhost:5173', 'https://69545059c2c5900008ded560--kioscoapp.netlify.app', 'https://kioscoapp.netlify.app' ];
+const allowedOrigins = [ 'http://localhost:5173', 'http://localhost:5174', 'https://69545059c2c5900008ded560--kioscoapp.netlify.app', 'https://kioscoapp.netlify.app' ];
 
 app.use(cors({
   origin: allowedOrigins, /*─────────────────── 🔎 Frontend permitido 🔎 ───────────────────*/
