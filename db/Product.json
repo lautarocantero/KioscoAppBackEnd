@@ -1,5 +1,27 @@
 [
     {
+        "_id": "e3e7237a-99c0-47fb-9a6b-3f09eb3f93a7",
+        "name": "product test 2",
+        "description": "product test 2",
+        "created_at": "2026-04-10",
+        "updated_at": "2026-04-10",
+        "image_url": "feature/hide-view-products-shopping-tag",
+        "gallery_urls": [],
+        "brand": "testtt",
+        "variants": []
+    },
+    {
+        "_id": "53dbaf9c-d632-4c98-82d6-29faaba2e7c8",
+        "name": "product test",
+        "description": "product test ",
+        "created_at": "2026-03-26",
+        "updated_at": "2026-03-26",
+        "image_url": "test",
+        "gallery_urls": [],
+        "brand": "coca cola ",
+        "variants": []
+    },
+    {
         "_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
         "name": "Coca-Cola Original",
         "description": "Refresco carbonatado clásico con sabor inconfundible, refrescante y burbujeante.",

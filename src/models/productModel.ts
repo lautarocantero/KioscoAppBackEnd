@@ -127,7 +127,7 @@ export class ProductModel {
       const descriptionResult: string = Validation.stringValidation(description, 'description');
       const createdAtResult: string = Validation.date(created_at, 'created_at');
       const updatedAtResult: string = Validation.date(updated_at, 'updated_at');
-      const imageUrlResult: string = Validation.image(image_url);
+      // const imageUrlResult: string = Validation.image(image_url);
       const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
       const brandResult: string = Validation.stringValidation(brand, 'brand');
       const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
@@ -144,7 +144,7 @@ export class ProductModel {
           description: descriptionResult,
           created_at: createdAtResult,
           updated_at: updatedAtResult,
-          image_url: imageUrlResult,
+          image_url: image_url as string, // se saco la validacion por ahora, agregarl aluego
           gallery_urls: galleryUrlsResult,
           brand: brandResult,
           variants: variantsResult,
