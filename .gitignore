@@ -1,2 +1,9 @@
-node_modules
-build
+# Ignorar dependencias
+node_modules/
+
+# Ignorar archivos de entorno
+.env
+
+# Ignorar compilados
+build/
+dist/

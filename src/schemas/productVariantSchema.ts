@@ -1,7 +1,3 @@
-import DBLocal from "db-local";
-import { ProductVariantSchemaType } from "@typings/productVariant";
-
-const { Schema } = new DBLocal({ path: './db'});
 
 /*──────────────────────────────
 🎭 ProductVariantSchema (DB Local)
@@ -34,21 +30,27 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - Los datos almacenados aquí son temporales y se sincronizan con SQL cuando hay conexión.
 ──────────────────────────────*/
 
-export const ProductVariantSchema = Schema<ProductVariantSchemaType>('ProductVariant', {
-    _id: { type: String, required: true },
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    created_at: { type: String, required: true },
-    updated_at: { type: String, required: true },
-    image_url: { type: String, required: true },
-    gallery_urls: { type: Array, required: true },
-    brand: { type: String, required: true },
-    product_id: { type: String, required: true },
-    sku: { type: String, required: true },
-    model_type: { type: String, required: true },
-    model_size: { type: String, required: true },
-    min_stock: { type: Number, required: true },
-    stock: { type: Number, required: true },
-    price: { type: Number, required: true },
+import mongoose, { Schema } from 'mongoose';
+import { ProductVariantSchemaType } from '@typings/productVariant';
+
+const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
+    _id:             { type: String, required: true },
+    name:            { type: String, required: true },
+    description:     { type: String, required: true },
+    created_at:      { type: String, required: true },
+    updated_at:      { type: String, required: true },
+    image_url:       { type: String, required: true },
+    gallery_urls:    [{ type: String }],
+    brand:           { type: String, required: true },
+    product_id:      { type: String, required: true },
+    sku:             { type: String, required: true },
+    model_type:      { type: String, required: true },
+    model_size:      { type: String, required: true },
+    min_stock:       { type: Number, required: true },
+    stock:           { type: Number, required: true },
+    price:           { type: Number, required: true },
     expiration_date: { type: String, required: true },
-});
+}, { _id: false });
+
+export const ProductVariantSchema = mongoose.models.ProductVariant ||
+    mongoose.model<ProductVariantSchemaType>('ProductVariant', ProductVariantMongoSchema, 'product_variants');

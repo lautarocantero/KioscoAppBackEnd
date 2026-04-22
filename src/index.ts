@@ -19,6 +19,7 @@ import productVariantRoutes from './routes/productVariant.routes';
 import providerRoutes from './routes/provider.routes';
 import sellRoutes from './routes/sell.routes';
 import sellerRoutes from './routes/seller.routes';
+import { connectDB } from './config/db';
 
 const app = express();
 
@@ -73,6 +74,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  */
 const port = Number(process.env.PORT) || 3000;
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en el puerto ${port}`);
+connectDB().then(() => {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 Servidor corriendo en el puerto ${port}`);
+  });
 });

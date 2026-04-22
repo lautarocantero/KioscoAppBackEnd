@@ -4,9 +4,10 @@
     "target": "es2015",
     "lib": ["es2017", "dom"],
     "outDir": "./build",
+    "rootDir": "./src",
     "strict": true,
     "allowJs": false,
-    "typeRoots": ["./src/typings"],
+    "types": ["node"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
@@ -14,11 +15,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": "src",
     "paths": { "@typings/*": ["typings/*"] }
   },
-  "include": [ 
-    "src",
-  ],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

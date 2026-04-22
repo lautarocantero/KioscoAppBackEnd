@@ -1,8 +1,3 @@
-import DBLocal from "db-local";
-import { ProviderSchemaType } from "@typings/provider";
-
-const { Schema } = new DBLocal({ path: './db'});
-
 /*──────────────────────────────
 🏢 ProviderSchema (DB Local)
 ──────────────────────────────
@@ -23,10 +18,16 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - Los datos almacenados aquí son temporales y se sincronizan con SQL cuando hay conexión.
 ──────────────────────────────*/
 
-export const ProviderSchema = Schema<ProviderSchemaType>('Provider', {
-    _id: { type: String, required: true },
-    name: { type: String, required: true },
-    valoration: { type: Number, required: false },
-    contact_phone: { type: String, required: true },
+import mongoose, { Schema } from 'mongoose';
+import { ProviderSchemaType } from '@typings/provider';
+
+const ProviderMongoSchema = new Schema<ProviderSchemaType>({
+    _id:              { type: String, required: true },
+    name:             { type: String, required: true },
+    valoration:       { type: Number, required: false },
+    contact_phone:    { type: String, required: true },
     contact_auxiliar: { type: String, required: false },
-});
+}, { _id: false });
+
+export const ProviderSchema = mongoose.models.Provider ||
+    mongoose.model<ProviderSchemaType>('Provider', ProviderMongoSchema, 'providers');

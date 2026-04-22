@@ -18,7 +18,7 @@ Incluye entidad principal, repositorio local (db-local), payloads y requests.
 - Validar siempre los payloads antes de persistir o responder.
 ──────────────────────────────*/
 
-import { ProductVariant } from "../product-variant/productVariantTypes";
+import { ProductVariant } from "../productVariant/productVariantTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║

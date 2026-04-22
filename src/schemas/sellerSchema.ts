@@ -1,7 +1,3 @@
-import DBLocal from "db-local";
-import { SellerSchemaType } from "@typings/seller";
-
-const { Schema } = new DBLocal({ path: './db'});
 
 /*──────────────────────────────
 🧑‍💼 SellerSchema (DB Local)
@@ -25,12 +21,18 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - Los datos almacenados aquí son temporales y se sincronizan con SQL cuando hay conexión.
 ──────────────────────────────*/
 
-export const SellerSchema = Schema<SellerSchemaType>('Seller', {
-    _id: { type: String, required: true },
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    rol: { type: String, required: true },
-    created_at: { type: String, required: true }, 
+import mongoose, { Schema } from 'mongoose';
+import { SellerSchemaType } from '@typings/seller';
+
+const SellerMongoSchema = new Schema<SellerSchemaType>({
+    _id:         { type: String, required: true },
+    name:        { type: String, required: true },
+    email:       { type: String, required: true },
+    password:    { type: String, required: true },
+    rol:         { type: String, required: true },
+    created_at:  { type: String, required: true },
     user_status: { type: String, required: true },
-});
+}, { _id: false });
+
+export const SellerSchema = mongoose.models.Seller ||
+    mongoose.model<SellerSchemaType>('Seller', SellerMongoSchema, 'sellers');

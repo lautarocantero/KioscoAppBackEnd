@@ -26,21 +26,24 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - Permite mantener la operatividad del sistema en modo offline y asegurar consistencia al reconectar.  
 ──────────────────────────────*/
 
-import DBLocal from "db-local";
-import { SellSchemaType } from "@typings/sell";
+import mongoose, { Schema } from 'mongoose';
+import { SellSchemaType } from '@typings/sell';
 
-const { Schema } = new DBLocal({ path: './db'});
+const ProductVariantSubSchema = new Schema({}, { strict: false, _id: false });
 
-export const SellSchema = Schema<SellSchemaType>('Sell', {
-    currency: { type: String, required: true},
-    iva: { type: Number, required: true },
+const SellMongoSchema = new Schema<SellSchemaType>({
+    ticket_id:         { type: String, required: true },
+    currency:          { type: String, required: true },
+    iva:               { type: Number, required: true },
     modification_date: { type: String, required: false },
-    payment_method: { type: String, required: true },
-    products: { type: Array, required: true },
-    purchase_date: { type: String, required: true },
-    seller_id: { type: String, required: true },
-    seller_name: { type: String, required: true },
-    sub_total: { type: Number, required: true },
-    ticket_id: { type: String, required: true },
-    total_amount: { type: Number, required: true },
-});
+    payment_method:    { type: String, required: true },
+    products:          { type: [ProductVariantSubSchema], required: true },
+    purchase_date:     { type: String, required: true },
+    seller_id:         { type: String, required: true },
+    seller_name:       { type: String, required: true },
+    sub_total:         { type: Number, required: true },
+    total_amount:      { type: Number, required: true },
+}, { _id: false });
+
+export const SellSchema = mongoose.models.Sell ||
+    mongoose.model<SellSchemaType>('Sell', SellMongoSchema, 'sells');

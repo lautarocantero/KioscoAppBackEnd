@@ -37,9 +37,9 @@ declare module 'db-local' {
   }
 
   interface Schema<T> {
-    create(data: T): T<T>;
+    create(data: T): T;
     find(query: Partial<T> | ((item: T) => boolean)): T[];
-    findOne(query: Partial<T> | ((item: T) => boolean)): T<T> | undefined;
+    findOne(query: Partial<T> | ((item: T) => boolean)): T | undefined;
     save(query: Partial<T>, update: Partial<T>): void;
     remove(query: Partial<T> | ((item: T) => boolean)): void;
   }
