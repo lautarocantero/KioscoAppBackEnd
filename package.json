@@ -6,7 +6,7 @@
     "tsc": "tsc",
     "build": "tsc",
     "linter": "ts-standard",
-    "dev": "ts-node-dev src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node --watch build/index",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docgen": "ts-node tools/docgen/generate-controller-docs.ts"

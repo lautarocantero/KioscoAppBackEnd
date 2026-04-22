@@ -29,49 +29,10 @@ const config_1 = require("../config");
 const authSchema_1 = require("../schemas/authSchema");
 const validation_1 = require("./validation");
 /*──────────────────────────────
-🔐 AuthModel
+🔐 AuthModel — Mongoose
 ──────────────────────────────
-📜 Propósito: Autenticación y gestión de usuarios
+📜 Propósito: Autenticación y gestión de usuarios contra MongoDB
 🧩 Dependencias: bcrypt, SALT_ROUNDS, AuthSchema, Validation, authTypes
-📂 Endpoints: GET, POST, DELETE, PUT
-🛡️ Seguridad:
-   - Hash de contraseñas con bcrypt + SALT_ROUNDS
-   - Nunca devolver password ni refreshToken
-   - Validaciones estrictas en todos los campos
-──────────────────────────────*/
-/*──────────────────────────────
-📚 Tipos usados en Auth
-──────────────────────────────
-- AuthRegisterPayload: datos para registro
-- AuthLoginPayload: credenciales de login
-- AuthPublic: usuario sin datos sensibles
-- AuthPublicSchema: usuario público validado
-- AuthTokenPublic: objeto con refreshToken
-- AuthSchemaType: documento completo en BD
-- AuthModelType: instancia del modelo en BD
-- AuthCheckAuthPayload: payload para validar usuario
-- AuthRefreshTokenPayload: payload para manejar refreshToken
-- DeleteAuthPayload: payload para eliminar usuario
-- EditAuthPayload: payload para editar usuario
-──────────────────────────────*/
-/*──────────────────────────────
-🛡️ Seguridad
-──────────────────────────────
-🔒 Contraseñas: siempre hash con bcrypt + SALT_ROUNDS
-🗑️ Password y refreshToken nunca se devuelven en JSON
-⚠️ Validaciones estrictas en todos los campos
-──────────────────────────────*/
-/*──────────────────────────────
-🌀 Flujo
-──────────────────────────────
-[Register] → crea usuario con hash → guarda en AuthSchema
-[Login] → valida email + bcrypt.compare → devuelve AuthPublic
-[GetRefreshToken] → busca token de refresco por _id
-[CheckAuth] → valida usuario y devuelve datos públicos
-[SaveRefreshToken] → guarda token de refresco en usuario
-[DeleteRefreshToken] → borra token de refresco de usuario
-[DeleteAuth] → elimina usuario
-[EditAuth] → actualiza datos validados
 ──────────────────────────────*/
 class AuthModel {
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
@@ -79,17 +40,19 @@ class AuthModel {
     ║ 📥 Entrada: AuthRefreshTokenPayload {_id} ║
     ║ ⚙️ Proceso: valida id y busca refreshToken ║
     ║ 📤 Salida: AuthTokenPublic {refreshToken}  ║
-    ║ 🛠️ Errores: faltante o tipo inválido       ║
     ╚══════════════════════════════════════════╝*/
     static getRefreshToken(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { _id } = data;
             const idResult = validation_1.Validation.stringValidation(_id, '_id');
-            const { refreshToken } = authSchema_1.AuthSchema.findOne({ _id: idResult });
+            const user = yield authSchema_1.AuthSchema.findOne({ _id: idResult }).lean();
+            if (!user)
+                throw new Error('User not found');
+            const { refreshToken } = user;
             if (!refreshToken)
-                throw new Error("Missing refresh token in cookies");
+                throw new Error('Missing refresh token in cookies');
             if (typeof refreshToken !== 'string')
-                throw new Error("Refresh token is not a string");
+                throw new Error('Refresh token is not a string');
             return { refreshToken };
         });
     }
@@ -98,19 +61,16 @@ class AuthModel {
     ║ ⚙️ Proceso: valida id, busca usuario,   ║
     ║    elimina password y refreshToken      ║
     ║ 📤 Salida: AuthPublicSchema             ║
-    ║ 🛠️ Errores: usuario no encontrado,      ║
-    ║    token faltante                       ║
     ╚═════════════════════════════════════════╝*/
     static checkAuth(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { _id } = data;
             const idResult = validation_1.Validation.stringValidation(_id, '_id');
-            const authObject = authSchema_1.AuthSchema.findOne({ _id: idResult });
+            const authObject = yield authSchema_1.AuthSchema.findOne({ _id: idResult }).lean();
             if (!authObject)
                 throw new Error('User not found');
             if (!authObject.refreshToken)
                 throw new Error('Missing refresh token in cookies');
-            // eliminacion de dato sensible password
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const _a = authObject, { password: _password, refreshToken: _refreshToken } = _a, publicAuth = __rest(_a, ["password", "refreshToken"]);
             return publicAuth;
@@ -119,11 +79,10 @@ class AuthModel {
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
     /*══════════ 🎮 create ══════════╗
-    ║ 📥 Entrada: AuthRegisterPayload {username,email,password,repeatPassword,profilePhoto} ║
-    ║ ⚙️ Proceso: valida campos, verifica duplicados, genera _id y hash de password         ║
-    ║ 📤 Salida: string _id generado                                                        ║
-    ║ 🛠️ Errores: username existente, validaciones fallidas                                ║
-    ╚═════════════════════════════════════════════════════════════════════════════════════╝*/
+    ║ 📥 Entrada: AuthRegisterPayload ║
+    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password y guarda ║
+    ║ 📤 Salida: string _id generado  ║
+    ╚══════════════════════════════════╝*/
     static create(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { username, email, password, repeatPassword, profilePhoto } = data;
@@ -132,37 +91,35 @@ class AuthModel {
             const passwordResult = validation_1.Validation.password(password);
             validation_1.Validation.password(repeatPassword);
             const profileResult = profilePhoto ? validation_1.Validation.image(profilePhoto) : '';
-            const authObject = authSchema_1.AuthSchema.findOne({ username: usernameResult });
-            if (authObject)
+            const existing = yield authSchema_1.AuthSchema.findOne({ username: usernameResult }).lean();
+            if (existing)
                 throw new Error('username already exists');
             const _id = crypto.randomUUID();
             const hashedPassword = yield bcrypt_1.default.hash(passwordResult, config_1.SALT_ROUNDS);
-            authSchema_1.AuthSchema.create({
+            yield authSchema_1.AuthSchema.create({
                 _id,
                 username: usernameResult,
                 email: emailResult,
                 password: hashedPassword,
                 refreshToken: '',
                 profilePhoto: profileResult,
-            }).save(); //save hace que se guarde en la dblocal
+            });
             return _id;
         });
     }
     /*══════════ 🎮 login ══════════╗
-     📥 Entrada: AuthLoginPayload {email,password} ║
-     ⚙️ Proceso: valida credenciales con bcrypt     ║
-     📤 Salida: AuthPublic                          ║
-     🛠️ Errores: email inexistente, password inválido ║
-    ═══════════════════════════════════════════════╝*/
+    ║ 📥 Entrada: AuthLoginPayload {email,password} ║
+    ║ ⚙️ Proceso: valida credenciales con bcrypt    ║
+    ║ 📤 Salida: AuthPublic                         ║
+    ╚═══════════════════════════════════════════════╝*/
     static login(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { email, password } = data;
             const emailResult = validation_1.Validation.email(email);
-            const passwordResult = validation_1.Validation.password(password);
-            const authObject = authSchema_1.AuthSchema.findOne({ email: emailResult });
+            const authObject = yield authSchema_1.AuthSchema.findOne({ email: emailResult }).lean();
             if (!authObject)
                 throw new Error('email does not exist');
-            const isValid = yield bcrypt_1.default.compare(passwordResult, authObject.password);
+            const isValid = yield bcrypt_1.default.compare(password, authObject.password);
             if (!isValid)
                 throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -176,16 +133,14 @@ class AuthModel {
     ║ 📥 Entrada: DeleteAuthPayload {_id} ║
     ║ ⚙️ Proceso: valida id y elimina usuario ║
     ║ 📤 Salida: void                        ║
-    ║ 🛠️ Errores: usuario no encontrado      ║
     ╚═══════════════════════════════════════╝*/
     static deleteAuth(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { _id } = data;
             const _idResult = validation_1.Validation.stringValidation(_id, '_id');
-            const authObject = authSchema_1.AuthSchema.findOne({ _id: _idResult });
-            if (!authObject)
+            const deleted = yield authSchema_1.AuthSchema.findOneAndDelete({ _id: _idResult });
+            if (!deleted)
                 throw new Error('User not found');
-            authObject.remove();
         });
     }
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
@@ -194,45 +149,39 @@ class AuthModel {
     ║ 📥 Entrada: AuthRefreshTokenPayload {_id,token} ║
     ║ ⚙️ Proceso: valida id y token, guarda refreshToken ║
     ║ 📤 Salida: void                                ║
-    ║ 🛠️ Errores: usuario no encontrado              ║
     ╚═══════════════════════════════════════════════╝*/
     static saveRefreshToken(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { _id, token } = data;
             const _idResult = validation_1.Validation.stringValidation(_id, '_id');
             const tokenResult = validation_1.Validation.stringValidation(token, 'token');
-            const authObject = authSchema_1.AuthSchema.findOne({ _id: _idResult });
-            if (!authObject)
+            const updated = yield authSchema_1.AuthSchema.findOneAndUpdate({ _id: _idResult }, { $set: { refreshToken: tokenResult } });
+            if (!updated)
                 throw new Error('User not found');
-            authObject.refreshToken = tokenResult;
-            authObject.save();
         });
     }
     /*══════════ 🎮 deleteRefreshToken ══════════╗
     ║ 📥 Entrada: AuthRefreshTokenPayload {_id}   ║
     ║ ⚙️ Proceso: valida id, borra refreshToken   ║
     ║ 📤 Salida: void                             ║
-    ║ 🛠️ Errores: usuario no encontrado, token faltante ║
     ╚════════════════════════════════════════════╝*/
     static deleteRefreshToken(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { _id } = data;
             const _idResult = validation_1.Validation.stringValidation(_id, '_id');
-            const authObject = authSchema_1.AuthSchema.findOne({ _id: _idResult });
+            const authObject = yield authSchema_1.AuthSchema.findOne({ _id: _idResult });
             if (!authObject)
                 throw new Error('User not found');
             if (!authObject.refreshToken)
                 throw new Error('Missing refresh token in cookies');
-            authObject.refreshToken = undefined;
-            authObject.save();
+            yield authSchema_1.AuthSchema.findOneAndUpdate({ _id: _idResult }, { $unset: { refreshToken: '' } });
         });
     }
     /*══════════ 🎮 editAuth ══════════╗
-    ║ 📥 Entrada: EditAuthPayload {_id,username,profilePhoto,email,password} ║
-    ║ ⚙️ Proceso: valida campos y actualiza usuario                          ║
-    ║ 📤 Salida: void                                                        ║
-    ║ 🛠️ Errores: usuario no encontrado, validaciones fallidas               ║
-    ╚═══════════════════════════════════════════════════════════════════════╝*/
+    ║ 📥 Entrada: EditAuthPayload      ║
+    ║ ⚙️ Proceso: valida campos y actualiza usuario ║
+    ║ 📤 Salida: void                  ║
+    ╚══════════════════════════════════╝*/
     static editAuth(data) {
         return __awaiter(this, void 0, void 0, function* () {
             const { _id, username, profilePhoto, email, password } = data;
@@ -241,14 +190,14 @@ class AuthModel {
             const profileResult = validation_1.Validation.stringValidation(profilePhoto, 'profile photo');
             const emailResult = validation_1.Validation.email(email);
             const passwordResult = validation_1.Validation.password(password);
-            const authObject = authSchema_1.AuthSchema.findOne({ _id: _idResult });
-            if (!authObject)
+            const updated = yield authSchema_1.AuthSchema.findOneAndUpdate({ _id: _idResult }, { $set: {
+                    username: userNameResult,
+                    email: emailResult,
+                    profilePhoto: profileResult,
+                    password: passwordResult,
+                } });
+            if (!updated)
                 throw new Error('User not found');
-            authObject.username = userNameResult;
-            authObject.email = emailResult;
-            authObject.profilePhoto = profileResult;
-            authObject.password = passwordResult;
-            authObject.save();
         });
     }
 }

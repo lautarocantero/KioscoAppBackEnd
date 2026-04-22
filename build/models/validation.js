@@ -1,6 +1,4 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Validation = void 0;
 /*──────────────────────────────
 🛡️ Validation
 ──────────────────────────────
@@ -33,6 +31,8 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 🌀 Flujo estándar:
 [Input] → [Validation.*] → [Error o valor validado] → [Modelo/Controlador]
 ──────────────────────────────*/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Validation = void 0;
 const isString = (string) => typeof string === 'string';
 const isNumber = (number) => typeof number === 'number';
 const isDate = (value) => {
@@ -61,26 +61,22 @@ const isLongString = (string) => string.length > 30;
 const isSKU = (value) => /^[A-Z0-9_-]+$/i.test(value);
 const isZero = (value) => value === 0;
 const isBarcode = (value) => /^\d{13}$/.test(value);
-const isVariant = (value) => {
+const isTicket = (value) => {
     if (typeof value !== "object" || value === null)
         return false;
     const v = value;
     return (typeof v._id === "string" &&
         typeof v.name === "string" &&
         typeof v.description === "string" &&
-        typeof v.created_at === "string" &&
-        typeof v.updated_at === "string" &&
         typeof v.image_url === "string" &&
-        Array.isArray(v.gallery_urls) && v.gallery_urls.every(url => typeof url === "string") &&
         typeof v.brand === "string" &&
         typeof v.product_id === "string" &&
         typeof v.sku === "string" &&
         typeof v.model_type === "string" &&
         typeof v.model_size === "string" &&
-        typeof v.min_stock === "number" &&
-        typeof v.stock === "number" &&
         typeof v.price === "number" &&
-        typeof v.expiration_date === "string");
+        typeof v.expiration_date === "string" &&
+        typeof v.stock_required === "number");
 };
 class Validation {
     /*══════════ 🎮 stringValidation ══════════╗
@@ -164,16 +160,16 @@ class Validation {
     }
     /*══════════ 🎮 number ══════════╗
     ║ 📥 Entrada: digit (unknown), title ║
-    ║ ⚙️ Proceso: valida que sea número > 0 ║
+    ║ ⚙️ Proceso: valida que sea número > 0 si isZeroValid es false ║
     ║ 📤 Salida: number validado          ║
     ║ 🛠️ Errores: no provisto, no número, igual a 0 ║
     ╚════════════════════════════════════╝*/
-    static number(digit, title) {
-        if (!digit)
-            throw new Error('No number provided');
-        if (!isNumber(digit))
+    static number(digit, title, isZeroValid) {
+        if (!digit && !isZeroValid)
+            throw new Error(`No number provided for ${title}`);
+        if (!isNumber(digit) && !isZeroValid)
             throw new Error(`${title} is not a number`);
-        if (isZero(digit))
+        if (isZero(digit) && !isZeroValid)
             throw new Error(`${title} must be greater than 0`);
         return digit;
     }
@@ -252,8 +248,9 @@ class Validation {
             throw new Error("No variants provided");
         if (!Array.isArray(variants))
             throw new Error("variants must be an array");
+        { /*─────────────────── 🔎 No son variantes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/ }
         variants.forEach((variant, index) => {
-            if (!isVariant(variant))
+            if (!isTicket(variant))
                 throw new Error(`Variant Product at index ${index} is not a variant product`);
         });
         return variants;
