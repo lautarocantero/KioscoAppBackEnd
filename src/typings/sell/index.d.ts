@@ -10,6 +10,7 @@ import { ProductVariant } from "@typings/productVariant";
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
 interface SellEntityInterface {
+    _id: string; 
     currency: string;
     iva: number; 
     modification_date: string; 
@@ -19,7 +20,6 @@ interface SellEntityInterface {
     seller_id: string; 
     seller_name: string;
     sub_total: number; 
-    ticket_id: string; 
     total_amount: number;
 }
 
@@ -40,7 +40,7 @@ declare module '@typings/sell' {
 
   export type SellType = SellEntityInterface;
 
-  export type SellPublicType = Omit<SellEntityInterface ,'iva' | 'modification_date' | 'seller_id' | 'ticket_id'>;
+  export type SellPublicType = Omit<SellEntityInterface ,'iva' | 'modification_date' | 'seller_id' | '_id'>;
 
   export type SellModelType = SellRepositoryInterface;
 
@@ -52,24 +52,24 @@ declare module '@typings/sell' {
 
   //──────────────────────────────────────────── 📦 PAYLOAD 📦 ───────────────────────────────────────────//
 
-  export type GetSellByIdPayloadType = Pick<SellPayloadType, 'ticket_id'>;
+  export type GetSellByIdPayloadType = Pick<SellPayloadType, '_id'>;
 
   export type GetSellsBySellerPayloadType = Pick<SellPayloadType, 'seller_name'>;
 
   export type GetSellsByDatePayloadType = Pick<SellPayloadType, 'purchase_date'>;
 
-  export type GetSellsByProductPayloadType = Pick<SellPayloadType, 'ticket_id'>;
+  export type GetSellsByProductPayloadType = Pick<SellPayloadType, '_id'>;
 
-  export type CreateSellPayloadType = Omit<SellPayloadType, 'ticket_id' | 'modification_date'>;
+  export type CreateSellPayloadType = Omit<SellPayloadType, '_id' | 'modification_date'>;
 
-  export type DeleteSellPayloadType = Pick<SellPayloadType, 'ticket_id'>;
+  export type DeleteSellPayloadType = Pick<SellPayloadType, '_id'>;
 
   export type EditSellPayloadType = SellPayloadType;
 
   //──────────────────────────────────────────── 🔗 REQUEST 🔗 ───────────────────────────────────────────//
   
   type SellParamsType = {
-    ticket_id?: string;
+    _id?: string;
   };
 
   export type GetSellByIdRequestType = Request<SellParamsType, unknown, GetSellByIdPayloadType>;

@@ -17,7 +17,7 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - seller_id        → Identificador del vendedor responsable (String, requerido)
 - seller_name      → Nombre del vendedor responsable (String, requerido)
 - sub_total        → Subtotal de la venta antes de impuestos (Number, requerido)
-- ticket_id        → Identificador único de la venta (String, requerido)
+- _id        → Identificador único de la venta (String, requerido)
 - total_amount     → Monto total de la venta (Number, requerido)
 
 🛡️ Notas:
@@ -32,18 +32,19 @@ import { SellSchemaType } from '@typings/sell';
 const ProductVariantSubSchema = new Schema({}, { strict: false, _id: false });
 
 const SellMongoSchema = new Schema<SellSchemaType>({
-    ticket_id:         { type: String, required: true },
-    currency:          { type: String, required: true },
-    iva:               { type: Number, required: true },
-    modification_date: { type: String, required: false },
-    payment_method:    { type: String, required: true },
-    products:          { type: [ProductVariantSubSchema], required: true },
-    purchase_date:     { type: String, required: true },
-    seller_id:         { type: String, required: true },
-    seller_name:       { type: String, required: true },
-    sub_total:         { type: Number, required: true },
-    total_amount:      { type: Number, required: true },
-}, { _id: false });
+  _id:                  { type: String, required: true },
+  currency:             { type: String, required: true },
+  iva:                  { type: Number, required: true },
+  modification_date:    { type: String, required: false },
+  payment_method:       { type: String, required: true },
+  products:             { type: [ProductVariantSubSchema], required: true },
+  purchase_date:        { type: String, required: true },
+  seller_id:            { type: String, required: true },
+  seller_name:          { type: String, required: true },
+  sub_total:            { type: Number, required: true },
+  total_amount:         { type: Number, required: true },
+});
+
 
 export const SellSchema = mongoose.models.Sell ||
     mongoose.model<SellSchemaType>('Sell', SellMongoSchema, 'sells');

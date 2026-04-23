@@ -66,12 +66,12 @@
         "seller_id": "0123",
         "seller_name": "Claudia",
         "sub_total": 9500,
-        "ticket_id": "ce1e7984-6dea-45cc-9a7d-bd434b52b8d1",
+        "_id": "ce1e7984-6dea-45cc-9a7d-bd434b52b8d1",
         "total_amount": 9500,
         "_id": "6962d1012d00a34d9be2985e"
     },
     {
-        "ticket_id": "venta-550e8400-e29b-41d4-a716-446655440000",
+        "_id": "venta-550e8400-e29b-41d4-a716-446655440000",
         "purchase_date": "11/01/2026",
         "modification_date": "",
         "seller_id": "0789",
@@ -108,7 +108,7 @@
         "_id": "venta006"
     },
     {
-        "ticket_id": "venta-6fa459ea-ee8a-3ca4-894e-db77e160355e",
+        "_id": "venta-6fa459ea-ee8a-3ca4-894e-db77e160355e",
         "purchase_date": "11/01/2026",
         "modification_date": "",
         "seller_id": "0789",
@@ -145,7 +145,7 @@
         "_id": "venta016"
     },
     {
-        "ticket_id": "venta-1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+        "_id": "venta-1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
         "purchase_date": "11/01/2026",
         "modification_date": "",
         "seller_id": "0789",
@@ -182,7 +182,7 @@
         "_id": "venta106"
     },
     {
-        "ticket_id": "venta-nn9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+        "_id": "venta-nn9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
         "purchase_date": "20/10/2025",
         "modification_date": "",
         "seller_id": "0789",
@@ -219,7 +219,7 @@
         "_id": "venta003"
     },
     {
-        "ticket_id": "venta-9d8e7c66-5b4a-4c3d-8f2a-7b6c5d4e3f2a",
+        "_id": "venta-9d8e7c66-5b4a-4c3d-8f2a-7b6c5d4e3f2a",
         "purchase_date": "05/09/2025",
         "modification_date": "",
         "seller_id": "0789",

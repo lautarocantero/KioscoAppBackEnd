@@ -40,9 +40,9 @@ export class SellModel {
     }
 
     static async getSellsByProduct(data: GetSellsByProductPayloadType): Promise<SellType[]> {
-        const { ticket_id }: { ticket_id: unknown } = data;
+        const { _id }: { _id: unknown } = data;
 
-        const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
 
         // Busca ventas donde algún producto dentro del array tenga ese product_id
         const results = await SellSchema.find({
@@ -61,8 +61,15 @@ export class SellModel {
             sub_total, total_amount,
         } = data;
 
+        function parseDate(input: string): Date {
+          const [day, month, year] = input.split("/").map(Number);
+          return new Date(year, month - 1, day); // month es 0-indexado
+        }
+
+        const purchaseDateObj: Date = parseDate(purchase_date as string);
+
         const productsResult: ProductVariant[]  = Validation.isVariantArray(products);
-        const purchaseDateResult: string        = Validation.date(purchase_date, 'purchase date');
+        const purchaseDateResult: string        = Validation.date(purchaseDateObj, 'purchase date');
         const sellerIdResult: string            = Validation.stringValidation(seller_id, 'seller id');
         const sellerNameResult: string          = Validation.stringValidation(seller_name, 'seller name');
         const subTotalResult: number            = Validation.number(sub_total, 'sub total');
@@ -71,10 +78,10 @@ export class SellModel {
         const paymentMethodResult: string       = Validation.stringValidation(payment_method, 'payment method');
         const currencyResult: string            = Validation.stringValidation(currency, 'currency');
 
-        const ticket_id: string = crypto.randomUUID();
+        const _id: string = crypto.randomUUID();
 
         await SellSchema.create({
-            ticket_id,
+            _id,
             purchase_date:     purchaseDateResult,
             modification_date: '',
             seller_id:         sellerIdResult,
@@ -87,33 +94,33 @@ export class SellModel {
             currency:          currencyResult,
         });
 
-        return ticket_id;
+        return _id;
     }
 
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
     static async delete(data: DeleteSellPayloadType): Promise<void> {
-        const { ticket_id }: { ticket_id: unknown } = data;
+        const { _id }: { _id: unknown } = data;
 
-        const _idResult: string = Validation.stringValidation(ticket_id, 'ticket_id');
+        const _idResult: string = Validation.stringValidation(_id, '_id');
 
-        const deleted = await SellSchema.findOneAndDelete({ ticket_id: _idResult });
-        if (!deleted) throw new Error(`There is not any sell with that id ${ticket_id}`);
+        const deleted = await SellSchema.findOneAndDelete({ _id: _idResult });
+        if (!deleted) throw new Error(`There is not any sell with that id ${_id}`);
     }
 
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
     static async edit(data: EditSellPayloadType): Promise<void> {
-        const { ticket_id, products, purchase_date, seller_name, total_amount } = data;
+        const { _id, products, purchase_date, seller_name, total_amount } = data;
 
-        const _idResult: string                = Validation.stringValidation(ticket_id, 'ticket_id');
+        const _idResult: string                = Validation.stringValidation(_id, '_id');
         const productsResult: ProductVariant[] = Validation.isVariantArray(products);
         const purchaseDateResult: string       = Validation.date(purchase_date, 'purchase_date');
         const sellerNameResult: string         = Validation.stringValidation(seller_name, 'seller_name');
         const totalAmountResult: number        = Validation.number(total_amount, 'total_amount');
 
         const updated = await SellSchema.findOneAndUpdate(
-            { ticket_id: _idResult },
+            { _id: _idResult },
             { $set: {
                 products:          productsResult,
                 purchase_date:     purchaseDateResult,
@@ -123,6 +130,6 @@ export class SellModel {
             }},
         );
 
-        if (!updated) throw new Error(`There is not any sell with that id ${ticket_id}`);
+        if (!updated) throw new Error(`There is not any sell with that id ${_id}`);
     }
 }

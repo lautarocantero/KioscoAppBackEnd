@@ -51,7 +51,7 @@ const swaggerOptions = {
         Sell: {
           type: "object",
           properties: {
-            ticket_id: { type: "string" },
+            _id: { type: "string" },
             purchase_date: { type: "string" },
             modification_date: { type: "string" },
             seller_id: { type: "string" },
@@ -73,14 +73,14 @@ const swaggerOptions = {
         },
         EditSellPayload: {
           allOf: [{ $ref: "#/components/schemas/Sell" }],
-          required: ["ticket_id"]
+          required: ["_id"]
         },
         GetSellsByProductPayload: {
           type: "object",
           properties: {
-            ticket_id: { type: "string" }
+            _id: { type: "string" }
           },
-          required: ["ticket_id"]
+          required: ["_id"]
         }
       }
     }

@@ -173,6 +173,7 @@ static date(date: unknown, title: string): string {
   return date as string;
 }
 
+
 /*══════════ 🎮 image ══════════╗
 ║ 📥 Entrada: photo (unknown)   ║
 ║ ⚙️ Proceso: valida que sea URL de imagen válida ║

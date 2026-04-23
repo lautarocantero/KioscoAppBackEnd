@@ -77,13 +77,13 @@ const router = express.Router();
 
 /**
  * @openapi
- * /sell/get-sell-by-id/{ticket_id}:
+ * /sell/get-sell-by-id/{_id}:
  *   get:
  *     summary: Obtener venta por ID
- *     description: Busca una venta específica validando el campo `ticket_id`.
+ *     description: Busca una venta específica validando el campo `_id`.
  *     parameters:
  *       - in: path
- *         name: ticket_id
+ *         name: _id
  *         required: true
  *         schema:
  *           type: string
@@ -184,7 +184,7 @@ const router = express.Router();
  * /sell/create-sell:
  *   post:
  *     summary: Crear nueva venta
- *     description: Valida todos los campos, genera un `ticket_id` único y guarda la venta.
+ *     description: Valida todos los campos, genera un `_id` único y guarda la venta.
  *     requestBody:
  *       required: true
  *       content:
@@ -200,13 +200,13 @@ const router = express.Router();
 
 /**
  * @openapi
- * /sell/delete-sell/{ticket_id}:
+ * /sell/delete-sell/{_id}:
  *   delete:
  *     summary: Eliminar venta por ID
- *     description: Valida el `ticket_id` y elimina la venta si existe.
+ *     description: Valida el `_id` y elimina la venta si existe.
  *     parameters:
  *       - in: path
- *         name: ticket_id
+ *         name: _id
  *         required: true
  *         schema:
  *           type: string
@@ -239,7 +239,7 @@ const router = express.Router();
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 router.get('/', home);
 router.get('/get-sells', getSells);
-router.get('/get-sell-by-id/:ticket_id', getSellById);
+router.get('/get-sell-by-id/:_id', getSellById);
 router.get('/get-sells-by-seller', getSellsBySeller);
 router.get('/get-sells-by-date', getSellsByDate);
 router.get('/get-sells-by-product', getSellsByProduct);
@@ -248,7 +248,7 @@ router.get('/get-sells-by-product', getSellsByProduct);
 router.post('/create-sell', createSell);
 
 //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
-router.delete('/delete-sell/:ticket_id', deleteSell);
+router.delete('/delete-sell/:_id', deleteSell);
 
 //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 router.put('/edit-sell', editSell);
