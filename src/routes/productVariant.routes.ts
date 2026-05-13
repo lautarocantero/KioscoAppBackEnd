@@ -13,8 +13,11 @@ import {
   getProductVariantBySize, 
   getProductVariantByPresentation 
 } from '../controllers/productVariant.controller';
+import multer from "multer";
+
 
 const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 /*──────────────────────────────
 🎭 ProductVariantRouter
@@ -47,7 +50,7 @@ router.get('/get-product-variant-by-price', getProductVariantByPrice);
 router.get('/get-product-variant-by-size', getProductVariantBySize);
 router.get('/get-product-variant-by-presentation', getProductVariantByPresentation);
 
-router.post('/create-product-variant', createProductVariant);
+router.post('/create-product-variant', upload.single("image"), createProductVariant);
 router.delete('/delete-product-variant', deleteProductVariant);
 router.put('/edit-product-variant', editProductVariant);
 

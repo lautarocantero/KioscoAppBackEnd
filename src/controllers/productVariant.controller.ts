@@ -225,25 +225,38 @@ export async function getProductVariantByPresentation(req: GetProductVariantByPr
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
-export async function createProductVariant(req: CreateProductVariantRequest, res:Response): Promise<void>  {
+export async function createProductVariant(req: CreateProductVariantRequest, res: Response): Promise<void> {
     const { 
-        name,description,image_url,
-        gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
-        stock,price,expiration_date 
+        name, description, image_url,
+        gallery_urls, brand, product_id, sku, model_type, model_size, min_stock,
+        stock, price, expiration_date 
     } = req.body;
 
-    try{
+    const finalImageUrl = req.file
+        ? `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`
+        : image_url;
+
+    // ✅ FormData manda todo como string, hay que parsear el array
+    const parsedGalleryUrls: string[] = typeof gallery_urls === "string"
+        ? JSON.parse(gallery_urls)
+        : gallery_urls ?? [];
+
+    const parsedMinStock = Number(min_stock);
+    const parsedStock    = Number(stock);
+    const parsedPrice    = Number(price);
+
+    try {
         const _id = await ProductVariantModel.createProductVariant({
-            name,description,image_url,
-            gallery_urls,brand,product_id,sku,model_type,model_size,min_stock,
-            stock,price,expiration_date
+            name, description, image_url: finalImageUrl,
+            gallery_urls: parsedGalleryUrls,
+            brand, product_id, sku, model_type, model_size, min_stock: parsedMinStock, 
+            stock: parsedStock, price: parsedPrice, expiration_date
         });
-        res
-            .status(200)
-            .json({
-                _id,
-                message: "Product variant created successfully",
-            });
+
+        res.status(200).json({
+            _id,
+            message: "Product variant created successfully",
+        });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

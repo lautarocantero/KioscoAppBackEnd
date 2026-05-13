@@ -28,6 +28,15 @@ export class ProductVariantModel {
         return results as unknown as ProductVariant[];
     }
 
+    static async getProductVariantById(data: GetProductVariantByIdPayload): Promise<ProductVariant> {
+        const { _id } = data;
+        const _idResult: string = Validation.stringValidation(_id, 'id');
+
+        const result = await ProductVariantSchema.findOne({ _id: _idResult }).lean();
+        if (!result) throw new Error('Does not exist a productVariant with this id');
+        return result as unknown as ProductVariant;
+    }
+
     /*══════════ 🎮 getProductVariantByField ══════════╗
     ║ 📥 Entrada: field, value, type ('string'|'number') ║
     ║ ⚙️ Proceso: valida tipo y busca variantes por campo ║

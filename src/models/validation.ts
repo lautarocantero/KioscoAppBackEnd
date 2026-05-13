@@ -1,4 +1,3 @@
-
 /*──────────────────────────────
 🛡️ Validation
 ──────────────────────────────
@@ -46,6 +45,7 @@ const isDate = (value: unknown): boolean => {
   return false;
 };
 const isImageUrl = (value: string): boolean => {
+  if (value.startsWith("data:image/")) return true;
   try {
     const url = new URL(value);
     if (url.protocol !== "http:" && url.protocol !== "https:") return false;
@@ -108,130 +108,127 @@ export class Validation {
   }
 
   /*══════════ 🎮 email ══════════╗
-║ 📥 Entrada: email (unknown)   ║
-║ ⚙️ Proceso: valida que sea string y >= 3 caracteres ║
-║ 📤 Salida: string validado    ║
-║ 🛠️ Errores: no provisto, no string, demasiado corto ║
-╚══════════════════════════════╝*/
-static email(email: unknown): string {
-  if (!email) throw new Error(`No email provided`);
-  if (!isString(email)) throw new Error('email must be a string');
-  if (isShortString(email as string)) throw new Error('email must be at least 3 characters long');
-  return email as string;
-}
+  ║ 📥 Entrada: email (unknown)   ║
+  ║ ⚙️ Proceso: valida que sea string y >= 3 caracteres ║
+  ║ 📤 Salida: string validado    ║
+  ║ 🛠️ Errores: no provisto, no string, demasiado corto ║
+  ╚══════════════════════════════╝*/
+  static email(email: unknown): string {
+    if (!email) throw new Error(`No email provided`);
+    if (!isString(email)) throw new Error('email must be a string');
+    if (isShortString(email as string)) throw new Error('email must be at least 3 characters long');
+    return email as string;
+  }
 
-/*══════════ 🎮 refreshToken ══════════╗
-║ 📥 Entrada: token (unknown)          ║
-║ ⚙️ Proceso: valida que sea string y no vacío ║
-║ 📤 Salida: string validado           ║
-║ 🛠️ Errores: no provisto, no string, mismatch ║
-╚═════════════════════════════════════╝*/
-static refreshToken(token: unknown): string {
-  if (!token) throw new Error(`No refresh Token provided`);
-  if (!isString(token)) throw new Error('token must be a string');
-  if (isShortString(token as string)) throw new Error('token miss match');
-  return token as string;
-}
+  /*══════════ 🎮 refreshToken ══════════╗
+  ║ 📥 Entrada: token (unknown)          ║
+  ║ ⚙️ Proceso: valida que sea string y no vacío ║
+  ║ 📤 Salida: string validado           ║
+  ║ 🛠️ Errores: no provisto, no string, mismatch ║
+  ╚═════════════════════════════════════╝*/
+  static refreshToken(token: unknown): string {
+    if (!token) throw new Error(`No refresh Token provided`);
+    if (!isString(token)) throw new Error('token must be a string');
+    if (isShortString(token as string)) throw new Error('token miss match');
+    return token as string;
+  }
 
-/*══════════ 🎮 sku ══════════╗
-║ 📥 Entrada: sku (unknown)   ║
-║ ⚙️ Proceso: valida formato SKU, longitud mínima y máxima ║
-║ 📤 Salida: string validado  ║
-║ 🛠️ Errores: no provisto, no string, demasiado corto/largo, formato inválido ║
-╚════════════════════════════╝*/
-static sku(sku: unknown): string {
-  if (!sku) throw new Error('No sku Provided');
-  if (!isString(sku)) throw new Error('sku must be a string');
-  if (isShortString(sku as string)) throw new Error('sku must be at least 3 characters long');
-  if (isLongString(sku as string)) throw new Error('sku must be shorter than 30 characters long');
-  if (!isSKU(sku as string)) throw new Error('sku miss match');
-  return sku as string;
-}
+  /*══════════ 🎮 sku ══════════╗
+  ║ 📥 Entrada: sku (unknown)   ║
+  ║ ⚙️ Proceso: valida formato SKU, longitud mínima y máxima ║
+  ║ 📤 Salida: string validado  ║
+  ║ 🛠️ Errores: no provisto, no string, demasiado corto/largo, formato inválido ║
+  ╚════════════════════════════╝*/
+  static sku(sku: unknown): string {
+    if (!sku) throw new Error('No sku Provided');
+    if (!isString(sku)) throw new Error('sku must be a string');
+    if (isShortString(sku as string)) throw new Error('sku must be at least 3 characters long');
+    if (isLongString(sku as string)) throw new Error('sku must be shorter than 30 characters long');
+    if (!isSKU(sku as string)) throw new Error('sku miss match');
+    return sku as string;
+  }
 
-/*══════════ 🎮 number ══════════╗
-║ 📥 Entrada: digit (unknown), title ║
-║ ⚙️ Proceso: valida que sea número > 0 si isZeroValid es false ║
-║ 📤 Salida: number validado          ║
-║ 🛠️ Errores: no provisto, no número, igual a 0 ║
-╚════════════════════════════════════╝*/
-static number(digit: unknown, title: string, isZeroValid?: boolean): number {
-  if (!digit && !isZeroValid) throw new Error(`No number provided for ${title}`);
-  if (!isNumber(digit) && !isZeroValid) throw new Error(`${title} is not a number`);
-  if (isZero(digit as number) && !isZeroValid) throw new Error(`${title} must be greater than 0`);
-  return digit as number;
-}
+  /*══════════ 🎮 number ══════════╗
+  ║ 📥 Entrada: digit (unknown), title ║
+  ║ ⚙️ Proceso: valida que sea número > 0 si isZeroValid es false ║
+  ║ 📤 Salida: number validado          ║
+  ║ 🛠️ Errores: no provisto, no número, igual a 0 ║
+  ╚════════════════════════════════════╝*/
+  static number(digit: unknown, title: string, isZeroValid?: boolean): number {
+    if (!digit && !isZeroValid) throw new Error(`No number provided for ${title}`);
+    if (!isNumber(digit) && !isZeroValid) throw new Error(`${title} is not a number`);
+    if (isZero(digit as number) && !isZeroValid) throw new Error(`${title} must be greater than 0`);
+    return digit as number;
+  }
 
-/*══════════ 🎮 date ══════════╗
-║ 📥 Entrada: date (unknown), title ║
-║ ⚙️ Proceso: valida que sea fecha válida ║
-║ 📤 Salida: string (fecha)          ║
-║ 🛠️ Errores: no provisto, no fecha ║
-╚═══════════════════════════════════╝*/
-static date(date: unknown, title: string): string {
-  if (!date) throw new Error('No date provided');
-  if (!isDate(date)) throw new Error(`${title} is not a date`);
-  return date as string;
-}
+  /*══════════ 🎮 date ══════════╗
+  ║ 📥 Entrada: date (unknown), title ║
+  ║ ⚙️ Proceso: valida que sea fecha válida ║
+  ║ 📤 Salida: string (fecha)          ║
+  ║ 🛠️ Errores: no provisto, no fecha ║
+  ╚═══════════════════════════════════╝*/
+  static date(date: unknown, title: string): string {
+    if (!date) throw new Error('No date provided');
+    if (!isDate(date)) throw new Error(`${title} is not a date`);
+    return date as string;
+  }
 
+  /*══════════ 🎮 image ══════════╗
+  ║ 📥 Entrada: photo (unknown)   ║
+  ║ ⚙️ Proceso: valida URL http/https con extensión de imagen o base64 ║
+  ║ 📤 Salida: string (URL o base64) ║
+  ║ 🛠️ Errores: no provisto, no string, URL inválida ║
+  ╚══════════════════════════════╝*/
+  static image(photo: unknown): string {
+    if (!photo) throw new Error('No image provided');
+    if (!isString(photo)) throw new Error('image Url is not a string');
+    if (!isImageUrl(photo as string)) throw new Error('ImageUrl does not provide a valid url');
+    return photo as string;
+  }
 
-/*══════════ 🎮 image ══════════╗
-║ 📥 Entrada: photo (unknown)   ║
-║ ⚙️ Proceso: valida que sea URL de imagen válida ║
-║ 📤 Salida: string (URL)       ║
-║ 🛠️ Errores: no provisto, no string, demasiado corto, URL inválida ║
-╚══════════════════════════════╝*/
-static image(photo: unknown): string {
-  if (!photo) throw new Error('No image provided');
-  if (!isString(photo)) throw new Error('image Url is not a string');
-  if (isShortString(photo as string)) throw new Error('image must be at least 3 characters long');
-  if (!isImageUrl(photo as string)) throw new Error('ImageUrl does not provide a valid url');
-  return photo as string;
-}
+  /*══════════ 🎮 imageArray ══════════╗
+  ║ 📥 Entrada: images (unknown)       ║
+  ║ ⚙️ Proceso: valida array de URLs de imágenes (puede ser vacío) ║
+  ║ 📤 Salida: string[] validado       ║
+  ║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
+  ╚═══════════════════════════════════╝*/
+  static imageArray(images: unknown): string[] {
+    if (!images) throw new Error("No images provided");
+    if (!Array.isArray(images)) throw new Error("images must be an array");
+    if (images.length === 0) return [];
+    images.forEach((image, index) => {
+      if (!isImageUrl(image as string)) throw new Error(`Image at index ${index} is not a valid image URL`);
+      if (isShortString(image as string)) throw new Error(`Image at index ${index} must be at least 3 characters long`);
+    });
+    return images as string[];
+  }
 
-/*══════════ 🎮 imageArray ══════════╗
-║ 📥 Entrada: images (unknown)       ║
-║ ⚙️ Proceso: valida array de URLs de imágenes ║
-║ 📤 Salida: string[] validado       ║
-║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
-╚═══════════════════════════════════╝*/
-static imageArray(images: unknown): string[] {
-  if (!images) throw new Error("No images provided");
-  if (!Array.isArray(images)) throw new Error("images must be an array");
-  images.forEach((image, index) => {
-    if (!isImageUrl(image as string)) throw new Error(`Image at index ${index} is not a valid image URL`);
-    if (isShortString(image as string)) throw new Error(`Image at index ${index} must be at least 3 characters long`);
-  });
-  return images as string[];
-}
+  /*══════════ 🎮 barcode ══════════╗
+  ║ 📥 Entrada: barcode (unknown)   ║
+  ║ ⚙️ Proceso: valida formato EAN-13 ║
+  ║ 📤 Salida: string validado      ║
+  ║ 🛠️ Errores: no provisto, no string, formato inválido ║
+  ╚════════════════════════════════╝*/
+  static barcode(barcode: unknown): string {
+    if (!barcode) throw new Error('No barcode provided');
+    if (!isString(barcode)) throw new Error('Barcode is not a string');
+    if (!isBarcode(barcode as string)) throw new Error('barcode is not an EAN (13 characters long)');
+    return barcode as string;
+  }
 
-/*══════════ 🎮 barcode ══════════╗
-║ 📥 Entrada: barcode (unknown)   ║
-║ ⚙️ Proceso: valida formato EAN-13 ║
-║ 📤 Salida: string validado      ║
-║ 🛠️ Errores: no provisto, no string, formato inválido ║
-╚════════════════════════════════╝*/
-static barcode(barcode: unknown): string {
-  if (!barcode) throw new Error('No barcode provided');
-  if (!isString(barcode)) throw new Error('Barcode is not a string');
-  if (!isBarcode(barcode as string)) throw new Error('barcode is not an EAN (13 characters long)');
-  return barcode as string;
-}
-
-/*══════════ 🎮 isVariantArray ══════════╗
-║ 📥 Entrada: variants (unknown)        ║
-║ ⚙️ Proceso: valida array de objetos ProductVariant ║
-║ 📤 Salida: ProductVariant[] validado  ║
-║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
-╚══════════════════════════════════════╝*/
-static isVariantArray(variants: unknown): ProductVariant[] {
-  if (!variants) throw new Error("No variants provided");
-  if (!Array.isArray(variants)) throw new Error("variants must be an array");
-  {/*─────────────────── 🔎 No son variantes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/}
-  variants.forEach((variant, index) => {
-    if (!isTicket(variant)) throw new Error(`Variant Product at index ${index} is not a variant product`);
-  });
-  return variants as ProductVariant[];
-}
-
-
+  /*══════════ 🎮 isVariantArray ══════════╗
+  ║ 📥 Entrada: variants (unknown)        ║
+  ║ ⚙️ Proceso: valida array de objetos ProductVariant ║
+  ║ 📤 Salida: ProductVariant[] validado  ║
+  ║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
+  ╚══════════════════════════════════════╝*/
+  static isVariantArray(variants: unknown): ProductVariant[] {
+    if (variants === undefined || variants === null) return [];
+    if (!Array.isArray(variants)) throw new Error("variants must be an array");
+    {/*─────────────────── 🔎 No son variantes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/}
+    variants.forEach((variant, index) => {
+      if (!isTicket(variant)) throw new Error(`Variant Product at index ${index} is not a variant product`);
+    });
+    return variants as ProductVariant[];
+  }
 }

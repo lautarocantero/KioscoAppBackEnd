@@ -70,15 +70,18 @@ export async function getProducts( _req: Request,res: Response): Promise <void> 
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
-export async function getProductById (req: GetProductByIdRequest, res: Response): Promise<void> {
-    const { _id } = req.body;
+export async function getProductById(req: GetProductByIdRequest, res: Response): Promise<void> {
+    const _id = req.params._id ?? req.body._id;   // ← params primero, body como fallback
 
     try {
-        // pese a ser un array de product[], siempre devolvera uno solo.
-        const productObject: Product[] = await ProductModel.getProductByField('_id',_id,'string');
-        res
-            .status(200)
-            .json(productObject);
+        const productObject: Product[] = await ProductModel.getProductByField('_id', _id, 'string');
+
+        if (!productObject.length) {
+            res.status(404).json({ message: 'Producto no encontrado' });
+            return;
+        }
+
+        res.status(200).json(productObject[0]);   // ← devuelve objeto, no array
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

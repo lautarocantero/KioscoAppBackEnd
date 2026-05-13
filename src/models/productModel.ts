@@ -167,7 +167,6 @@ export class ProductModel {
     const _idResult: string           = Validation.stringValidation(_id, '_id');
     const nameResult: string          = Validation.stringValidation(name, 'name');
     const descriptionResult: string   = Validation.stringValidation(description, 'description');
-    const createdAtResult: string     = Validation.date(created_at, 'createdAt');
     const updatedAtResult: string     = Validation.date(updated_at, 'updatedAt');
     const imageUrlResult: string      = Validation.image(image_url);
     const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
@@ -180,7 +179,7 @@ export class ProductModel {
         $set: {
           name:         nameResult,
           description:  descriptionResult,
-          created_at:   createdAtResult,
+          created_at:   created_at,
           updated_at:   updatedAtResult,
           image_url:    imageUrlResult,
           gallery_urls: galleryUrlsResult,

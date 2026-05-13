@@ -31,11 +31,11 @@ Define las rutas relacionadas con productos y las conecta con sus controladores.
 
 router.get('/', home);
 router.get('/get-products', getProducts);
-router.get('/get-product-by-id', getProductById);
+router.get('/get-product-by-id/:_id', getProductById);
 router.get('/get-product-by-name', getProductByName);
 router.get('/get-product-by-brand', getProductByBrand);
 router.post('/create-product', createProduct);
 router.delete('/delete-product', deleteProduct);
-router.put('/edit-product', editProduct);
+router.put('/edit-product/:_id', editProduct);
 
 export default router;
