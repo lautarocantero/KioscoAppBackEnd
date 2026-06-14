@@ -168,7 +168,6 @@ export class ProductModel {
     const nameResult: string          = Validation.stringValidation(name, 'name');
     const descriptionResult: string   = Validation.stringValidation(description, 'description');
     const updatedAtResult: string     = Validation.date(updated_at, 'updatedAt');
-    const imageUrlResult: string      = Validation.image(image_url);
     const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
     const brandResult: string         = Validation.stringValidation(brand, 'brand');
     const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
@@ -181,7 +180,7 @@ export class ProductModel {
           description:  descriptionResult,
           created_at:   created_at,
           updated_at:   updatedAtResult,
-          image_url:    imageUrlResult,
+          image_url:    image_url as string,
           gallery_urls: galleryUrlsResult,
           brand:        brandResult,
           variants:     variantsResult,

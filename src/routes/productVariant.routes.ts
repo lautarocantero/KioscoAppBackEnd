@@ -1,57 +1,61 @@
 import express from 'express';
-import { 
-  getProductVariantByProductId, 
-  getProductVariants, 
-  home, 
-  deleteProductVariant, 
-  editProductVariant, 
-  createProductVariant, 
-  getProductVariantById, 
-  getProductVariantByBrand, 
-  getProductVariantByStock, 
-  getProductVariantByPrice, 
-  getProductVariantBySize, 
-  getProductVariantByPresentation 
+import {
+    home,
+    getProductVariants,
+    getProductVariantById,
+    getProductVariantByProductId,
+    getProductVariantByStock,
+    getProductVariantByPrice,
+    getProductVariantByStatus,
+    getProductVariantByNetContent,
+    createProductVariant,
+    editProductVariant,
+    deleteProductVariant,
 } from '../controllers/productVariant.controller';
-import multer from "multer";
-
-
-const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 /*──────────────────────────────
 🎭 ProductVariantRouter
 ──────────────────────────────
 📜 Propósito:
-Define las rutas relacionadas con variantes de producto y las conecta con sus controladores.
+Rutas de variantes de producto. Sin multer — imagen removida del modelo.
 
 📂 Endpoints:
-- GET    /                                → home (lista de endpoints)
-- GET    /get-product-variants            → obtener todas las variantes
-- GET    /get-product-variant-by-id       → obtener variante por ID
-- GET    /get-product-variant-by-product-id/:product_id → obtener variantes por producto
-- GET    /get-product-variant-by-brand    → obtener variantes por marca
-- GET    /get-product-variant-by-stock    → obtener variantes por stock
-- GET    /get-product-variant-by-price    → obtener variantes por precio
-- GET    /get-product-variant-by-size     → obtener variantes por tamaño
-- GET    /get-product-variant-by-presentation → obtener variantes por presentación
-- POST   /create-product-variant          → crear nueva variante
-- DELETE /delete-product-variant          → eliminar variante
-- PUT    /edit-product-variant            → editar variante existente
+── GET ────────────────────────────────────────────────────────────────
+- GET    /                                           → home
+- GET    /get-product-variants                       → todas
+- GET    /get-product-variant-by-id/:id              → por ID
+- GET    /get-product-variant-by-product-id/:pid     → por producto ← usado en el listado de presentaciones
+- GET    /get-product-variant-by-stock               → body: { stock_current }
+- GET    /get-product-variant-by-price               → body: { price }
+- GET    /get-product-variant-by-status              → body: { status }
+- GET    /get-product-variant-by-net-content         → body: { net_content }
+
+── POST / PUT / DELETE ────────────────────────────────────────────────
+- POST   /create-product-variant                     → body: { ...campos }
+- PUT    /edit-product-variant                       → body: { _id, ...campos }
+- DELETE /delete-product-variant                     → body: { _id }
+
+🗑️ Endpoints eliminados vs versión anterior:
+- /get-product-variant-by-brand        (brand removido del modelo)
+- /get-product-variant-by-size         (model_size removido → usar net_content)
+- /get-product-variant-by-presentation (model_type removido → usar status/net_content)
 ──────────────────────────────*/
 
-router.get('/', home);
-router.get('/get-product-variants', getProductVariants);
+const router = express.Router();
+
+// ── GET ───────────────────────────────────────────────────────────────────────
+router.get('/',                                    home);
+router.get('/get-product-variants',                getProductVariants);
 router.get('/get-product-variant-by-id/:product_variant_id', getProductVariantById);
 router.get('/get-product-variant-by-product-id/:product_id', getProductVariantByProductId);
-router.get('/get-product-variant-by-brand', getProductVariantByBrand);
-router.get('/get-product-variant-by-stock', getProductVariantByStock);
-router.get('/get-product-variant-by-price', getProductVariantByPrice);
-router.get('/get-product-variant-by-size', getProductVariantBySize);
-router.get('/get-product-variant-by-presentation', getProductVariantByPresentation);
+router.get('/get-product-variant-by-stock',        getProductVariantByStock);
+router.get('/get-product-variant-by-price',        getProductVariantByPrice);
+router.get('/get-product-variant-by-status',       getProductVariantByStatus);
+router.get('/get-product-variant-by-net-content',  getProductVariantByNetContent);
 
-router.post('/create-product-variant', upload.single("image"), createProductVariant);
+// ── POST / PUT / DELETE ───────────────────────────────────────────────────────
+router.post('/create-product-variant',   createProductVariant);
+router.put('/edit-product-variant/:variant_id', editProductVariant);
 router.delete('/delete-product-variant', deleteProductVariant);
-router.put('/edit-product-variant', editProductVariant);
 
 export default router;

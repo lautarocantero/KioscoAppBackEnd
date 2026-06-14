@@ -1,130 +1,130 @@
-
 /*──────────────────────────────
-📘 ProductVariantTypes
+📘 ProductVariantTypes — rediseñado
 ──────────────────────────────
 📜 Propósito:
-Definir tipados base y derivados para variantes de producto.  
-Incluye entidad principal, repositorio local (db-local), payloads y requests.
+Tipados base y derivados para variantes de producto.
+La variante representa UNA presentación comercial de un producto
+(ej: Coca Cola Botella 2,25l / Coca Cola Lata 354ml).
 
-🧩 Derivaciones:
-- ProductVariantEntity → ProductVariant → ProductVariantSchemaType
-- ProductVariantEntity → ProductVariantRepository → ProductVariantModelType
-- ProductVariantEntity → ProductVariantPayloadUnknown → ProductVariantPayload
-- ProductVariantPayload → Payloads específicos (Get, Create, Edit, Delete)
-- Payloads → Requests tipados para controladores
+🧩 Campos propios de la variante (NO del producto padre):
+- Identificación:  _id, product_id, sku, barcode
+- Presentación:    name, description (opcional), net_content
+- Precios:         price (venta), purchase_price (compra al proveedor)
+- Stock:           stock_current, stock_available, reorder_point
+- Estado:          status → 'available' | 'out_of_stock' | 'unavailable'
+                   (out_of_stock se calcula; available/unavailable son manuales)
+- Fechas:          created_at, updated_at, expiration_date (opcional)
+- Proveedores:     supplier_ids → string[] (referencias a IDs del módulo Providers)
 
-🛡️ Seguridad:
-- Usar ProductVariantPublic para exponer datos sin campos sensibles.
-- Validar siempre los payloads antes de persistir o responder.
-
-🌀 Flujo estándar:
-[Request] → [Payload] → [Repository] → [DB Local/SQL] → [Response]
+🗑️ Campos eliminados respecto a la versión anterior:
+- brand       → vive en el producto padre
+- image_url   → sin hosting por ahora
+- gallery_urls → sin hosting por ahora
+- model_type  → reemplazado por net_content (más genérico)
+- model_size  → reemplazado por net_content
+- min_stock   → renombrado a reorder_point (más semántico)
+- stock       → renombrado a stock_current
 ──────────────────────────────*/
 
 declare module '@typings/productVariant' {
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║
+║ 🔒 BASES PRIVADAS                                                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-//base
+
+type ProductVariantStatus = 'available' | 'out_of_stock' | 'unavailable';
+
 interface ProductVariantEntity {
-    _id: string;
-    brand: string;
-    created_at: string;
-    description: string;
-    expiration_date: string;
-    gallery_urls: string[];
-    image_url: string;
-    min_stock: number;
-    model_size: string;
-    model_type: string;
-    name: string;
-    price: number;
-    product_id: string;
-    sku: string;
-    stock: number;
-    updated_at: string;
+    // ── Identidad ──────────────────────────────────────────────────────
+    _id:            string;
+    product_id:     string;
+    sku:            string;
+    barcode:        string;
+
+    // ── Presentación ───────────────────────────────────────────────────
+    name:           string;
+    description:    string;          // opcional — vacío string si no aplica
+    net_content:    string;          // ej: "2,25l" | "354ml" | "500g"
+
+    // ── Precios ────────────────────────────────────────────────────────
+    price:          number;          // precio de venta unitario
+    purchase_price: number;          // precio de compra al proveedor
+
+    // ── Stock ──────────────────────────────────────────────────────────
+    stock_current:   number;         // unidades físicas en depósito
+    stock_available: number;         // unidades libres (sin reservas)
+    reorder_point:   number;         // punto de reposición (antes min_stock)
+
+    // ── Estado ─────────────────────────────────────────────────────────
+    status:         ProductVariantStatus;
+
+    // ── Fechas ─────────────────────────────────────────────────────────
+    created_at:      string;
+    updated_at:      string;
+    expiration_date: string;         // opcional — vacío string si no aplica
+
+    // ── Proveedores ────────────────────────────────────────────────────
+    supplier_ids:    string[];       // refs a IDs del módulo Providers
 }
 
-//base con las funciones de db-local
 interface ProductVariantRepository extends ProductVariantEntity {
-  find(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity[]>;
-  findOne(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity | null>;
-  save(query?: Partial<ProductVariantEntity>, data?: Partial<ProductVariantEntity>): Promise<void>;
-  remove(query?: Partial<ProductVariantEntity>): Promise<void>;
+    find(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity[]>;
+    findOne(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity | null>;
+    save(query?: Partial<ProductVariantEntity>, data?: Partial<ProductVariantEntity>): Promise<void>;
+    remove(query?: Partial<ProductVariantEntity>): Promise<void>;
 }
 
-//base para payloads
 type ProductVariantPayloadUnknown = Record<keyof ProductVariantEntity, unknown>;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🧩 DERIVADOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩                ║
+║ 🧩 DERIVADOS                                                         ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-// derivado para no utilizar directamente el ProductVariantEntity
-export type ProductVariant = ProductVariantEntity;
-
-// derivado para los datos publicos
-export type ProductVariantPublic = Omit<ProductVariantEntity, ''>;
-
-// derivado para acceder a los metodos de ProductVariant
+export type ProductVariant        = ProductVariantEntity;
+export type ProductVariantPublic  = Omit<ProductVariantEntity, ''>;
 export type ProductVariantModelType = ProductVariantRepository;
-
-// derivado para data de payloads y posterior validacion
 export type ProductVariantPayload = ProductVariantPayloadUnknown;
+export type ProductVariantStatus  = ProductVariantStatus;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
+║ 🗂️ SCHEMA                                                            ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 export type ProductVariantSchemaType = ProductVariant;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
+║ 📦 PAYLOADS                                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-// recordar que deben ser unknown todos los campos
-export type GetProductVariantByIdPayload = Pick<ProductVariantPayload, '_id' >;
 
-export type GetProductVariantByProductIdPayload = Pick<ProductVariantPayload, 'product_id' >;
+export type GetProductVariantByIdPayload          = Pick<ProductVariantPayload, '_id'>;
+export type GetProductVariantByProductIdPayload   = Pick<ProductVariantPayload, 'product_id'>;
+export type GetProductVariantByStockPayload       = Pick<ProductVariantPayload, 'stock_current'>;
+export type GetProductVariantByPricePayload       = Pick<ProductVariantPayload, 'price'>;
+export type GetProductVariantByStatusPayload      = Pick<ProductVariantPayload, 'status'>;
+export type GetProductVariantByNetContentPayload  = Pick<ProductVariantPayload, 'net_content'>;
 
-export type GetProductVariantByBrandPayload = Pick<ProductVariantPayload, 'brand' >;
-
-export type GetProductVariantByStockPayload = Pick<ProductVariantPayload, 'stock' >;
-
-export type GetProductVariantByPricePayload = Pick<ProductVariantPayload, 'price' >;
-
-export type GetProductVariantBySizePayload = Pick<ProductVariantPayload, 'model_size' >;
-
-export type GetProductVariantByPresentationPayload = Pick<ProductVariantPayload, 'model_type' >;
-
-export type CreateProductVariantPayload = Omit<ProductVariantPayload, '_id' | 'created_at' | 'updated_at' >;
+export type CreateProductVariantPayload = Omit<ProductVariantPayload,
+    '_id' | 'created_at' | 'updated_at' | 'status'
+    // status se calcula al crear: si stock_current > 0 → 'available', si no → 'out_of_stock'
+>;
 
 export type EditProductVariantPayload = ProductVariantPayload;
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
+║ 🔗 REQUESTS                                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type GetProductVariantByIdRequest = Request<ProductParams, unknown, GetProductVariantByIdPayload>;
+interface ProductVariantParams { variant_id: string; }
+interface ProductIdParams      { product_id: string; }
 
-export type GetProductVariantByProductIdRequest = Request<ProductParams, unknown, GetProductVariantByProductIdPayload>;
-
-export type GetProductVariantByBrandRequest = Request<ProductParams, unknown, GetProductVariantByBrandPayload>;
-
-export type GetProductVariantByStockRequest = Request<ProductParams, unknown, GetProductVariantByStockPayload>;
-
-export type GetProductVariantByPriceRequest = Request<ProductParams, unknown, GetProductVariantByPricePayload>;
-
-export type GetProductVariantBySizeRequest = Request<ProductParams, unknown, GetProductVariantBySizePayload>;
-
-export type GetProductVariantByPresentationRequest = Request<ProductParams, unknown, GetProductVariantByPresentationPayload>;
-
-export type CreateProductVariantRequest = Request<ProductVariantParams, unknown, CreateProductVariantPayload>;
-
-export type CreateProductVariantRequest = Request<ProductVariantParams, unknown, CreateProductVariantPayload>;
-
-export type DeleteProductVariantRequest = Request<ProductVariantParams, unknown, GetProductVariantByIdPayload>;
-
-export type EditProductVariantRequest = Request<ProductVariantParams, unknown, EditProductVariantPayload>;
+export type GetProductVariantByIdRequest        = Request<ProductVariantParams, unknown, GetProductVariantByIdPayload>;
+export type GetProductVariantByProductIdRequest = Request<ProductIdParams, unknown, GetProductVariantByProductIdPayload>;
+export type GetProductVariantByStockRequest     = Request<ProductVariantParams, unknown, GetProductVariantByStockPayload>;
+export type GetProductVariantByPriceRequest     = Request<ProductVariantParams, unknown, GetProductVariantByPricePayload>;
+export type GetProductVariantByStatusRequest    = Request<ProductVariantParams, unknown, GetProductVariantByStatusPayload>;
+export type GetProductVariantByNetContentRequest = Request<ProductVariantParams, unknown, GetProductVariantByNetContentPayload>;
+export type CreateProductVariantRequest         = Request<ProductVariantParams, unknown, CreateProductVariantPayload>;
+export type DeleteProductVariantRequest         = Request<ProductVariantParams, unknown, GetProductVariantByIdPayload>;
+export type EditProductVariantRequest           = Request<ProductVariantParams, unknown, EditProductVariantPayload>;
 
 }

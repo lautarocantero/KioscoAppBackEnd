@@ -1,187 +1,95 @@
-import { ProductVariantSchema } from '../schemas/productVariantSchema';
-import { 
-    CreateProductVariantPayload, 
-    EditProductVariantPayload, 
-    GetProductVariantByIdPayload, 
-    ProductVariant, 
-} from '@typings/productVariant';
-import { Validation } from './validation';
+import mongoose, { Schema } from 'mongoose';
+import { ProductVariantSchemaType } from '@typings/productVariant';
 
 /*──────────────────────────────
-🎨 ProductVariantModel — Mongoose
+🎭 ProductVariantSchema (DB Local — fallback offline)
 ──────────────────────────────
-📜 Propósito: Gestión completa de variantes de producto contra MongoDB
-🧩 Dependencias: ProductVariantSchema, Validation, productVariantTypes
+📜 Propósito:
+Esquema Mongoose para variantes de producto.
+Opera como fallback local cuando no hay conexión al servidor SQL.
+
+🧩 Campos:
+── Identidad ──────────────────────────────────────────────────────────
+- _id             → UUID generado en el modelo          (String, req)
+- product_id      → ID del producto padre               (String, req)
+- sku             → Código SKU de la presentación       (String, req)
+- barcode         → Código de barras                    (String, req)
+
+── Presentación ───────────────────────────────────────────────────────
+- name            → Nombre de la presentación           (String, req)
+                    ej: "Botella 2,25l", "Lata 354ml"
+- description     → Descripción opcional                (String, default "")
+- net_content     → Contenido neto / peso               (String, req)
+                    ej: "2,25l", "354ml", "500g"
+
+── Precios ────────────────────────────────────────────────────────────
+- price           → Precio de venta unitario            (Number, req)
+- purchase_price  → Precio de compra al proveedor       (Number, req)
+
+── Stock ──────────────────────────────────────────────────────────────
+- stock_current   → Unidades físicas en depósito        (Number, req)
+- stock_available → Unidades libres (sin reservas)      (Number, req)
+- reorder_point   → Punto de reposición                 (Number, req)
+
+── Estado ─────────────────────────────────────────────────────────────
+- status          → available | out_of_stock | unavailable
+                    out_of_stock se setea automáticamente al crear/editar
+                    si stock_current === 0
+
+── Fechas ─────────────────────────────────────────────────────────────
+- created_at      → ISO string de creación              (String, req)
+- updated_at      → ISO string de última edición        (String, req)
+- expiration_date → Fecha de vencimiento opcional       (String, default "")
+
+── Proveedores ────────────────────────────────────────────────────────
+- supplier_ids    → Array de IDs del módulo Providers   (String[])
+
+🗑️ Campos eliminados:
+- brand, image_url, gallery_urls, model_type, model_size, min_stock
 ──────────────────────────────*/
 
-export class ProductVariantModel {
+const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
+    // ── Identidad ──────────────────────────────────────────────────────
+    _id:             { type: String,   required: true },
+    product_id:      { type: String,   required: true },
+    sku:             { type: String,   required: true },
+    barcode:         { type: String,   required: true },
 
-    //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
+    // ── Presentación ───────────────────────────────────────────────────
+    name:            { type: String,   required: true },
+    description:     { type: String,   default: '' },
+    net_content:     { type: String,   required: true },
 
-    /*══════════ 🎮 getAllProductVariants ══════════╗
-    ║ 📥 Entrada: ninguna                           ║
-    ║ ⚙️ Proceso: obtiene hasta 100 variantes       ║
-    ║ 📤 Salida: ProductVariant[]                   ║
-    ╚═════════════════════════════════════════════╝*/
-    static async getAllProductVariants(): Promise<ProductVariant[]> {
-        const results = await ProductVariantSchema.find().limit(100).lean();
-        return results as unknown as ProductVariant[];
-    }
+    // ── Precios ────────────────────────────────────────────────────────
+    price:           { type: Number,   required: true },
+    purchase_price:  { type: Number,   required: true },
 
-    static async getProductVariantById(data: GetProductVariantByIdPayload): Promise<ProductVariant> {
-        const { _id } = data;
-        const _idResult: string = Validation.stringValidation(_id, 'id');
+    // ── Stock ──────────────────────────────────────────────────────────
+    stock_current:   { type: Number,   required: true },
+    stock_available: { type: Number,   required: true },
+    reorder_point:   { type: Number,   required: true },
 
-        const result = await ProductVariantSchema.findOne({ _id: _idResult }).lean();
-        if (!result) throw new Error('Does not exist a productVariant with this id');
-        return result as unknown as ProductVariant;
-    }
+    // ── Estado ─────────────────────────────────────────────────────────
+    status: {
+        type:    String,
+        enum:    ['available', 'out_of_stock', 'unavailable'],
+        required: true,
+    },
 
-    /*══════════ 🎮 getProductVariantByField ══════════╗
-    ║ 📥 Entrada: field, value, type ('string'|'number') ║
-    ║ ⚙️ Proceso: valida tipo y busca variantes por campo ║
-    ║ 📤 Salida: ProductVariant[]                         ║
-    ╚════════════════════════════════════════════════════╝*/
-    static async getProductVariantByField<T extends keyof ProductVariant>(
-        field: T,
-        value: ProductVariant[T],
-        type: 'string' | 'number',
-    ): Promise<ProductVariant[]> {
-        if (type !== 'string' && type !== 'number') throw new Error(`Unsupported field type for ${String(field)}`);
-        if (type === 'string') Validation.stringValidation(value, field as string);
-        if (type === 'number') Validation.number(value, field as string);
+    // ── Fechas ─────────────────────────────────────────────────────────
+    created_at:      { type: String,   required: true },
+    updated_at:      { type: String,   required: true },
+    expiration_date: { type: String,   default: '' },
 
-        const results = await ProductVariantSchema.find({ [field]: value }).lean();
-        return results as unknown as ProductVariant[];
-    }
+    // ── Proveedores ────────────────────────────────────────────────────
+    supplier_ids:    [{ type: String }],
 
-    //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
-    //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
+}, { _id: false });
 
-    /*══════════ 🎮 createProductVariant ══════════╗
-    ║ 📥 Entrada: CreateProductVariantPayload      ║
-    ║ ⚙️ Proceso: valida, controla duplicados y guarda ║
-    ║ 📤 Salida: string _id generado               ║
-    ╚═════════════════════════════════════════════╝*/
-    static async createProductVariant(data: CreateProductVariantPayload): Promise<string> {
-        const {
-            name, description, image_url, gallery_urls, brand,
-            product_id, sku, model_type, model_size,
-            min_stock, stock, price, expiration_date
-        } = data;
-
-        const nameResult: string          = Validation.stringValidation(name, 'name');
-        const descriptionResult: string   = Validation.stringValidation(description, 'description');
-        const imageUrlResult: string      = Validation.image(image_url);
-        const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
-        const brandResult: string         = Validation.stringValidation(brand, 'brand');
-        const productIdResult: string     = Validation.stringValidation(product_id, 'product_id');
-        const skuResult: string           = Validation.stringValidation(sku, 'sku');
-        const modelTypeResult: string     = Validation.stringValidation(model_type, 'model_type');
-        const modelSizeResult: string     = Validation.stringValidation(model_size, 'model_size', 2);
-        const minStockResult: number      = Validation.number(min_stock, 'min_stock');
-        const stockResult: number         = Validation.number(stock, 'stock');
-        const priceResult: number         = Validation.number(price, 'price');
-        const expirationDateResult: string = Validation.date(expiration_date, 'expiration_date');
-
-        const existing = await ProductVariantSchema.findOne({ name: nameResult }).lean();
-        if (existing) throw new Error('Product Variant already exists');
-
-        const _id: string = crypto.randomUUID();
-
-        await ProductVariantSchema.create({
-            _id,
-            name:            nameResult,
-            description:     descriptionResult,
-            created_at:      new Date().toISOString(),
-            updated_at:      new Date().toISOString(),
-            image_url:       imageUrlResult,
-            gallery_urls:    galleryUrlsResult,
-            brand:           brandResult,
-            product_id:      productIdResult,
-            sku:             skuResult,
-            model_type:      modelTypeResult,
-            model_size:      modelSizeResult,
-            min_stock:       minStockResult,
-            stock:           stockResult,
-            price:           priceResult,
-            expiration_date: expirationDateResult,
-        });
-
-        return _id;
-    }
-
-    //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
-    //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
-
-    /*══════════ 🎮 deleteProductVariant ══════════╗
-    ║ 📥 Entrada: GetProductVariantByIdPayload {_id} ║
-    ║ ⚙️ Proceso: valida id y elimina variante        ║
-    ║ 📤 Salida: void                                 ║
-    ╚═══════════════════════════════════════════════╝*/
-    static async deleteProductVariant(data: GetProductVariantByIdPayload): Promise<void> {
-        const { _id } = data;
-        const _idResult: string = Validation.stringValidation(_id, 'id');
-
-        const deleted = await ProductVariantSchema.findOneAndDelete({ _id: _idResult });
-        if (!deleted) throw new Error('Does not exist a productVariant with this id');
-    }
-
-    //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
-    //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
-
-    /*══════════ 🎮 editProductVariant ══════════╗
-    ║ 📥 Entrada: EditProductVariantPayload      ║
-    ║ ⚙️ Proceso: valida campos y actualiza      ║
-    ║ 📤 Salida: void                            ║
-    ╚════════════════════════════════════════════╝*/
-    static async editProductVariant(data: EditProductVariantPayload): Promise<void> {
-        const {
-            _id, name, description, created_at, updated_at, image_url,
-            gallery_urls, brand, product_id, sku, model_type, model_size,
-            min_stock, stock, price, expiration_date
-        } = data;
-
-        const _idResult: string            = Validation.stringValidation(_id, 'id');
-        const nameResult: string           = Validation.stringValidation(name, 'name');
-        const descriptionResult: string    = Validation.stringValidation(description, 'description');
-        const createdAtResult: string      = Validation.date(created_at, 'created_at');
-        const updatedAtResult: string      = Validation.date(updated_at, 'updated_at');
-        const imageUrlResult: string       = Validation.image(image_url);
-        const galleryUrlsResult: string[]  = Validation.imageArray(gallery_urls);
-        const brandResult: string          = Validation.stringValidation(brand, 'brand');
-        const productIdResult: string      = Validation.stringValidation(product_id, 'product_id');
-        const skuResult: string            = Validation.stringValidation(sku, 'sku');
-        const modelTypeResult: string      = Validation.stringValidation(model_type, 'model_type');
-        const modelSizeResult: string      = Validation.stringValidation(model_size, 'model_size', 2);
-        const minStockResult: number       = Validation.number(min_stock, 'min_stock');
-        const stockResult: number          = Validation.number(stock, 'stock');
-        const priceResult: number          = Validation.number(price, 'price');
-        const expirationDateResult: string = Validation.date(expiration_date, 'expiration_date');
-
-        const updated = await ProductVariantSchema.findOneAndUpdate(
-            { _id: _idResult },
-            { $set: {
-                name:            nameResult,
-                description:     descriptionResult,
-                created_at:      createdAtResult,
-                updated_at:      updatedAtResult,
-                image_url:       imageUrlResult,
-                gallery_urls:    galleryUrlsResult,
-                brand:           brandResult,
-                product_id:      productIdResult,
-                sku:             skuResult,
-                model_type:      modelTypeResult,
-                model_size:      modelSizeResult,
-                min_stock:       minStockResult,
-                stock:           stockResult,
-                price:           priceResult,
-                expiration_date: expirationDateResult,
-            }},
-        );
-
-        if (!updated) throw new Error('Does not exist a productVariant with this id');
-    }
-
-    //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
-}
+export const ProductVariantSchema =
+    mongoose.models.ProductVariant ||
+    mongoose.model<ProductVariantSchemaType>(
+        'ProductVariant',
+        ProductVariantMongoSchema,
+        'product_variants',
+    );
