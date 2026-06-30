@@ -95,17 +95,16 @@ export async function getProductById(req: GetProductByIdRequest, res: Response):
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function getProductByName (req: GetProductByNameRequest, res: Response): Promise<void> {
-    const { name } = req.body;
+    const name = (req.query.name as string) ?? req.body.name;
 
     try {
-        const productsObject: Product[] = await ProductModel.getProductByField('name',name,'string');
-        res
-            .status(200)
-            .json(productsObject);
+        const productsObject: Product[] = await ProductModel.searchByField('name', name);
+        res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
+
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 getProductByBrand → Busca productos por marca                                                                          ║

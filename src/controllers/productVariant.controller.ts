@@ -7,7 +7,7 @@ import {
     DeleteProductVariantRequest,
     EditProductVariantRequest,
     GetProductVariantByIdRequest,
-    GetProductVariantByNetContentRequest,
+    GetProductVariantByModelSizeRequest,
     GetProductVariantByPriceRequest,
     GetProductVariantByProductIdRequest,
     GetProductVariantByStatusRequest,
@@ -109,8 +109,8 @@ export async function getProductVariantByStatus(
     }
 }
 
-export async function getProductVariantByNetContent(
-    req: GetProductVariantByNetContentRequest,
+export async function getProductVariantByModelSize(
+    req: GetProductVariantByModelSizeRequest,
     res: Response,
 ): Promise<void> {
     const { net_content } = req.body;
@@ -124,44 +124,53 @@ export async function getProductVariantByNetContent(
 
 //──────────────────────────────────────── POST ───────────────────────────────//
 
+import { randomUUID } from 'crypto';
+
 export async function createProductVariant(
     req: CreateProductVariantRequest,
     res: Response,
 ): Promise<void> {
     const {
-        product_id, sku, barcode,
-        name, description, net_content,
-        price, purchase_price,
-        stock_current, stock_available, reorder_point,
-        expiration_date,
-        supplier_ids,
+        product_id, sku,
+        name, description, brand,
+        image_url, gallery_urls,
+        model_type, model_size,
+        min_stock, stock,
+        price, expiration_date,
     } = req.body;
 
-    const parsedPrice          = Number(price);
-    const parsedPurchasePrice  = Number(purchase_price);
-    const parsedStockCurrent   = Number(stock_current);
-    const parsedStockAvailable = Number(stock_available);
-    const parsedReorderPoint   = Number(reorder_point);
+    const parsedPrice      = Number(price);
+    const parsedMinStock   = Number(min_stock);
+    const parsedStock      = Number(stock);
 
-    const parsedSupplierIds: string[] =
-        typeof supplier_ids === 'string'
-            ? JSON.parse(supplier_ids)
-            : (supplier_ids as string[]) ?? [];
+    const parsedGalleryUrls: string[] =
+        typeof gallery_urls === 'string'
+            ? JSON.parse(gallery_urls)
+            : (gallery_urls as string[]) ?? [];
+
+    const imageUrl = req.file ? req.file.path : image_url;
+    const now = new Date().toISOString();
 
     try {
-        const _id = await ProductVariantSchema.create({
-            product_id, sku, barcode,
-            name, description, net_content,
-            price:           parsedPrice,
-            purchase_price:  parsedPurchasePrice,
-            stock_current:   parsedStockCurrent,
-            stock_available: parsedStockAvailable,
-            reorder_point:   parsedReorderPoint,
+        const _id = randomUUID();
+
+        const variant = await ProductVariantSchema.create({
+            _id,
+            product_id, sku,
+            name, description, brand,
+            image_url: imageUrl,
+            gallery_urls: parsedGalleryUrls,
+            model_type, model_size,
+            min_stock: parsedMinStock,
+            stock: parsedStock,
+            price: parsedPrice,
+            status: parsedStock > 0 ? 'available' : 'out_of_stock',
+            created_at: now,
+            updated_at: now,
             expiration_date: expiration_date as string ?? '',
-            supplier_ids:    parsedSupplierIds,
         });
 
-        res.status(200).json({ _id, message: 'Product variant created successfully' });
+        res.status(200).json({ _id: variant._id, message: 'Product variant created successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

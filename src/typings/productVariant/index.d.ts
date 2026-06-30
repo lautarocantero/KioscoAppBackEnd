@@ -1,5 +1,5 @@
 /*──────────────────────────────
-📘 ProductVariantTypes — rediseñado
+📘 ProductVariantTypes
 ──────────────────────────────
 📜 Propósito:
 Tipados base y derivados para variantes de producto.
@@ -7,23 +7,13 @@ La variante representa UNA presentación comercial de un producto
 (ej: Coca Cola Botella 2,25l / Coca Cola Lata 354ml).
 
 🧩 Campos propios de la variante (NO del producto padre):
-- Identificación:  _id, product_id, sku, barcode
-- Presentación:    name, description (opcional), net_content
-- Precios:         price (venta), purchase_price (compra al proveedor)
-- Stock:           stock_current, stock_available, reorder_point
+- Identificación:  _id, product_id, sku
+- Presentación:    name, description (opcional), brand, model_type, model_size
+- Imágenes:        image_url (opcional), gallery_urls
+- Precios y Stock: price (venta), stock, min_stock
 - Estado:          status → 'available' | 'out_of_stock' | 'unavailable'
                    (out_of_stock se calcula; available/unavailable son manuales)
 - Fechas:          created_at, updated_at, expiration_date (opcional)
-- Proveedores:     supplier_ids → string[] (referencias a IDs del módulo Providers)
-
-🗑️ Campos eliminados respecto a la versión anterior:
-- brand       → vive en el producto padre
-- image_url   → sin hosting por ahora
-- gallery_urls → sin hosting por ahora
-- model_type  → reemplazado por net_content (más genérico)
-- model_size  → reemplazado por net_content
-- min_stock   → renombrado a reorder_point (más semántico)
-- stock       → renombrado a stock_current
 ──────────────────────────────*/
 
 declare module '@typings/productVariant' {
@@ -39,21 +29,22 @@ interface ProductVariantEntity {
     _id:            string;
     product_id:     string;
     sku:            string;
-    barcode:        string;
 
     // ── Presentación ───────────────────────────────────────────────────
     name:           string;
     description:    string;          // opcional — vacío string si no aplica
-    net_content:    string;          // ej: "2,25l" | "354ml" | "500g"
+    brand:          string;          // opcional — vacío string si no aplica
+    model_type:     string;
+    model_size:     string;          // ej: "2,25l" | "354ml" | "500g"
 
-    // ── Precios ────────────────────────────────────────────────────────
+    // ── Imágenes ───────────────────────────────────────────────────────
+    image_url:      string;          // opcional — vacío string si no aplica
+    gallery_urls:   string[];
+
+    // ── Precios y Stock ────────────────────────────────────────────────
     price:          number;          // precio de venta unitario
-    purchase_price: number;          // precio de compra al proveedor
-
-    // ── Stock ──────────────────────────────────────────────────────────
-    stock_current:   number;         // unidades físicas en depósito
-    stock_available: number;         // unidades libres (sin reservas)
-    reorder_point:   number;         // punto de reposición (antes min_stock)
+    stock:          number;          // unidades disponibles
+    min_stock:      number;          // punto mínimo de reposición
 
     // ── Estado ─────────────────────────────────────────────────────────
     status:         ProductVariantStatus;
@@ -62,9 +53,6 @@ interface ProductVariantEntity {
     created_at:      string;
     updated_at:      string;
     expiration_date: string;         // opcional — vacío string si no aplica
-
-    // ── Proveedores ────────────────────────────────────────────────────
-    supplier_ids:    string[];       // refs a IDs del módulo Providers
 }
 
 interface ProductVariantRepository extends ProductVariantEntity {
@@ -98,14 +86,14 @@ export type ProductVariantSchemaType = ProductVariant;
 
 export type GetProductVariantByIdPayload          = Pick<ProductVariantPayload, '_id'>;
 export type GetProductVariantByProductIdPayload   = Pick<ProductVariantPayload, 'product_id'>;
-export type GetProductVariantByStockPayload       = Pick<ProductVariantPayload, 'stock_current'>;
+export type GetProductVariantByStockPayload       = Pick<ProductVariantPayload, 'stock'>;
 export type GetProductVariantByPricePayload       = Pick<ProductVariantPayload, 'price'>;
 export type GetProductVariantByStatusPayload      = Pick<ProductVariantPayload, 'status'>;
-export type GetProductVariantByNetContentPayload  = Pick<ProductVariantPayload, 'net_content'>;
+export type GetProductVariantByModelSizePayload   = Pick<ProductVariantPayload, 'model_size'>;
 
 export type CreateProductVariantPayload = Omit<ProductVariantPayload,
     '_id' | 'created_at' | 'updated_at' | 'status'
-    // status se calcula al crear: si stock_current > 0 → 'available', si no → 'out_of_stock'
+    // status se calcula al crear: si stock > 0 → 'available', si no → 'out_of_stock'
 >;
 
 export type EditProductVariantPayload = ProductVariantPayload;
@@ -122,7 +110,7 @@ export type GetProductVariantByProductIdRequest = Request<ProductIdParams, unkno
 export type GetProductVariantByStockRequest     = Request<ProductVariantParams, unknown, GetProductVariantByStockPayload>;
 export type GetProductVariantByPriceRequest     = Request<ProductVariantParams, unknown, GetProductVariantByPricePayload>;
 export type GetProductVariantByStatusRequest    = Request<ProductVariantParams, unknown, GetProductVariantByStatusPayload>;
-export type GetProductVariantByNetContentRequest = Request<ProductVariantParams, unknown, GetProductVariantByNetContentPayload>;
+export type GetProductVariantByModelSizeRequest = Request<ProductVariantParams, unknown, GetProductVariantByModelSizePayload>;
 export type CreateProductVariantRequest         = Request<ProductVariantParams, unknown, CreateProductVariantPayload>;
 export type DeleteProductVariantRequest         = Request<ProductVariantParams, unknown, GetProductVariantByIdPayload>;
 export type EditProductVariantRequest           = Request<ProductVariantParams, unknown, EditProductVariantPayload>;

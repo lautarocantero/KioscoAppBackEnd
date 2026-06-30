@@ -7,11 +7,12 @@ import {
     getProductVariantByStock,
     getProductVariantByPrice,
     getProductVariantByStatus,
-    getProductVariantByNetContent,
+    getProductVariantByModelSize,
     createProductVariant,
     editProductVariant,
     deleteProductVariant,
 } from '../controllers/productVariant.controller';
+import multer from 'multer';
 
 /*──────────────────────────────
 🎭 ProductVariantRouter
@@ -42,6 +43,7 @@ Rutas de variantes de producto. Sin multer — imagen removida del modelo.
 ──────────────────────────────*/
 
 const router = express.Router();
+const upload = multer();
 
 // ── GET ───────────────────────────────────────────────────────────────────────
 router.get('/',                                    home);
@@ -51,10 +53,10 @@ router.get('/get-product-variant-by-product-id/:product_id', getProductVariantBy
 router.get('/get-product-variant-by-stock',        getProductVariantByStock);
 router.get('/get-product-variant-by-price',        getProductVariantByPrice);
 router.get('/get-product-variant-by-status',       getProductVariantByStatus);
-router.get('/get-product-variant-by-net-content',  getProductVariantByNetContent);
+router.get('/get-product-variant-by-model-size',   getProductVariantByModelSize);
 
 // ── POST / PUT / DELETE ───────────────────────────────────────────────────────
-router.post('/create-product-variant',   createProductVariant);
+router.post('/create-product-variant', upload.single('image'), createProductVariant);
 router.put('/edit-product-variant/:variant_id', editProductVariant);
 router.delete('/delete-product-variant', deleteProductVariant);
 

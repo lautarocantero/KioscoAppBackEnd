@@ -88,6 +88,27 @@ export class ProductModel {
     return results as unknown as Product[];
   }
 
+    /*══════════ 🎮 searchByField ══════════╗
+  ║ 📥 Entrada: field, value (string)      ║
+  ║ ⚙️ Proceso: busca coincidencia parcial,║
+  ║            case-insensitive            ║
+  ║ 📤 Salida: Product[]                   ║
+  ╚═════════════════════════════════════════╝*/
+
+  static async searchByField(
+    field: 'name' | 'brand',
+    value: string,
+  ): Promise<Product[]> {
+
+    Validation.stringValidation(value, field);
+
+    const results = await ProductMongo.find({
+      [field]: { $regex: value, $options: 'i' }
+    }).lean();
+
+    return results as unknown as Product[];
+}
+
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
   /*══════════ 🎮 create ══════════╗
