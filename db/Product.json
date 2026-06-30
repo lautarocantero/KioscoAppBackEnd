@@ -8,7 +8,7 @@
         "image_url": "feature/hide-view-products-shopping-tag",
         "gallery_urls": [],
         "brand": "testtt",
-        "variants": []
+        "presentations": []
     },
     {
         "_id": "53dbaf9c-d632-4c98-82d6-29faaba2e7c8",
@@ -19,7 +19,7 @@
         "image_url": "test",
         "gallery_urls": [],
         "brand": "coca cola ",
-        "variants": []
+        "presentations": []
     },
     {
         "_id": "f692f67c-6044-4ab0-a1cc-960ab2bd9c73",
@@ -34,7 +34,7 @@
             "https://example.com/images/coca-cola-pack.png"
         ],
         "brand": "Coca-Cola",
-        "variants": [
+        "presentations": [
             {
                 "_id": "a1f3b2c4-9d12-4e8a-8f77-1c2d3e4f5a67",
                 "name": "Coca Cola Clásica 500ml",
@@ -225,7 +225,7 @@
             "https://example.com/images/monster-can.png"
         ],
         "brand": "Monster",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7798422620014",
                 "name": "Monster 473ml",
@@ -262,7 +262,7 @@
             "https://example.com/images/pepsi-pack.png"
         ],
         "brand": "Pepsi",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7791813888468",
                 "name": "Pepsi 2l",
@@ -320,7 +320,7 @@
             "https://example.com/images/panuelos-elite-pack.png"
         ],
         "brand": "Elite",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790250000358",
                 "name": "Pañuelos Elite Folha Tripla",
@@ -356,7 +356,7 @@
             "https://example.com/images/raid-pack.png"
         ],
         "brand": "Raid",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790520029089",
                 "name": "Espirales Raid",
@@ -412,7 +412,7 @@
             "https://example.com/images/fuyi-pack.png"
         ],
         "brand": "Fuyi",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790520025869",
                 "name": "Fuyi Aerosol 360ml",
@@ -447,7 +447,7 @@
             "https://example.com/images/spa-pack.png"
         ],
         "brand": "Spa",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7798096059257",
                 "name": "Spa Maracuyá 250ml",
@@ -503,7 +503,7 @@
             "https://example.com/images/yerba-pack.png"
         ],
         "brand": "Mañanita",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790387015324",
                 "name": "Yerba Mate Mañanita 1kg",
@@ -539,7 +539,7 @@
             "https://example.com/images/alicante-pizza-back.jpg"
         ],
         "brand": "Alicante",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790150490334",
                 "name": "Alicante Condimento para Pizza",
@@ -596,7 +596,7 @@
             "https://example.com/images/campagnola-oregano-back.jpg"
         ],
         "brand": "La Campagnola",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790580136550",
                 "name": "La Campagnola Orégano",
@@ -632,7 +632,7 @@
             "https://example.com/images/nuez-moscada-back.jpg"
         ],
         "brand": "Genérica",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790130001260",
                 "name": "Nuez Moscada Molida",
@@ -668,7 +668,7 @@
             "https://example.com/images/off-back.jpg"
         ],
         "brand": "Off",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7798040053652",
                 "name": "Off Repelente de Insectos 170ml",
@@ -704,7 +704,7 @@
             "https://example.com/images/lux-back.jpg"
         ],
         "brand": "Lux",
-        "variants": [
+        "presentations": [
             {
                 "_id": "64817514",
                 "name": "Jabón Lux 125g",
@@ -740,7 +740,7 @@
             "https://example.com/images/higienol-back.jpg"
         ],
         "brand": "Higienol",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790250015840",
                 "name": "Higienol Max Papel Higiénico 12 unidades",
@@ -776,7 +776,7 @@
             "https://example.com/images/nescafe-back.jpg"
         ],
         "brand": "Nescafé",
-        "variants": [
+        "presentations": [
             {
                 "_id": "8445291081895",
                 "name": "Nescafé Dolca 170g",
@@ -812,7 +812,7 @@
             "https://example.com/images/boldo-back.jpg"
         ],
         "brand": "La Morenita",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7790170924642",
                 "name": "Té de Boldo La Morenita",
@@ -848,7 +848,7 @@
             "https://example.com/images/sulleg-back.jpg"
         ],
         "brand": "Sulleg",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7793344904105",
                 "name": "Sulleg Rollos de Cocina Pack 3",
@@ -884,7 +884,7 @@
             "https://example.com/images/7up-back.jpg"
         ],
         "brand": "7up",
-        "variants": [
+        "presentations": [
             {
                 "_id": "7791813777007",
                 "name": "7up 2L Retornable",

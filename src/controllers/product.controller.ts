@@ -131,7 +131,7 @@ export async function getProductByBrand (req: GetProductByBrandRequest, res: Res
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 createProduct → Crea producto nuevo                                                                                    ║
-║ 📥 Entrada: { name, description, created_at, updated_at, image_url, gallery_urls, brand, variants }                       ║
+║ 📥 Entrada: { name, description, created_at, updated_at, image_url, gallery_urls, brand, presentations }                       ║
 ║ 📤 Salida: JSON { _id, message }                                                                                          ║
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
@@ -139,13 +139,13 @@ export async function getProductByBrand (req: GetProductByBrandRequest, res: Res
 export async function createProduct(req: CreateProductRequest, res: Response): Promise <void> {
     const {
         name, description, created_at, updated_at,
-        image_url, gallery_urls, brand, variants,
+        image_url, gallery_urls, brand, presentations,
     } = req.body;
 
     try{
         const _id: string = await ProductModel.create({
             name, description, created_at, updated_at, image_url, gallery_urls, 
-            brand, variants
+            brand, presentations
         });
         res
             .status(200)
@@ -188,7 +188,7 @@ export async function deleteProduct (req: DeleteProductRequest, res: Response): 
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 editProduct → Edita producto existente                                                                                 ║
-║ 📥 Entrada: { _id, name, description, created_at, updated_at, image_url, gallery_urls, brand, variants }                  ║
+║ 📥 Entrada: { _id, name, description, created_at, updated_at, image_url, gallery_urls, brand, presentations }                  ║
 ║ 📤 Salida: JSON { _id, message }                                                                                          ║
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
@@ -197,12 +197,12 @@ export async function editProduct (req: EditProductRequest, res: Response) : Pro
     const { 
         _id,name,description,created_at,
         updated_at,image_url,gallery_urls,
-        brand,variants 
+        brand,presentations 
     } = req.body;
                         
     try {
         await ProductModel.edit({_id,name,description,created_at,
-            updated_at,image_url,gallery_urls, brand,variants});
+            updated_at,image_url,gallery_urls, brand,presentations});
         res
             .status(200)
             .json({

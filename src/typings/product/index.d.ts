@@ -18,7 +18,7 @@ Incluye entidad principal, repositorio local (db-local), payloads y requests.
 - Validar siempre los payloads antes de persistir o responder.
 ──────────────────────────────*/
 
-import { ProductVariant } from "../productVariant/productVariantTypes";
+import { presentation } from "../presentation/productVariantTypes";
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║
@@ -35,7 +35,7 @@ interface ProductEntity {
     image_url: string;
     gallery_urls: string[];
     brand: string;
-    variants: ProductVariant[];
+    presentations: presentation[];
 }
 
 //base con las funciones de db-local

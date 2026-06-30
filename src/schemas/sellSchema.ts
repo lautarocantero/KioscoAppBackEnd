@@ -29,7 +29,7 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 import mongoose, { Schema } from 'mongoose';
 import { SellSchemaType } from '@typings/sell';
 
-const ProductVariantSubSchema = new Schema({}, { strict: false, _id: false });
+const PresentationSubSchema = new Schema({}, { strict: false, _id: false });
 
 const SellMongoSchema = new Schema<SellSchemaType>({
   _id:                  { type: String, required: true },
@@ -37,7 +37,7 @@ const SellMongoSchema = new Schema<SellSchemaType>({
   iva:                  { type: Number, required: true },
   modification_date:    { type: String, required: false },
   payment_method:       { type: String, required: true },
-  products:             { type: [ProductVariantSubSchema], required: true },
+  products:             { type: [PresentationSubSchema], required: true },
   purchase_date:        { type: String, required: true },
   seller_id:            { type: String, required: true },
   seller_name:          { type: String, required: true },

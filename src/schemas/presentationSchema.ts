@@ -1,11 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
-import { ProductVariantSchemaType } from '@typings/productVariant';
+import { PresentationSchemaType } from '@typings/presentation';
 
 /*──────────────────────────────
-🎭 ProductVariantSchema (DB Local — fallback offline)
+🎭 PresentationSchema (DB Local — fallback offline)
 ──────────────────────────────
 📜 Propósito:
-Esquema Mongoose para variantes de producto.
+Esquema Mongoose para presentationes de producto.
 Opera como fallback local cuando no hay conexión al servidor SQL.
 
 🧩 Campos:
@@ -19,7 +19,7 @@ Opera como fallback local cuando no hay conexión al servidor SQL.
 - name            → Nombre de la presentación           (String, req)
                     ej: "Botella 2,25l", "Lata 354ml"
 - description     → Descripción opcional                (String, default "")
-- net_content     → Contenido neto / peso               (String, req)
+- model_size     → Contenido neto / peso               (String, req)
                     ej: "2,25l", "354ml", "500g"
 
 ── Precios ────────────────────────────────────────────────────────────
@@ -27,14 +27,14 @@ Opera como fallback local cuando no hay conexión al servidor SQL.
 - purchase_price  → Precio de compra al proveedor       (Number, req)
 
 ── Stock ──────────────────────────────────────────────────────────────
-- stock_current   → Unidades físicas en depósito        (Number, req)
+- stock   → Unidades físicas en depósito        (Number, req)
 - stock_available → Unidades libres (sin reservas)      (Number, req)
 - reorder_point   → Punto de reposición                 (Number, req)
 
 ── Estado ─────────────────────────────────────────────────────────────
 - status          → available | out_of_stock | unavailable
                     out_of_stock se setea automáticamente al crear/editar
-                    si stock_current === 0
+                    si stock === 0
 
 ── Fechas ─────────────────────────────────────────────────────────────
 - created_at      → ISO string de creación              (String, req)
@@ -48,7 +48,7 @@ Opera como fallback local cuando no hay conexión al servidor SQL.
 - brand, image_url, gallery_urls, model_type, model_size, min_stock
 ──────────────────────────────*/
 
-const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
+const PresentationMongoSchema = new Schema<PresentationSchemaType>({
     // ── Identidad ──────────────────────────────────────────────────────
     _id:             { type: String,   required: true },
     product_id:      { type: String,   required: true },
@@ -58,14 +58,14 @@ const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
     // ── Presentación ───────────────────────────────────────────────────
     name:            { type: String,   required: true },
     description:     { type: String,   default: '' },
-    net_content:     { type: String,   required: true },
+    model_size:     { type: String,   required: true },
 
     // ── Precios ────────────────────────────────────────────────────────
     price:           { type: Number,   required: true },
     purchase_price:  { type: Number,   required: true },
 
     // ── Stock ──────────────────────────────────────────────────────────
-    stock_current:   { type: Number,   required: true },
+    stock:   { type: Number,   required: true },
     stock_available: { type: Number,   required: true },
     reorder_point:   { type: Number,   required: true },
 
@@ -86,10 +86,10 @@ const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
 
 }, { _id: false });
 
-export const ProductVariantSchema =
-    mongoose.models.ProductVariant ||
-    mongoose.model<ProductVariantSchemaType>(
-        'ProductVariant',
-        ProductVariantMongoSchema,
-        'product_variants',
+export const PresentationSchema =
+    mongoose.models.presentation ||
+    mongoose.model<PresentationSchemaType>(
+        'presentation',
+        PresentationMongoSchema,
+        'product_presentations',
     );

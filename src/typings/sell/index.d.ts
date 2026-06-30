@@ -5,7 +5,7 @@
  Este archivo contiene únicamente los tipos.
 ───────────────────────────────────────────────*/
 
-import { ProductVariant } from "@typings/productVariant";
+import { presentation } from "@typings/presentation";
 
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
@@ -15,7 +15,7 @@ interface SellEntityInterface {
     iva: number; 
     modification_date: string; 
     payment_method: string; 
-    products: ProductVariant[]; 
+    products: presentation[]; 
     purchase_date: string; 
     seller_id: string; 
     seller_name: string;

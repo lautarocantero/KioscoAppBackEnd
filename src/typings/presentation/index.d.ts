@@ -1,12 +1,12 @@
 /*──────────────────────────────
-📘 ProductVariantTypes
+📘 PresentationTypes
 ──────────────────────────────
 📜 Propósito:
-Tipados base y derivados para variantes de producto.
-La variante representa UNA presentación comercial de un producto
+Tipados base y derivados para presentationes de producto.
+La presentatione representa UNA presentación comercial de un producto
 (ej: Coca Cola Botella 2,25l / Coca Cola Lata 354ml).
 
-🧩 Campos propios de la variante (NO del producto padre):
+🧩 Campos propios de la presentatione (NO del producto padre):
 - Identificación:  _id, product_id, sku
 - Presentación:    name, description (opcional), brand, model_type, model_size
 - Imágenes:        image_url (opcional), gallery_urls
@@ -16,15 +16,15 @@ La variante representa UNA presentación comercial de un producto
 - Fechas:          created_at, updated_at, expiration_date (opcional)
 ──────────────────────────────*/
 
-declare module '@typings/productVariant' {
+declare module '@typings/presentation' {
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS                                                    ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-type ProductVariantStatus = 'available' | 'out_of_stock' | 'unavailable';
+type PresentationStatus = 'available' | 'out_of_stock' | 'unavailable';
 
-interface ProductVariantEntity {
+interface PresentationEntity {
     // ── Identidad ──────────────────────────────────────────────────────
     _id:            string;
     product_id:     string;
@@ -47,7 +47,7 @@ interface ProductVariantEntity {
     min_stock:      number;          // punto mínimo de reposición
 
     // ── Estado ─────────────────────────────────────────────────────────
-    status:         ProductVariantStatus;
+    status:         PresentationStatus;
 
     // ── Fechas ─────────────────────────────────────────────────────────
     created_at:      string;
@@ -55,64 +55,64 @@ interface ProductVariantEntity {
     expiration_date: string;         // opcional — vacío string si no aplica
 }
 
-interface ProductVariantRepository extends ProductVariantEntity {
-    find(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity[]>;
-    findOne(query: Partial<ProductVariantEntity>): Promise<ProductVariantEntity | null>;
-    save(query?: Partial<ProductVariantEntity>, data?: Partial<ProductVariantEntity>): Promise<void>;
-    remove(query?: Partial<ProductVariantEntity>): Promise<void>;
+interface PresentationRepository extends PresentationEntity {
+    find(query: Partial<PresentationEntity>): Promise<PresentationEntity[]>;
+    findOne(query: Partial<PresentationEntity>): Promise<PresentationEntity | null>;
+    save(query?: Partial<PresentationEntity>, data?: Partial<PresentationEntity>): Promise<void>;
+    remove(query?: Partial<PresentationEntity>): Promise<void>;
 }
 
-type ProductVariantPayloadUnknown = Record<keyof ProductVariantEntity, unknown>;
+type PresentationPayloadUnknown = Record<keyof PresentationEntity, unknown>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🧩 DERIVADOS                                                         ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type ProductVariant        = ProductVariantEntity;
-export type ProductVariantPublic  = Omit<ProductVariantEntity, ''>;
-export type ProductVariantModelType = ProductVariantRepository;
-export type ProductVariantPayload = ProductVariantPayloadUnknown;
-export type ProductVariantStatus  = ProductVariantStatus;
+export type presentation        = PresentationEntity;
+export type PresentationPublic  = Omit<PresentationEntity, ''>;
+export type PresentationModelType = PresentationRepository;
+export type PresentationPayload = PresentationPayloadUnknown;
+export type PresentationStatus  = PresentationStatus;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🗂️ SCHEMA                                                            ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type ProductVariantSchemaType = ProductVariant;
+export type PresentationSchemaType = presentation;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOADS                                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type GetProductVariantByIdPayload          = Pick<ProductVariantPayload, '_id'>;
-export type GetProductVariantByProductIdPayload   = Pick<ProductVariantPayload, 'product_id'>;
-export type GetProductVariantByStockPayload       = Pick<ProductVariantPayload, 'stock'>;
-export type GetProductVariantByPricePayload       = Pick<ProductVariantPayload, 'price'>;
-export type GetProductVariantByStatusPayload      = Pick<ProductVariantPayload, 'status'>;
-export type GetProductVariantByModelSizePayload   = Pick<ProductVariantPayload, 'model_size'>;
+export type GetPresentationByIdPayload          = Pick<PresentationPayload, '_id'>;
+export type GetPresentationByProductIdPayload   = Pick<PresentationPayload, 'product_id'>;
+export type GetPresentationByStockPayload       = Pick<PresentationPayload, 'stock'>;
+export type GetPresentationByPricePayload       = Pick<PresentationPayload, 'price'>;
+export type GetPresentationByStatusPayload      = Pick<PresentationPayload, 'status'>;
+export type GetPresentationByModelSizePayload   = Pick<PresentationPayload, 'model_size'>;
 
-export type CreateProductVariantPayload = Omit<ProductVariantPayload,
+export type CreatePresentationPayload = Omit<PresentationPayload,
     '_id' | 'created_at' | 'updated_at' | 'status'
     // status se calcula al crear: si stock > 0 → 'available', si no → 'out_of_stock'
 >;
 
-export type EditProductVariantPayload = ProductVariantPayload;
+export type EditPresentationPayload = PresentationPayload;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUESTS                                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-interface ProductVariantParams { variant_id: string; }
+interface PresentationParams { presentation_id: string; }
 interface ProductIdParams      { product_id: string; }
 
-export type GetProductVariantByIdRequest        = Request<ProductVariantParams, unknown, GetProductVariantByIdPayload>;
-export type GetProductVariantByProductIdRequest = Request<ProductIdParams, unknown, GetProductVariantByProductIdPayload>;
-export type GetProductVariantByStockRequest     = Request<ProductVariantParams, unknown, GetProductVariantByStockPayload>;
-export type GetProductVariantByPriceRequest     = Request<ProductVariantParams, unknown, GetProductVariantByPricePayload>;
-export type GetProductVariantByStatusRequest    = Request<ProductVariantParams, unknown, GetProductVariantByStatusPayload>;
-export type GetProductVariantByModelSizeRequest = Request<ProductVariantParams, unknown, GetProductVariantByModelSizePayload>;
-export type CreateProductVariantRequest         = Request<ProductVariantParams, unknown, CreateProductVariantPayload>;
-export type DeleteProductVariantRequest         = Request<ProductVariantParams, unknown, GetProductVariantByIdPayload>;
-export type EditProductVariantRequest           = Request<ProductVariantParams, unknown, EditProductVariantPayload>;
+export type GetPresentationByIdRequest        = Request<PresentationParams, unknown, GetPresentationByIdPayload>;
+export type GetPresentationByProductIdRequest = Request<ProductIdParams, unknown, GetPresentationByProductIdPayload>;
+export type GetPresentationByStockRequest     = Request<PresentationParams, unknown, GetPresentationByStockPayload>;
+export type GetPresentationByPriceRequest     = Request<PresentationParams, unknown, GetPresentationByPricePayload>;
+export type GetPresentationByStatusRequest    = Request<PresentationParams, unknown, GetPresentationByStatusPayload>;
+export type GetPresentationByModelSizeRequest = Request<PresentationParams, unknown, GetPresentationByModelSizePayload>;
+export type CreatePresentationRequest         = Request<PresentationParams, unknown, CreatePresentationPayload>;
+export type DeletePresentationRequest         = Request<PresentationParams, unknown, GetPresentationByIdPayload>;
+export type EditPresentationRequest           = Request<PresentationParams, unknown, EditPresentationPayload>;
 
 }

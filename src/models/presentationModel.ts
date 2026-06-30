@@ -1,11 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
-import { ProductVariantSchemaType } from '@typings/productVariant';
+import { PresentationSchemaType } from '@typings/presentation';
 
 /*──────────────────────────────
-🎭 ProductVariantSchema (DB Local — fallback offline)
+🎭 PresentationSchema (DB Local — fallback offline)
 ──────────────────────────────
 📜 Propósito:
-Esquema Mongoose para variantes de producto.
+Esquema Mongoose para presentationes de producto.
 Opera como fallback local cuando no hay conexión al servidor SQL.
 
 🧩 Campos:
@@ -43,7 +43,7 @@ Opera como fallback local cuando no hay conexión al servidor SQL.
 - expiration_date → Fecha de vencimiento opcional       (String, default "")
 ──────────────────────────────*/
 
-const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
+const PresentationMongoSchema = new Schema<PresentationSchemaType>({
     // ── Identidad ──────────────────────────────────────────────────────
     _id:             { type: String,   required: true },
     product_id:      { type: String,   required: true },
@@ -79,10 +79,10 @@ const ProductVariantMongoSchema = new Schema<ProductVariantSchemaType>({
 
 }, { _id: false });
 
-export const ProductVariantSchema =
-    mongoose.models.ProductVariant ||
-    mongoose.model<ProductVariantSchemaType>(
-        'ProductVariant',
-        ProductVariantMongoSchema,
-        'product_variants',
+export const PresentationSchema =
+    mongoose.models.presentation ||
+    mongoose.model<PresentationSchemaType>(
+        'presentation',
+        PresentationMongoSchema,
+        'presentations',
     );

@@ -5,7 +5,7 @@ import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger";
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
-import productVariantRoutes from './routes/productVariant.routes';
+import productVariantRoutes from './routes/presentation.routes';
 import providerRoutes from './routes/provider.routes';
 import sellRoutes from './routes/sell.routes';
 import sellerRoutes from './routes/seller.routes';
@@ -35,7 +35,7 @@ app.use('/sell', sellRoutes);
 app.use('/seller', sellerRoutes);
 app.use('/provider', providerRoutes);
 app.use('/product', productRoutes);
-app.use('/product-variant', productVariantRoutes);
+app.use('/presentation', productVariantRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

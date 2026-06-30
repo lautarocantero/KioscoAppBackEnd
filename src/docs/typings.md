@@ -8,7 +8,7 @@ Cada archivo en `/typings` define la estructura de datos y contratos que asegura
 🧩 Organización:
 - AuthTypes.ts → Tipados de autenticación
 - ProductTypes.ts → Tipados de productos
-- ProductVariantTypes.ts → Tipados de variantes de producto
+- PresentationTypes.ts → Tipados de presentationes de producto
 - ProviderTypes.ts → Tipados de proveedores
 - SellerTypes.ts → Tipados de vendedores
 - SellTypes.ts → Tipados de ventas

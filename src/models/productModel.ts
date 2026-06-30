@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { ProductVariant } from "@typings/productVariant";
+import { presentation } from "@typings/presentation";
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
 
@@ -15,7 +15,7 @@ import { Validation } from "./validation";
 // ─── Schema de Mongoose ───────────────────────────────────────────
 // Refleja exactamente la estructura de tus JSON
 
-const ProductVariantSchema = new Schema({
+const PresentationSchema = new Schema({
   _id:             { type: String, required: true },
   name:            { type: String, required: true },
   description:     { type: String },
@@ -43,7 +43,7 @@ const ProductMongoSchema = new Schema({
   image_url:    { type: String },
   gallery_urls: [{ type: String }],
   brand:        { type: String },
-  variants:     [ProductVariantSchema],
+  presentations:     [PresentationSchema],
 }, { _id: false }); // _id: false porque usamos UUID string como _id
 
 // Evitar re-compilación del modelo en hot-reload
@@ -120,7 +120,7 @@ export class ProductModel {
   static async create(data: CreateProductPayload): Promise<string> {
     const {
       name, description, created_at, updated_at,
-      image_url, gallery_urls, brand, variants
+      image_url, gallery_urls, brand, presentations
     } = data;
 
     const nameResult: string        = Validation.stringValidation(name, 'name');
@@ -129,7 +129,7 @@ export class ProductModel {
     const updatedAtResult: string   = Validation.date(updated_at, 'updated_at');
     const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
     const brandResult: string       = Validation.stringValidation(brand, 'brand');
-    const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
+    const presentationsResult: presentation[] = Validation.isVariantArray(presentations);
 
     // Control de duplicados
     const existing = await ProductMongo.findOne({ name: nameResult }).lean();
@@ -146,7 +146,7 @@ export class ProductModel {
       image_url:    image_url as string,
       gallery_urls: galleryUrlsResult,
       brand:        brandResult,
-      variants:     variantsResult,
+      presentations:     presentationsResult,
     });
 
     return _id;
@@ -182,7 +182,7 @@ export class ProductModel {
     const {
       _id, name, description, created_at,
       updated_at, image_url, gallery_urls,
-      brand, variants
+      brand, presentations
     } = data;
 
     const _idResult: string           = Validation.stringValidation(_id, '_id');
@@ -191,7 +191,7 @@ export class ProductModel {
     const updatedAtResult: string     = Validation.date(updated_at, 'updatedAt');
     const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
     const brandResult: string         = Validation.stringValidation(brand, 'brand');
-    const variantsResult: ProductVariant[] = Validation.isVariantArray(variants);
+    const presentationsResult: presentation[] = Validation.isVariantArray(presentations);
 
     const updated = await ProductMongo.findOneAndUpdate(
       { _id: _idResult },
@@ -204,7 +204,7 @@ export class ProductModel {
           image_url:    image_url as string,
           gallery_urls: galleryUrlsResult,
           brand:        brandResult,
-          variants:     variantsResult,
+          presentations:     presentationsResult,
         }
       },
       { new: true } // devuelve el documento actualizado

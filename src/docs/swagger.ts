@@ -10,7 +10,7 @@ const swaggerOptions = {
     },
     components: {
       schemas: {
-        ProductVariant: { 
+        presentation: { 
             type: "object", 
             required: [ 
                 "_id",
@@ -59,7 +59,7 @@ const swaggerOptions = {
             payment_method: { type: "string" },
             products: {
               type: "array",
-              items: { $ref: "#/components/schemas/ProductVariant" }
+              items: { $ref: "#/components/schemas/presentation" }
             },
             sub_total: { type: "number" },
             iva: { type: "number" },

@@ -10,7 +10,7 @@ Cuando haya conexión, las consultas se realizan contra la base de datos **SQL o
 🧩 Organización:
 - auth.schema.ts → Esquema de autenticación
 - product.schema.ts → Esquema de productos
-- productVariant.schema.ts → Esquema de variantes de producto
+- presentation.schema.ts → Esquema de presentationes de producto
 - provider.schema.ts → Esquema de proveedores
 - sell.schema.ts → Esquema de ventas
 - seller.schema.ts → Esquema de vendedores
@@ -46,7 +46,7 @@ Cuando haya conexión, las consultas se realizan contra la base de datos **SQL o
 - image_url     → Imagen principal (String, requerido)
 - gallery_urls  → Galería de imágenes (Array, requerido)
 - brand         → Marca (String, requerido)
-- variants      → Variantes asociadas (Array, requerido)
+- presentations      → Variantes asociadas (Array, requerido)
 
 ──────────────────────────────
-🎭 ProductVariantSchema
+🎭 PresentationSchema

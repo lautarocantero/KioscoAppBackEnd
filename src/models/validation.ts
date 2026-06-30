@@ -6,7 +6,7 @@ Centralizar todas las validaciones de datos usadas en los modelos y controladore
 Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto.
 
 🧩 Dependencias:
-- ProductVariant (tipado de variantes de producto)
+- presentation (tipado de presentationes de producto)
 
 📂 Funciones principales:
 - stringValidation → valida cadenas genéricas
@@ -19,7 +19,7 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 - image → valida URL de imagen
 - imageArray → valida arrays de imágenes
 - barcode → valida códigos de barras EAN-13
-- isVariantArray → valida arrays de variantes de producto
+- isVariantArray → valida arrays de presentationes de producto
 
 🛡️ Seguridad:
 - Todas las funciones lanzan errores descriptivos si la validación falla.
@@ -32,7 +32,7 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 ──────────────────────────────*/
 
 import { ProductTicket } from "@typings/product";
-import { ProductVariant } from "@typings/productVariant";
+import { presentation } from "@typings/presentation";
 
 const isString = (string: unknown): boolean => typeof string === 'string';
 const isNumber = (number: unknown): boolean => typeof number === 'number';
@@ -217,18 +217,18 @@ export class Validation {
   }
 
   /*══════════ 🎮 isVariantArray ══════════╗
-  ║ 📥 Entrada: variants (unknown)        ║
-  ║ ⚙️ Proceso: valida array de objetos ProductVariant ║
-  ║ 📤 Salida: ProductVariant[] validado  ║
+  ║ 📥 Entrada: presentations (unknown)        ║
+  ║ ⚙️ Proceso: valida array de objetos presentation ║
+  ║ 📤 Salida: presentation[] validado  ║
   ║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
   ╚══════════════════════════════════════╝*/
-  static isVariantArray(variants: unknown): ProductVariant[] {
-    if (variants === undefined || variants === null) return [];
-    if (!Array.isArray(variants)) throw new Error("variants must be an array");
-    {/*─────────────────── 🔎 No son variantes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/}
-    variants.forEach((variant, index) => {
-      if (!isTicket(variant)) throw new Error(`Variant Product at index ${index} is not a variant product`);
+  static isVariantArray(presentations: unknown): presentation[] {
+    if (presentations === undefined || presentations === null) return [];
+    if (!Array.isArray(presentations)) throw new Error("presentations must be an array");
+    {/*─────────────────── 🔎 No son presentationes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/}
+    presentations.forEach((presentation, index) => {
+      if (!isTicket(presentation)) throw new Error(`presentation Product at index ${index} is not a presentation product`);
     });
-    return variants as ProductVariant[];
+    return presentations as presentation[];
   }
 }

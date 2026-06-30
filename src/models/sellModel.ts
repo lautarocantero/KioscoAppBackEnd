@@ -1,4 +1,4 @@
-import { ProductVariant } from '@typings/productVariant';
+import { presentation } from '@typings/presentation';
 import {
     CreateSellPayloadType,
     DeleteSellPayloadType,
@@ -68,7 +68,7 @@ export class SellModel {
 
         const purchaseDateObj: Date = parseDate(purchase_date as string);
 
-        const productsResult: ProductVariant[]  = Validation.isVariantArray(products);
+        const productsResult: presentation[]  = Validation.isVariantArray(products);
         const purchaseDateResult: string        = Validation.date(purchaseDateObj, 'purchase date');
         const sellerIdResult: string            = Validation.stringValidation(seller_id, 'seller id');
         const sellerNameResult: string          = Validation.stringValidation(seller_name, 'seller name');
@@ -114,7 +114,7 @@ export class SellModel {
         const { _id, products, purchase_date, seller_name, total_amount } = data;
 
         const _idResult: string                = Validation.stringValidation(_id, '_id');
-        const productsResult: ProductVariant[] = Validation.isVariantArray(products);
+        const productsResult: presentation[] = Validation.isVariantArray(products);
         const purchaseDateResult: string       = Validation.date(purchase_date, 'purchase_date');
         const sellerNameResult: string         = Validation.stringValidation(seller_name, 'seller_name');
         const totalAmountResult: number        = Validation.number(total_amount, 'total_amount');

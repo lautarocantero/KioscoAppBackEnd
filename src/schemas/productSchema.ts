@@ -20,7 +20,7 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - image_url     → URL de imagen principal (String, requerido)
 - gallery_urls  → Array de URLs de imágenes adicionales (Array, requerido)
 - brand         → Marca del producto (String, requerido)
-- variants      → Variantes asociadas al producto (Array, requerido)
+- presentations      → Variantes asociadas al producto (Array, requerido)
 
 🛡️ Notas:
 - Este esquema NO reemplaza la base de datos SQL, solo actúa como fallback local.
@@ -36,5 +36,5 @@ export const ProductSchema = Schema<ProductSchemaType>('Product', {
     image_url: { type: String, required: true }, 
     gallery_urls: { type: Array, required: true }, 
     brand: { type: String, required: true }, 
-    variants: { type: Array, required: true }, 
+    presentations: { type: Array, required: true }, 
 });

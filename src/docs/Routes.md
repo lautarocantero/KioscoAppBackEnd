@@ -8,7 +8,7 @@ Cada archivo en `/routes` define los endpoints disponibles para un recurso espec
 🧩 Organización:
 - auth.routes.ts → Rutas de autenticación
 - product.routes.ts → Rutas de productos
-- productVariant.routes.ts → Rutas de variantes de producto
+- presentation.routes.ts → Rutas de presentationes de producto
 - provider.routes.ts → Rutas de proveedores
 - sell.routes.ts → Rutas de ventas
 - seller.routes.ts → Rutas de vendedores
@@ -46,19 +46,19 @@ Cada archivo en `/routes` define los endpoints disponibles para un recurso espec
 - PUT    /edit-product          → editar producto existente
 
 ──────────────────────────────
-🎭 ProductVariantRouter
+🎭 PresentationRouter
 ──────────────────────────────
-- GET    /get-product-variants              → obtener todas las variantes
-- GET    /get-product-variant-by-id         → obtener variante por ID
-- GET    /get-product-variant-by-product-id → obtener variantes por producto
-- GET    /get-product-variant-by-brand      → obtener variantes por marca
-- GET    /get-product-variant-by-stock      → obtener variantes por stock
-- GET    /get-product-variant-by-price      → obtener variantes por precio
-- GET    /get-product-variant-by-size       → obtener variantes por tamaño
-- GET    /get-product-variant-by-presentation → obtener variantes por presentación
-- POST   /create-product-variant            → crear nueva variante
-- DELETE /delete-product-variant            → eliminar variante
-- PUT    /edit-product-variant              → editar variante existente
+- GET    /get-product-presentations              → obtener todas las presentationes
+- GET    /get-presentation-by-id         → obtener presentatione por ID
+- GET    /get-presentation-by-product-id → obtener presentationes por producto
+- GET    /get-presentation-by-brand      → obtener presentationes por marca
+- GET    /get-presentation-by-stock      → obtener presentationes por stock
+- GET    /get-presentation-by-price      → obtener presentationes por precio
+- GET    /get-presentation-by-size       → obtener presentationes por tamaño
+- GET    /get-presentation-by-presentation → obtener presentationes por presentación
+- POST   /create-presentation            → crear nueva presentatione
+- DELETE /delete-presentation            → eliminar presentatione
+- PUT    /edit-presentation              → editar presentatione existente
 
 ──────────────────────────────
 🏢 ProviderRouter

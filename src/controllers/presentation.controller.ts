@@ -1,122 +1,122 @@
-// controllers/productVariant.controller.ts
+// controllers/presentation.controller.ts
 
 import { Request, Response } from 'express';
-import { ProductVariantSchema } from '../models/productVariantModel';
+import { PresentationSchema } from '../models/presentationModel';
 import {
-    CreateProductVariantRequest,
-    DeleteProductVariantRequest,
-    EditProductVariantRequest,
-    GetProductVariantByIdRequest,
-    GetProductVariantByModelSizeRequest,
-    GetProductVariantByPriceRequest,
-    GetProductVariantByProductIdRequest,
-    GetProductVariantByStatusRequest,
-    GetProductVariantByStockRequest,
-    ProductVariant,
-} from '@typings/productVariant';
+    CreatePresentationRequest,
+    DeletePresentationRequest,
+    EditPresentationRequest,
+    GetPresentationByIdRequest,
+    GetPresentationByModelSizeRequest,
+    GetPresentationByPriceRequest,
+    GetPresentationByProductIdRequest,
+    GetPresentationByStatusRequest,
+    GetPresentationByStockRequest,
+    presentation,
+} from '@typings/presentation';
 import { handleControllerError } from '../utils/handleControllerError';
 
 //──────────────────────────────────────── GET ────────────────────────────────//
 
 export async function home(_req: Request, res: Response): Promise<void> {
     res.status(200).send(`
-        Estás en product-variant<br>
+        Estás en presentation<br>
         Endpoints =><br>
-        ---- GET    /get-product-variants<br>
-        ---- GET    /get-product-variant-by-id/:product_variant_id<br>
-        ---- GET    /get-product-variant-by-product-id/:product_id<br>
-        ---- GET    /get-product-variant-by-stock<br>
-        ---- GET    /get-product-variant-by-price<br>
-        ---- GET    /get-product-variant-by-status<br>
-        ---- GET    /get-product-variant-by-net-content<br>
-        ---- POST   /create-product-variant<br>
-        ---- PUT    /edit-product-variant/:variant_id<br>
-        ---- DELETE /delete-product-variant<br>
+        ---- GET    /get-product-presentations<br>
+        ---- GET    /get-presentation-by-id/:product_presentation_id<br>
+        ---- GET    /get-presentation-by-product-id/:product_id<br>
+        ---- GET    /get-presentation-by-stock<br>
+        ---- GET    /get-presentation-by-price<br>
+        ---- GET    /get-presentation-by-status<br>
+        ---- GET    /get-presentation-by-net-content<br>
+        ---- POST   /create-presentation<br>
+        ---- PUT    /edit-presentation/:presentation_id<br>
+        ---- DELETE /delete-presentation<br>
     `);
 }
 
-export async function getProductVariants(_req: Request, res: Response): Promise<void> {
+export async function getPresentations(_req: Request, res: Response): Promise<void> {
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find();
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find();
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProductVariantById(
-    req: GetProductVariantByIdRequest,
+export async function getPresentationById(
+    req: GetPresentationByIdRequest,
     res: Response,
 ): Promise<void> {
-    const { product_variant_id } = req.params;
+    const { product_presentation_id } = req.params;
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find({ _id: product_variant_id });
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find({ _id: product_presentation_id });
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProductVariantByProductId(
-    req: GetProductVariantByProductIdRequest,
+export async function getPresentationByProductId(
+    req: GetPresentationByProductIdRequest,
     res: Response,
 ): Promise<void> {
     const { product_id } = req.params;
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find({ product_id });
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find({ product_id });
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProductVariantByStock(
-    req: GetProductVariantByStockRequest,
+export async function getPresentationByStock(
+    req: GetPresentationByStockRequest,
     res: Response,
 ): Promise<void> {
-    const { stock_current } = req.body;
+    const { stock } = req.body;
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find({ stock_current });
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find({ stock });
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProductVariantByPrice(
-    req: GetProductVariantByPriceRequest,
+export async function getPresentationByPrice(
+    req: GetPresentationByPriceRequest,
     res: Response,
 ): Promise<void> {
     const { price } = req.body;
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find({ price });
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find({ price });
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProductVariantByStatus(
-    req: GetProductVariantByStatusRequest,
+export async function getPresentationByStatus(
+    req: GetPresentationByStatusRequest,
     res: Response,
 ): Promise<void> {
     const { status } = req.body;
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find({ status });
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find({ status });
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProductVariantByModelSize(
-    req: GetProductVariantByModelSizeRequest,
+export async function getPresentationByModelSize(
+    req: GetPresentationByModelSizeRequest,
     res: Response,
 ): Promise<void> {
-    const { net_content } = req.body;
+    const { model_size } = req.body;
     try {
-        const variants: ProductVariant[] = await ProductVariantSchema.find({ net_content });
-        res.status(200).json(variants);
+        const presentations: presentation[] = await PresentationSchema.find({ model_size });
+        res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -126,8 +126,8 @@ export async function getProductVariantByModelSize(
 
 import { randomUUID } from 'crypto';
 
-export async function createProductVariant(
-    req: CreateProductVariantRequest,
+export async function createPresentation(
+    req: CreatePresentationRequest,
     res: Response,
 ): Promise<void> {
     const {
@@ -154,7 +154,7 @@ export async function createProductVariant(
     try {
         const _id = randomUUID();
 
-        const variant = await ProductVariantSchema.create({
+        const presentation = await PresentationSchema.create({
             _id,
             product_id, sku,
             name, description, brand,
@@ -170,7 +170,7 @@ export async function createProductVariant(
             expiration_date: expiration_date as string ?? '',
         });
 
-        res.status(200).json({ _id: variant._id, message: 'Product variant created successfully' });
+        res.status(200).json({ _id: presentation._id, message: 'Product presentation created successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -178,48 +178,48 @@ export async function createProductVariant(
 
 //──────────────────────────────────────── PUT ────────────────────────────────//
 
-export async function editProductVariant(
-    req: EditProductVariantRequest,
+export async function editPresentation(
+    req: EditPresentationRequest,
     res: Response,
 ): Promise<void> {
-    const { variant_id } = req.params;
+    const { presentation_id } = req.params;
     const {
         sku, price, expiration_date,
         stock, min_stock,
         model_type, model_size,
-        image_url,
+        image_url, gallery_urls,
+        brand, description,
     } = req.body;
 
-    console.log("🔧 editProductVariant — variant_id:", variant_id);
-    console.log("🔧 body:", { sku, price, stock, min_stock, model_type, model_size });
-
     try {
-        const result = await ProductVariantSchema.updateOne(
-            { _id: variant_id },
+        const result = await PresentationSchema.updateOne(
+            { _id: presentation_id },
             {
                 $set: {
                     sku,
                     name:            `${model_type} ${model_size}`,
-                    net_content:     model_size,
+                    model_type,
+                    model_size,
+                    brand:           brand ?? '',
+                    description:     description ?? '',
                     price:           Number(price),
-                    stock_current:   Number(stock),
-                    stock_available: Number(stock),
-                    reorder_point:   Number(min_stock),
-                    image_url:       image_url ?? "",
+                    stock:           Number(stock),
+                    min_stock:       Number(min_stock),
+                    status:          Number(stock) > 0 ? 'available' : 'out_of_stock',
+                    image_url:       image_url ?? '',
+                    gallery_urls:    gallery_urls ?? [],
                     updated_at:      new Date().toISOString(),
                     expiration_date: expiration_date ?? '',
                 },
             }
         );
 
-        console.log("🔧 updateOne result:", result);
-
         if (result.matchedCount === 0) {
-            res.status(404).json({ message: `Variante ${variant_id} no encontrada` });
+            res.status(404).json({ message: `Variante ${presentation_id} no encontrada` });
             return;
         }
 
-        res.status(200).json({ _id: variant_id, message: 'Product variant edited successfully' });
+        res.status(200).json({ _id: presentation_id, message: 'Product presentation edited successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -227,14 +227,14 @@ export async function editProductVariant(
 
 //──────────────────────────────────────── DELETE ─────────────────────────────//
 
-export async function deleteProductVariant(
-    req: DeleteProductVariantRequest,
+export async function deletePresentation(
+    req: DeletePresentationRequest,
     res: Response,
 ): Promise<void> {
     const { _id } = req.body;
     try {
-        await ProductVariantSchema.deleteOne({ _id });
-        res.status(200).json({ message: 'Product variant deleted successfully' });
+        await PresentationSchema.deleteOne({ _id });
+        res.status(200).json({ message: 'Product presentation deleted successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
