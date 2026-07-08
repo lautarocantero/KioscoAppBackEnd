@@ -216,10 +216,10 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function editAuth (req: EditAuthRequest, res: Response): Promise <void> {
-  const { _id, username, email, password, profilePhoto } = req.body;
+  const { _id, username, email, password, profilePhoto, role } = req.body;
   
   try{
-    await AuthModel.editAuth({ _id, username, email, password, profilePhoto });
+    await AuthModel.editAuth({ _id, username, email, password, profilePhoto, role });
     res
       .status(200)
       .json({

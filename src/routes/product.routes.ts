@@ -7,7 +7,9 @@ import {
   getProductById, 
   getProductByName, 
   getProducts, 
-  home 
+  getProductsWithPresentations, 
+  home, 
+  searchProductsWithPresentations
 } from '../controllers/product.controller';
 
 const router = express.Router();
@@ -34,6 +36,8 @@ router.get('/get-products', getProducts);
 router.get('/get-product-by-id/:_id', getProductById);
 router.get('/get-product-by-name', getProductByName);
 router.get('/get-product-by-brand', getProductByBrand);
+router.get('/get-products-with-presentations', getProductsWithPresentations);
+router.get('/search-products-with-presentations', searchProductsWithPresentations);
 router.post('/create-product', createProduct);
 router.delete('/delete-product', deleteProduct);
 router.put('/edit-product/:_id', editProduct);

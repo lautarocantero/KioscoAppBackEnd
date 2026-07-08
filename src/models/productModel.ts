@@ -2,6 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { presentation } from "@typings/presentation";
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
+import { PresentationSchema } from './presentationModel';
 
 /*──────────────────────────────
 📦 ProductModel — Mongoose
@@ -15,7 +16,7 @@ import { Validation } from "./validation";
 // ─── Schema de Mongoose ───────────────────────────────────────────
 // Refleja exactamente la estructura de tus JSON
 
-const PresentationSchema = new Schema({
+const EmbeddedPresentationSchema = new Schema({
   _id:             { type: String, required: true },
   name:            { type: String, required: true },
   description:     { type: String },
@@ -43,7 +44,7 @@ const ProductMongoSchema = new Schema({
   image_url:    { type: String },
   gallery_urls: [{ type: String }],
   brand:        { type: String },
-  presentations:     [PresentationSchema],
+  presentations:     [EmbeddedPresentationSchema],
 }, { _id: false }); // _id: false porque usamos UUID string como _id
 
 // Evitar re-compilación del modelo en hot-reload
@@ -109,6 +110,94 @@ export class ProductModel {
     return results as unknown as Product[];
 }
 
+  /*══════════ 🎮 getProductsWithPresentations ══════════╗
+  ║ 📥 Entrada: ninguna                                   ║
+  ║ ⚙️ Proceso: trae productos + presentations (solo       ║
+  ║            sku, name, description, model_type,        ║
+  ║            model_size, stock) cuyo product_id          ║
+  ║            coincida con el _id del producto            ║
+  ║ 📤 Salida: Product[] (presentations resumidas)         ║
+  ╚════════════════════════════════════════════════════════╝*/
+
+  static async getProductsWithPresentations(): Promise<Product[]> {
+    const results = await ProductMongo.aggregate([
+      {
+        $lookup: {
+          from: 'presentations', // ← nombre real de la colección (ver PresentationSchema)
+          let: { productId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+            {
+              $project: {
+                _id: 0,
+                sku: 1,
+                name: 1,
+                description: 1,
+                model_type: 1,
+                model_size: 1,
+                stock: 1,
+              },
+            },
+          ],
+          as: 'presentations',
+        },
+      },
+      { $limit: 100 },
+    ]);
+
+    return results as unknown as Product[];
+  }
+
+  /*══════════ 🎮 searchProductsWithPresentations ══════════╗
+  ║ 📥 Entrada: term (string)                                ║
+  ║ ⚙️ Proceso: trae producto + presentations (igual que      ║
+  ║            getProductsWithPresentations) y filtra en DB   ║
+  ║            por $or: name del producto O name de alguna    ║
+  ║            presentation, case-insensitive                 ║
+  ║ 📤 Salida: Product[] (presentations resumidas)             ║
+  ╚════════════════════════════════════════════════════════════╝*/
+
+  static async searchProductsWithPresentations(term: string): Promise<Product[]> {
+    Validation.stringValidation(term, 'term');
+
+    const regex = { $regex: term, $options: 'i' };
+
+    const results = await ProductMongo.aggregate([
+      {
+        $lookup: {
+          from: 'presentations',
+          let: { productId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+            {
+              $project: {
+                _id: 0,
+                sku: 1,
+                name: 1,
+                description: 1,
+                model_type: 1,
+                model_size: 1,
+                stock: 1,
+              },
+            },
+          ],
+          as: 'presentations',
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { name: regex },
+            { 'presentations.name': regex },
+          ],
+        },
+      },
+      { $limit: 100 },
+    ]);
+
+    return results as unknown as Product[];
+  }
+
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
   /*══════════ 🎮 create ══════════╗
@@ -155,10 +244,11 @@ export class ProductModel {
   //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
   /*══════════ 🎮 delete ══════════╗
-  ║ 📥 Entrada: DeleteProductPayload {_id} ║
-  ║ ⚙️ Proceso: valida id y elimina de MongoDB ║
-  ║ 📤 Salida: void                            ║
-  ╚════════════════════════════════════════════╝*/
+    ║ 📥 Entrada: DeleteProductPayload {_id}                    ║
+    ║ ⚙️ Proceso: valida id, elimina el producto y en cascada    ║
+    ║            todas las presentations con ese product_id      ║
+    ║ 📤 Salida: void                                             ║
+    ╚════════════════════════════════════════════════════════════╝*/
 
   static async delete(data: DeleteProductPayload): Promise<void> {
     const { _id } = data;
@@ -168,6 +258,8 @@ export class ProductModel {
     const deleted = await ProductMongo.findOneAndDelete({ _id: _idResult });
 
     if (!deleted) throw new Error('There is not any product with that id');
+
+    await PresentationSchema.deleteMany({ product_id: _idResult });
   }
 
   //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//

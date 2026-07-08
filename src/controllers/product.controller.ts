@@ -126,6 +126,33 @@ export async function getProductByBrand (req: GetProductByBrandRequest, res: Res
     }
 }
 
+export async function getProductsWithPresentations(_req: Request, res: Response): Promise<void> {
+    try {
+        const productsObject: Product[] = await ProductModel.getProductsWithPresentations();
+        res.status(200).json(productsObject);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+/*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🎮 searchProductsWithPresentations → Busca productos por nombre propio o nombre de presentación ║
+║ 📥 Entrada: { term } (query)                                                                     ║
+║ 📤 Salida: JSON [Product] (con presentations resumidas)                                          ║
+║ 🛠️ Errores: handleControllerError                                                                 ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+
+export async function searchProductsWithPresentations(req: Request, res: Response): Promise<void> {
+    const term = (req.query.term as string) ?? req.body.term;
+
+    try {
+        const productsObject: Product[] = await ProductModel.searchProductsWithPresentations(term);
+        res.status(200).json(productsObject);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
 //──────────────────────────────────────────── 📤 GET 📤 ───────────────────────────────────────────//
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 

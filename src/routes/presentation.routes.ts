@@ -11,6 +11,8 @@ import {
     createPresentation,
     editPresentation,
     deletePresentation,
+    searchPresentationsByProductId,
+    getPresentationAnalytics,
 } from '../controllers/presentation.controller';
 import multer from 'multer';
 
@@ -30,6 +32,7 @@ Rutas de presentationes de producto. Sin multer — imagen removida del modelo.
 - GET    /get-presentation-by-price               → body: { price }
 - GET    /get-presentation-by-status              → body: { status }
 - GET    /get-presentation-by-net-content         → body: { model_size }
+- GET    /get-presentation-by-product-id/:product_id/search        → body: { por ID }
 
 ── POST / PUT / DELETE ────────────────────────────────────────────────
 - POST   /create-presentation                     → body: { ...campos }
@@ -54,6 +57,8 @@ router.get('/get-presentation-by-stock',        getPresentationByStock);
 router.get('/get-presentation-by-price',        getPresentationByPrice);
 router.get('/get-presentation-by-status',       getPresentationByStatus);
 router.get('/get-presentation-by-model-size',   getPresentationByModelSize);
+router.get('/get-presentation-by-product-id/:product_id/search', searchPresentationsByProductId);
+router.get('/get-presentation-analytics/:presentation_id',getPresentationAnalytics);
 
 // ── POST / PUT / DELETE ───────────────────────────────────────────────────────
 router.post('/create-presentation', upload.single('image'), createPresentation);

@@ -1,6 +1,3 @@
-
-
-
 /*──────────────────────────────
 🗂️ AuthSchema (DB Local)
 ──────────────────────────────
@@ -16,13 +13,17 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - password     → Contraseña encriptada (String, requerido)
 - refreshToken → Token de refresco (String, opcional)
 - profilePhoto → URL de foto de perfil (String, opcional)
+- role         → Rol del usuario (String, requerido, enum AuthRoleEnum, default "Usuario")
 
 🛡️ Notas:
 - Este esquema NO reemplaza la base de datos SQL, solo actúa como fallback local.
 - Los datos almacenados aquí son temporales y se sincronizan con SQL cuando hay conexión.
+- `role` tiene default "Usuario" a nivel de Mongoose como segunda barrera de seguridad,
+  además del default explícito que asigna AuthModel.create.
 ──────────────────────────────*/
+import { AuthSchemaType } from '../typings/auth';
+import { AuthRoleEnum } from '../typings/auth/enums';
 import mongoose, { Schema } from 'mongoose';
-import { AuthSchemaType } from '@typings/auth';
 
 const AuthMongoSchema = new Schema<AuthSchemaType>({
   _id:          { type: String, required: true },
@@ -31,6 +32,12 @@ const AuthMongoSchema = new Schema<AuthSchemaType>({
   password:     { type: String, required: true },
   refreshToken: { type: String, required: false },
   profilePhoto: { type: String, required: false },
+  role:         {
+    type: String,
+    enum: Object.values(AuthRoleEnum),
+    required: true,
+    default: AuthRoleEnum.Usuario,
+  },
 }, { _id: false });
 
 export const AuthSchema = mongoose.models.Auth || 

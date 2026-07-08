@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Model, Schema } from 'mongoose';
 import { PresentationSchemaType } from '@typings/presentation';
 
 /*──────────────────────────────
@@ -79,8 +79,8 @@ const PresentationMongoSchema = new Schema<PresentationSchemaType>({
 
 }, { _id: false });
 
-export const PresentationSchema =
-    mongoose.models.presentation ||
+export const PresentationSchema: Model<PresentationSchemaType> =
+    mongoose.models.presentation as Model<PresentationSchemaType> ||
     mongoose.model<PresentationSchemaType>(
         'presentation',
         PresentationMongoSchema,

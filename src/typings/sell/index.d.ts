@@ -6,6 +6,7 @@
 ───────────────────────────────────────────────*/
 
 import { presentation } from "@typings/presentation";
+import { Request } from "express";
 
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
@@ -86,4 +87,54 @@ declare module '@typings/sell' {
 
   export type EditSellRequestType = Request<Record<string, never>, unknown, EditSellPayloadType>;
 
+}
+
+  //──────────────────────────────────────────── 🔗 ANALYTICS 🔗 ───────────────────────────────────────────//
+
+export type PresentationAnalyticsQuery = {
+    start_date?: string; // 'YYYY-MM-DD'
+    end_date?: string;   // 'YYYY-MM-DD'
+};
+
+export type GetPresentationAnalyticsRequest = Request<
+    { presentation_id: string },
+    unknown,
+    unknown,
+    PresentationAnalyticsQuery
+>;
+
+export interface DailySalePoint {
+    isoDate: string;
+    date: string;   // '01 may'
+    units: number;
+    revenue: number;
+}
+
+export interface WeeklySalePoint {
+    weekLabel: string; // '29 abr - 05 may'
+    units: number;
+    revenue: number;
+}
+
+export interface PresentationAnalyticsRaw {
+    presentation_id: string;
+    range: { start: string; end: string };
+    comparisonRange: { start: string; end: string };
+    totals: { units: number; revenue: number; activeDays: number; avgTicket: number };
+    previousTotals: { units: number; revenue: number; activeDays: number; avgTicket: number };
+    deltas: {
+        unitsPct: number | null;
+        revenuePct: number | null;
+        activeDaysPct: number | null;
+        avgTicketPct: number | null;
+    };
+    dailySales: DailySalePoint[];
+    weeklySales: WeeklySalePoint[];
+    topSellingDays: DailySalePoint[];
+    periodSummary: {
+        maxDaily: DailySalePoint | null;
+        minDaily: DailySalePoint | null;
+        avgDailyUnits: number;
+        activeDaysCount: number;
+    };
 }

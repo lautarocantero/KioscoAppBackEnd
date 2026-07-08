@@ -1,4 +1,3 @@
-
 /*──────────────────────────────
 📘 AuthTypes
 ──────────────────────────────
@@ -14,9 +13,10 @@ c
 🛡️ Seguridad:
 - Usar AuthPublic/AuthPublicSchema para ocultar campos sensibles.
 - Validar siempre los payloads antes de persistir.
+- `role` NUNCA debe aceptarse desde AuthRegisterPayload ni desde el body de un request de
+  registro: se asigna un default en AuthModel.create para evitar que un usuario se auto-asigne
+  un rol privilegiado. Solo EditAuthPayload (uso administrativo) lo permite editar.
 ──────────────────────────────*/
-
-declare module "@typings/auth" {
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
@@ -32,10 +32,11 @@ interface AuthEntity {
   authToken: string | undefined;
   refreshToken: string | undefined;
   profilePhoto: string | null;
+  role: AuthRoleEnum;
 }
 
 // base para el schema
-type AuthSchema = Pick<AuthEntity, '_id' | 'username' | 'email' | 'password' | 'refreshToken' | 'profilePhoto'>;
+type AuthSchema = Pick<AuthEntity, '_id' | 'username' | 'email' | 'password' | 'refreshToken' | 'profilePhoto' | 'role'>;
 
 //base con las funciones del schema
 interface AuthRepository extends AuthSchema {
@@ -71,12 +72,13 @@ export type AuthPayload = AuthPayloadUnknown;
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profilePhoto'>;
+export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profilePhoto' | 'role'>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
+// role NO forma parte de AuthRegisterPayload a propósito (ver nota de seguridad arriba).
 export type AuthRegisterPayload = Pick<AuthPayload, 'username' | 'email' | 'profilePhoto' | 'password' | 'repeatPassword'>;
 
 export type AuthLoginPayload = Pick<AuthPayload, 'email' | 'password' >;
@@ -91,6 +93,8 @@ export type AuthCheckAuthPayload = Pick<AuthPayload, '_id'>;
 
 export type DeleteAuthPayload = Pick<AuthPayload, '_id'>;
 
+// EditAuthPayload SÍ incluye 'role' (hereda de AuthPayload sin excluirlo) para permitir
+// que un flujo administrativo edite el rol de un usuario existente.
 export type EditAuthPayload = Omit<AuthPayload, 'repeatPassword' | 'authToken' | 'refreshToken'>;
 
 export interface AuthRefreshTokenPayload {
@@ -120,5 +124,3 @@ export type EditAuthRequest = Request<AuthParams, unknown, EditAuthPayload>;
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 export type AuthTokenPublic = Pick<Auth, 'refreshToken'>
-
-}

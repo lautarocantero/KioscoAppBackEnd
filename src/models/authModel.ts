@@ -13,7 +13,8 @@ import {
     DeleteAuthPayload, 
     EditAuthPayload,
     AuthPublicSchema,
-} from '@typings/auth';
+} from '../typings/auth';
+import { AuthRoleEnum } from '../typings/auth/enums';
 
 /*──────────────────────────────
 🔐 AuthModel — Mongoose
@@ -79,7 +80,8 @@ export class AuthModel {
 
     /*══════════ 🎮 create ══════════╗
     ║ 📥 Entrada: AuthRegisterPayload ║
-    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password y guarda ║
+    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password, ║
+    ║    asigna role por default (Usuario) y guarda             ║
     ║ 📤 Salida: string _id generado  ║
     ╚══════════════════════════════════╝*/
 
@@ -98,6 +100,8 @@ export class AuthModel {
         const _id: string = crypto.randomUUID();
         const hashedPassword: string = await bcrypt.hash(passwordResult, SALT_ROUNDS);
 
+        // role nunca se toma del payload del cliente: se asigna acá por default para que
+        // nadie pueda auto-registrarse con un rol privilegiado.
         await AuthSchema.create({
             _id,
             username:     usernameResult,
@@ -105,6 +109,7 @@ export class AuthModel {
             password:     hashedPassword,
             refreshToken: '',
             profilePhoto: profileResult,
+            role:         AuthRoleEnum.Usuario,
         });
 
         return _id;
