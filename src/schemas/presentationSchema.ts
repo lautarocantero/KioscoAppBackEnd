@@ -45,7 +45,7 @@ Opera como fallback local cuando no hay conexión al servidor SQL.
 - supplier_ids    → Array de IDs del módulo Providers   (String[])
 
 🗑️ Campos eliminados:
-- brand, image_url, gallery_urls, model_type, model_size, min_stock
+- brand, image_url, model_type, model_size, min_stock
 ──────────────────────────────*/
 
 const PresentationMongoSchema = new Schema<PresentationSchemaType>({

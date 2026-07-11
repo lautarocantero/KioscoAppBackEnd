@@ -346,7 +346,7 @@ export async function createPresentation(
     const {
         product_id, sku,
         name, description, brand,
-        image_url, gallery_urls,
+        image_url,
         model_type, model_size,
         min_stock, stock,
         price, expiration_date,
@@ -355,11 +355,6 @@ export async function createPresentation(
     const parsedPrice      = Number(price);
     const parsedMinStock   = Number(min_stock);
     const parsedStock      = Number(stock);
-
-    const parsedGalleryUrls: string[] =
-        typeof gallery_urls === 'string'
-            ? JSON.parse(gallery_urls)
-            : (gallery_urls as string[]) ?? [];
 
     const imageUrl = req.file ? req.file.path : image_url;
     const now = new Date().toISOString();
@@ -372,7 +367,6 @@ export async function createPresentation(
             product_id, sku,
             name, description, brand,
             image_url: imageUrl,
-            gallery_urls: parsedGalleryUrls,
             model_type, model_size,
             min_stock: parsedMinStock,
             stock: parsedStock,
@@ -400,7 +394,7 @@ export async function editPresentation(
         sku, price, expiration_date,
         stock, min_stock,
         model_type, model_size,
-        image_url, gallery_urls,
+        image_url,
         brand, description,
     } = req.body;
 
@@ -420,7 +414,6 @@ export async function editPresentation(
                     min_stock:       Number(min_stock),
                     status:          Number(stock) > 0 ? 'available' : 'out_of_stock',
                     image_url:       image_url ?? '',
-                    gallery_urls:    gallery_urls ?? [],
                     updated_at:      new Date().toISOString(),
                     expiration_date: expiration_date ?? '',
                 },

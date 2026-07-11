@@ -23,7 +23,6 @@ const EmbeddedPresentationSchema = new Schema({
   created_at:      { type: String },
   updated_at:      { type: String },
   image_url:       { type: String },
-  gallery_urls:    [{ type: String }],
   brand:           { type: String },
   product_id:      { type: String },
   sku:             { type: String },
@@ -42,7 +41,6 @@ const ProductMongoSchema = new Schema({
   created_at:   { type: String },
   updated_at:   { type: String },
   image_url:    { type: String },
-  gallery_urls: [{ type: String }],
   brand:        { type: String },
   presentations:     [EmbeddedPresentationSchema],
 }, { _id: false }); // _id: false porque usamos UUID string como _id
@@ -198,6 +196,38 @@ export class ProductModel {
     return results as unknown as Product[];
   }
 
+  /*══════════ 🎮 getStats ══════════╗
+    ║ 📥 Entrada: ninguna                                        ║
+    ║ ⚙️ Proceso: cuenta el total de productos y cuántos de ellos ║
+    ║            tienen al menos una presentation con stock      ║
+    ║            por debajo de su min_stock                      ║
+    ║ 📤 Salida: { totalProducts, lowStockProducts }              ║
+    ╚═══════════════════════════════════════════════════════════╝*/
+
+    static async getStats(): Promise<{ totalProducts: number; lowStockProducts: number }> {
+      const totalProducts = await ProductMongo.countDocuments();
+
+      const lowStockResult = await ProductMongo.aggregate([
+        {
+          $addFields: {
+            lowStockPresentations: {
+              $filter: {
+                input: '$presentations',
+                as: 'p',
+                cond: { $lt: ['$$p.stock', '$$p.min_stock'] },
+              },
+            },
+          },
+        },
+        { $match: { 'lowStockPresentations.0': { $exists: true } } },
+        { $count: 'count' },
+      ]);
+
+      const lowStockProducts = lowStockResult[0]?.count ?? 0;
+
+      return { totalProducts, lowStockProducts };
+    }
+
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
   /*══════════ 🎮 create ══════════╗
@@ -209,14 +239,13 @@ export class ProductModel {
   static async create(data: CreateProductPayload): Promise<string> {
     const {
       name, description, created_at, updated_at,
-      image_url, gallery_urls, brand, presentations
+      image_url, brand, presentations
     } = data;
 
     const nameResult: string        = Validation.stringValidation(name, 'name');
     const descriptionResult: string = Validation.stringValidation(description, 'description');
     const createdAtResult: string   = Validation.date(created_at, 'created_at');
     const updatedAtResult: string   = Validation.date(updated_at, 'updated_at');
-    const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
     const brandResult: string       = Validation.stringValidation(brand, 'brand');
     const presentationsResult: presentation[] = Validation.isVariantArray(presentations);
 
@@ -233,7 +262,6 @@ export class ProductModel {
       created_at:   createdAtResult,
       updated_at:   updatedAtResult,
       image_url:    image_url as string,
-      gallery_urls: galleryUrlsResult,
       brand:        brandResult,
       presentations:     presentationsResult,
     });
@@ -273,7 +301,7 @@ export class ProductModel {
   static async edit(data: EditProductPayload): Promise<void> {
     const {
       _id, name, description, created_at,
-      updated_at, image_url, gallery_urls,
+      updated_at, image_url,
       brand, presentations
     } = data;
 
@@ -281,7 +309,6 @@ export class ProductModel {
     const nameResult: string          = Validation.stringValidation(name, 'name');
     const descriptionResult: string   = Validation.stringValidation(description, 'description');
     const updatedAtResult: string     = Validation.date(updated_at, 'updatedAt');
-    const galleryUrlsResult: string[] = Validation.imageArray(gallery_urls);
     const brandResult: string         = Validation.stringValidation(brand, 'brand');
     const presentationsResult: presentation[] = Validation.isVariantArray(presentations);
 
@@ -294,7 +321,6 @@ export class ProductModel {
           created_at:   created_at,
           updated_at:   updatedAtResult,
           image_url:    image_url as string,
-          gallery_urls: galleryUrlsResult,
           brand:        brandResult,
           presentations:     presentationsResult,
         }

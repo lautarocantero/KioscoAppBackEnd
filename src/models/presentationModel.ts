@@ -25,7 +25,6 @@ Opera como fallback local cuando no hay conexión al servidor SQL.
 
 ── Imágenes ───────────────────────────────────────────────────────────
 - image_url       → URL de imagen principal              (String, default "")
-- gallery_urls    → URLs de galería                       (String[])
 
 ── Precios y Stock ─────────────────────────────────────────────────────
 - price           → Precio de venta unitario              (Number, req)
@@ -58,7 +57,6 @@ const PresentationMongoSchema = new Schema<PresentationSchemaType>({
 
     // ── Imágenes ───────────────────────────────────────────────────────
     image_url:       { type: String,   default: '' },
-    gallery_urls:    [{ type: String }],
 
     // ── Precios y Stock ──────────────────────────────────────────────────
     price:           { type: Number,   required: true },

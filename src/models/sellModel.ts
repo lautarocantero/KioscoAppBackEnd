@@ -52,6 +52,30 @@ export class SellModel {
         return results as unknown as SellType[];
     }
 
+    /*══════════ 📊 getTodaySellsCount ══════════╗
+    ║ 📥 Entrada: -                               ║
+    ║ ⚙️ Proceso: cuenta ventas cuya purchase_date ║
+    ║    (guardada como Date.toString()) coincide  ║
+    ║    con el día de hoy. Filtrado en memoria    ║
+    ║    porque el campo no es un Date nativo.     ║
+    ║ 📤 Salida: number                            ║
+    ╚═══════════════════════════════════════════╝*/
+
+    static async getTodaySellsCount(): Promise<number> {
+        // Solo traemos purchase_date, para no cargar documentos completos innecesariamente.
+        const results = await SellSchema.find({}, { purchase_date: 1 }).lean();
+
+        const todayStr: string = new Date().toDateString();
+
+        const todaySells = (results as unknown as { purchase_date: string }[]).filter((sell) => {
+            const parsedDate = new Date(sell.purchase_date);
+            if (Number.isNaN(parsedDate.getTime())) return false;
+            return parsedDate.toDateString() === todayStr;
+        });
+
+        return todaySells.length;
+    }
+
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
     static async create(data: CreateSellPayloadType): Promise<string> {

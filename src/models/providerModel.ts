@@ -36,6 +36,18 @@ export class ProviderModel {
         return results as unknown as Provider[];
     }
 
+    //──────────────────────────────────────────── 📊 STATS 📊 ───────────────────────────────────────────//
+
+    /*══════════ 🎮 getProvidersCount ══════════╗
+    ║ 📥 Entrada: ninguna                        ║
+    ║ ⚙️ Proceso: cuenta el total de proveedores  ║
+    ║ 📤 Salida: number                           ║
+    ╚═════════════════════════════════════════════╝*/
+
+    static async getProvidersCount(): Promise<number> {
+        return await ProviderSchema.countDocuments();
+    }
+
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
     static async create(data: CreateProviderPayload): Promise<string> {

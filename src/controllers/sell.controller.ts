@@ -8,16 +8,17 @@ import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetS
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║ 📤 Métodos soportados (nombres verificados)                                                                               ║
 ║                                                                                                                           ║
-║ Tipo   | Link                   | Función            | Descripción                    | Params                         | Return           | Auth Req | Status            ║
-║--------|------------------------|--------------------|--------------------------------|--------------------------------|------------------|----------|-------------------║
-║ GET    | /get-sells             | getSells           | Obtener todas las ventas       | -                              | {Sell[]}         | Sí       | 200,500         ║
-║ GET    | /get-sell-by-id        | getSellById        | Obtener venta por ID           | params: { _id: string }  | {Sell}           | Sí       | 200,404,500     ║
-║ GET    | /get-sells-by-seller   | getSellsBySeller   | Ventas por vendedor            | body: { seller_name: string }  | {Sell[]}         | Sí       | 200,404,500     ║
-║ GET    | /get-sells-by-date     | getSellsByDate     | Ventas por fecha               | body: { purchase_date: string }| {Sell[]}         | Sí       | 200,404,500     ║
-║ GET    | /get-sells-by-product  | getSellsByProduct  | Ventas por producto            | body: { _id: string }    | {Sell[]}         | Sí       | 200,404,500     ║
-║ POST   | /create-sell           | createSell         | Crear nueva venta              | body: {...venta}               | {_id,msg}  | Sí       | 200,400,500     ║
-║ PUT    | /edit-sell             | editSell           | Editar venta existente         | body: {id, campos}             | {_id,msg}  | Sí       | 200,400,404,500 ║
-║ DELETE | /delete-sell           | deleteSell         | Eliminar venta                 | body: { _id: string }    | {_id,msg}  | Sí       | 200,404,500     ║
+║ Tipo   | Link                     | Función              | Descripción                    | Params                    | Return         | Auth Req | Status            ║
+║--------|--------------------------|-----------------------|--------------------------------|---------------------------|----------------|----------|-------------------║
+║ GET    | /get-sells               | getSells              | Obtener todas las ventas       | -                         | {Sell[]}       | Sí       | 200,500         ║
+║ GET    | /get-sell-by-id          | getSellById           | Obtener venta por ID           | params: { _id: string }   | {Sell}         | Sí       | 200,404,500     ║
+║ GET    | /get-sells-by-seller     | getSellsBySeller      | Ventas por vendedor            | body: { seller_name }     | {Sell[]}       | Sí       | 200,404,500     ║
+║ GET    | /get-sells-by-date       | getSellsByDate        | Ventas por fecha               | body: { purchase_date }   | {Sell[]}       | Sí       | 200,404,500     ║
+║ GET    | /get-sells-by-product    | getSellsByProduct     | Ventas por producto            | body: { _id: string }     | {Sell[]}       | Sí       | 200,404,500     ║
+║ GET    | /get-today-sells-count   | getTodaySellsCount    | Cantidad de ventas de hoy      | -                         | {count}        | Sí       | 200,500         ║
+║ POST   | /create-sell             | createSell            | Crear nueva venta              | body: {...venta}          | {_id,msg}      | Sí       | 200,400,500     ║
+║ PUT    | /edit-sell               | editSell              | Editar venta existente         | body: {id, campos}        | {_id,msg}      | Sí       | 200,400,404,500 ║
+║ DELETE | /delete-sell             | deleteSell            | Eliminar venta                 | body: { _id: string }     | {_id,msg}      | Sí       | 200,404,500     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 
@@ -40,8 +41,9 @@ export async function home(_req: Request, res: Response): Promise<void> {
             <li><strong>GET</strong> – Obtener venta por ID → <code>/sell/get-sell-by-id</code></li> 
             <li><strong>GET</strong> – Ventas por vendedor → <code>/sell/get-sells-by-seller</code></li> 
             <li><strong>GET</strong> – Ventas por fecha → <code>/sell/get-sells-by-date</code></li> 
-            <li><strong>GET</strong> – Ventas por producto → <code>/sell/get-sells-by-product</code>
-            </li> <li><strong>POST</strong> – Crear nueva venta → <code>/sell/create-sell</code></li> 
+            <li><strong>GET</strong> – Ventas por producto → <code>/sell/get-sells-by-product</code></li>
+            <li><strong>GET</strong> – Cantidad de ventas de hoy → <code>/sell/get-today-sells-count</code></li>
+            <li><strong>POST</strong> – Crear nueva venta → <code>/sell/create-sell</code></li> 
             <li><strong>DELETE</strong> – Eliminar venta → <code>/sell/delete-sell</code></li> 
             <li><strong>PUT</strong> – Editar venta → <code>/sell/edit-sell</code></li> 
         </ul> 
@@ -155,6 +157,24 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
         res
             .status(200)
             .json(SellObject);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+/*══════════ 🎮 getTodaySellsCount ══════════╗
+║ 📥 Entrada: -                              ║
+║ ⚙️ Proceso: cuenta ventas del día actual   ║
+║ 📤 Salida: { count: number }               ║
+║ 🛠️ Errores: handleControllerError          ║
+╚═══════════════════════════════════════════╝*/
+
+export async function getTodaySellsCount(_req: Request, res: Response): Promise<void> {
+    try {
+        const count: number = await SellModel.getTodaySellsCount();
+        res
+            .status(200)
+            .json({ count });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

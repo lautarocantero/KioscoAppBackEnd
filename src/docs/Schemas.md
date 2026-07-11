@@ -44,7 +44,6 @@ Cuando haya conexión, las consultas se realizan contra la base de datos **SQL o
 - created_at    → Fecha de creación (String, requerido)
 - updated_at    → Fecha de última actualización (String, requerido)
 - image_url     → Imagen principal (String, requerido)
-- gallery_urls  → Galería de imágenes (Array, requerido)
 - brand         → Marca (String, requerido)
 - presentations      → Variantes asociadas (Array, requerido)
 

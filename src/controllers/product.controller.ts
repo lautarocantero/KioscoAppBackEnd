@@ -153,12 +153,28 @@ export async function searchProductsWithPresentations(req: Request, res: Respons
     }
 }
 
+/*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🎮 getProductStats → Devuelve total de productos y cuántos tienen stock bajo (stock < min_stock) ║
+║ 📥 Entrada: -                                                                                     ║
+║ 📤 Salida: JSON { totalProducts, lowStockProducts }                                               ║
+║ 🛠️ Errores: handleControllerError                                                                  ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+
+export async function getProductStats(_req: Request, res: Response): Promise<void> {
+    try {
+        const stats = await ProductModel.getStats();
+        res.status(200).json(stats);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
 //──────────────────────────────────────────── 📤 GET 📤 ───────────────────────────────────────────//
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 createProduct → Crea producto nuevo                                                                                    ║
-║ 📥 Entrada: { name, description, created_at, updated_at, image_url, gallery_urls, brand, presentations }                       ║
+║ 📥 Entrada: { name, description, created_at, updated_at, image_url, brand, presentations }                       ║
 ║ 📤 Salida: JSON { _id, message }                                                                                          ║
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
@@ -166,12 +182,12 @@ export async function searchProductsWithPresentations(req: Request, res: Respons
 export async function createProduct(req: CreateProductRequest, res: Response): Promise <void> {
     const {
         name, description, created_at, updated_at,
-        image_url, gallery_urls, brand, presentations,
+        image_url, brand, presentations,
     } = req.body;
 
     try{
         const _id: string = await ProductModel.create({
-            name, description, created_at, updated_at, image_url, gallery_urls, 
+            name, description, created_at, updated_at, image_url, 
             brand, presentations
         });
         res
@@ -215,7 +231,7 @@ export async function deleteProduct (req: DeleteProductRequest, res: Response): 
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 editProduct → Edita producto existente                                                                                 ║
-║ 📥 Entrada: { _id, name, description, created_at, updated_at, image_url, gallery_urls, brand, presentations }                  ║
+║ 📥 Entrada: { _id, name, description, created_at, updated_at, image_url, brand, presentations }                  ║
 ║ 📤 Salida: JSON { _id, message }                                                                                          ║
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
@@ -223,13 +239,13 @@ export async function deleteProduct (req: DeleteProductRequest, res: Response): 
 export async function editProduct (req: EditProductRequest, res: Response) : Promise<void> {
     const { 
         _id,name,description,created_at,
-        updated_at,image_url,gallery_urls,
+        updated_at,image_url,
         brand,presentations 
     } = req.body;
                         
     try {
         await ProductModel.edit({_id,name,description,created_at,
-            updated_at,image_url,gallery_urls, brand,presentations});
+            updated_at,image_url, brand,presentations});
         res
             .status(200)
             .json({

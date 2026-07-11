@@ -33,7 +33,6 @@ interface ProductEntity {
     created_at: string;
     updated_at: string;
     image_url: string;
-    gallery_urls: string[];
     brand: string;
     presentations: presentation[];
 }

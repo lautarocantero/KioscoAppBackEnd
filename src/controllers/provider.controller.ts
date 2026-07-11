@@ -150,6 +150,22 @@ export async function getProvidersByContact (req: GetProviderByIdRequest, res: R
     }
 }
 
+/*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🎮 getProvidersStats → Devuelve el total de proveedores registrados                               ║
+║ 📥 Entrada: -                                                                                     ║
+║ 📤 Salida: JSON { totalProviders }                                                                ║
+║ 🛠️ Errores: handleControllerError                                                                  ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+
+export async function getProvidersStats(_req: Request, res: Response): Promise<void> {
+    try {
+        const totalProviders: number = await ProviderModel.getProvidersCount();
+        res.status(200).json({ totalProviders });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────/
 

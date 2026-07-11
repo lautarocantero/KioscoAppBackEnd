@@ -18,7 +18,6 @@ Cuando haya conexión, las consultas se realizarán contra la base de datos **SQ
 - created_at    → Fecha de creación (String, requerido)
 - updated_at    → Fecha de última actualización (String, requerido)
 - image_url     → URL de imagen principal (String, requerido)
-- gallery_urls  → Array de URLs de imágenes adicionales (Array, requerido)
 - brand         → Marca del producto (String, requerido)
 - presentations      → Variantes asociadas al producto (Array, requerido)
 
@@ -34,7 +33,6 @@ export const ProductSchema = Schema<ProductSchemaType>('Product', {
     created_at: { type: String, required: true }, 
     updated_at: { type: String, required: true },
     image_url: { type: String, required: true }, 
-    gallery_urls: { type: Array, required: true }, 
     brand: { type: String, required: true }, 
     presentations: { type: Array, required: true }, 
 });

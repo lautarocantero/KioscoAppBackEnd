@@ -8,6 +8,7 @@ import {
   getProvidersByContact, 
   getProvidersByName, 
   getProvidersByValoration, 
+  getProvidersStats, 
   home 
 } from '../controllers/provider.controller';
 
@@ -37,6 +38,7 @@ router.get('/get-provider-by-id', getProviderById);
 router.get('/get-provider-by-name', getProvidersByName);
 router.get('/get-provider-by-valoration', getProvidersByValoration);
 router.get('/get-providers-by-contact', getProvidersByContact);
+router.get('/get-providers-stats', getProvidersStats);
 
 router.post('/create-provider', createProvider);
 router.delete('/delete-provider', deleteProvider);

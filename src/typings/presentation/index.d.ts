@@ -9,7 +9,7 @@ La presentatione representa UNA presentación comercial de un producto
 🧩 Campos propios de la presentatione (NO del producto padre):
 - Identificación:  _id, product_id, sku
 - Presentación:    name, description (opcional), brand, model_type, model_size
-- Imágenes:        image_url (opcional), gallery_urls
+- Imágenes:        image_url (opcional),
 - Precios y Stock: price (venta), stock, min_stock
 - Estado:          status → 'available' | 'out_of_stock' | 'unavailable'
                    (out_of_stock se calcula; available/unavailable son manuales)
@@ -39,7 +39,6 @@ interface PresentationEntity {
 
     // ── Imágenes ───────────────────────────────────────────────────────
     image_url:      string;          // opcional — vacío string si no aplica
-    gallery_urls:   string[];
 
     // ── Precios y Stock ────────────────────────────────────────────────
     price:          number;          // precio de venta unitario

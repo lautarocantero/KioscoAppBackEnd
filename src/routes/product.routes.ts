@@ -7,6 +7,7 @@ import {
   getProductById, 
   getProductByName, 
   getProducts, 
+  getProductStats, 
   getProductsWithPresentations, 
   home, 
   searchProductsWithPresentations
@@ -26,8 +27,11 @@ Define las rutas relacionadas con productos y las conecta con sus controladores.
 - GET    /get-product-by-id  → obtener producto por ID
 - GET    /get-product-by-name→ obtener productos por nombre
 - GET    /get-product-by-brand→ obtener productos por marca
+
 - POST   /create-product     → crear producto nuevo
+
 - DELETE /delete-product     → eliminar producto
+
 - PUT    /edit-product       → editar producto existente
 ──────────────────────────────*/
 
@@ -37,9 +41,13 @@ router.get('/get-product-by-id/:_id', getProductById);
 router.get('/get-product-by-name', getProductByName);
 router.get('/get-product-by-brand', getProductByBrand);
 router.get('/get-products-with-presentations', getProductsWithPresentations);
+router.get('/get-product-stats', getProductStats);
+
 router.get('/search-products-with-presentations', searchProductsWithPresentations);
 router.post('/create-product', createProduct);
+
 router.delete('/delete-product', deleteProduct);
-router.put('/edit-product/:_id', editProduct);
+
+router.put('/edit-product', editProduct);
 
 export default router;
