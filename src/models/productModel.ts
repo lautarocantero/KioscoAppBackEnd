@@ -1,38 +1,8 @@
 import mongoose, { Schema } from 'mongoose';
-import { presentation } from "@typings/presentation";
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
 import { PresentationSchema } from './presentationModel';
 
-/*──────────────────────────────
-📦 ProductModel — Mongoose
-──────────────────────────────
-📜 Propósito: Gestión completa de productos contra MongoDB
-🧩 Dependencias: mongoose, Validation, productTypes
-📂 Endpoints: GET, POST, DELETE, PUT
-──────────────────────────────*/
-
-
-// ─── Schema de Mongoose ───────────────────────────────────────────
-// Refleja exactamente la estructura de tus JSON
-
-const EmbeddedPresentationSchema = new Schema({
-  _id:             { type: String, required: true },
-  name:            { type: String, required: true },
-  description:     { type: String },
-  created_at:      { type: String },
-  updated_at:      { type: String },
-  image_url:       { type: String },
-  brand:           { type: String },
-  product_id:      { type: String },
-  sku:             { type: String },
-  model_type:      { type: String },
-  model_size:      { type: String },
-  min_stock:       { type: Number },
-  stock:           { type: Number },
-  price:           { type: Number },
-  expiration_date: { type: String },
-}, { _id: false }); // _id: false porque ya lo manejamos como string
 
 const ProductMongoSchema = new Schema({
   _id:          { type: String, required: true },
@@ -42,8 +12,7 @@ const ProductMongoSchema = new Schema({
   updated_at:   { type: String },
   image_url:    { type: String },
   brand:        { type: String },
-  presentations:     [EmbeddedPresentationSchema],
-}, { _id: false }); // _id: false porque usamos UUID string como _id
+}, { _id: false });
 
 // Evitar re-compilación del modelo en hot-reload
 const ProductMongo = mongoose.models.Product || mongoose.model('Product', ProductMongoSchema, 'products');
@@ -52,6 +21,43 @@ const ProductMongo = mongoose.models.Product || mongoose.model('Product', Produc
 // ─── ProductModel ─────────────────────────────────────────────────
 
 export class ProductModel {
+
+  //──────────────────────────────────────────── 🔧 HELPERS 🔧 ───────────────────────────────────────────//
+  // to do mover a presentation 
+  
+  /*══════════ 🎮 buildPresentationsLookupStage ══════════╗
+  ║ 📥 Entrada: ninguna                                    ║
+  ║ ⚙️ Proceso: arma el stage $lookup reutilizable que      ║
+  ║            trae presentations resumidas (sku, name,    ║
+  ║            description, model_type, model_size, stock) ║
+  ║            para el producto cuyo _id coincide con      ║
+  ║            product_id de la presentation                ║
+  ║ 📤 Salida: objeto stage $lookup para usar en aggregate  ║
+  ╚═══════════════════════════════════════════════════════╝*/
+
+  private static buildPresentationsLookupStage() {
+    return {
+      $lookup: {
+        from: 'presentations',
+        let: { productId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+          {
+            $project: {
+              _id: 0,
+              sku: 1,
+              name: 1,
+              description: 1,
+              model_type: 1,
+              model_size: 1,
+              stock: 1,
+            },
+          },
+        ],
+        as: 'presentations',
+      },
+    };
+  }
 
   //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
@@ -119,27 +125,7 @@ export class ProductModel {
 
   static async getProductsWithPresentations(): Promise<Product[]> {
     const results = await ProductMongo.aggregate([
-      {
-        $lookup: {
-          from: 'presentations', // ← nombre real de la colección (ver PresentationSchema)
-          let: { productId: '$_id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-            {
-              $project: {
-                _id: 0,
-                sku: 1,
-                name: 1,
-                description: 1,
-                model_type: 1,
-                model_size: 1,
-                stock: 1,
-              },
-            },
-          ],
-          as: 'presentations',
-        },
-      },
+      this.buildPresentationsLookupStage(),
       { $limit: 100 },
     ]);
 
@@ -161,27 +147,7 @@ export class ProductModel {
     const regex = { $regex: term, $options: 'i' };
 
     const results = await ProductMongo.aggregate([
-      {
-        $lookup: {
-          from: 'presentations',
-          let: { productId: '$_id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-            {
-              $project: {
-                _id: 0,
-                sku: 1,
-                name: 1,
-                description: 1,
-                model_type: 1,
-                model_size: 1,
-                stock: 1,
-              },
-            },
-          ],
-          as: 'presentations',
-        },
-      },
+      this.buildPresentationsLookupStage(),
       {
         $match: {
           $or: [
@@ -239,7 +205,7 @@ export class ProductModel {
   static async create(data: CreateProductPayload): Promise<string> {
     const {
       name, description, created_at, updated_at,
-      image_url, brand, presentations
+      image_url, brand,
     } = data;
 
     const nameResult: string        = Validation.stringValidation(name, 'name');
@@ -247,7 +213,6 @@ export class ProductModel {
     const createdAtResult: string   = Validation.date(created_at, 'created_at');
     const updatedAtResult: string   = Validation.date(updated_at, 'updated_at');
     const brandResult: string       = Validation.stringValidation(brand, 'brand');
-    const presentationsResult: presentation[] = Validation.isVariantArray(presentations);
 
     // Control de duplicados
     const existing = await ProductMongo.findOne({ name: nameResult }).lean();
@@ -263,7 +228,6 @@ export class ProductModel {
       updated_at:   updatedAtResult,
       image_url:    image_url as string,
       brand:        brandResult,
-      presentations:     presentationsResult,
     });
 
     return _id;
@@ -302,15 +266,15 @@ export class ProductModel {
     const {
       _id, name, description, created_at,
       updated_at, image_url,
-      brand, presentations
+      brand
     } = data;
 
     const _idResult: string           = Validation.stringValidation(_id, '_id');
     const nameResult: string          = Validation.stringValidation(name, 'name');
     const descriptionResult: string   = Validation.stringValidation(description, 'description');
+    const createdResult: string     = Validation.date(created_at, 'createdAt');
     const updatedAtResult: string     = Validation.date(updated_at, 'updatedAt');
     const brandResult: string         = Validation.stringValidation(brand, 'brand');
-    const presentationsResult: presentation[] = Validation.isVariantArray(presentations);
 
     const updated = await ProductMongo.findOneAndUpdate(
       { _id: _idResult },
@@ -318,11 +282,10 @@ export class ProductModel {
         $set: {
           name:         nameResult,
           description:  descriptionResult,
-          created_at:   created_at,
+          created_at:   createdResult, // esto antes pasaba created_at, puede que haya una razon para eso pero no recuerdo.
           updated_at:   updatedAtResult,
           image_url:    image_url as string,
           brand:        brandResult,
-          presentations:     presentationsResult,
         }
       },
       { new: true } // devuelve el documento actualizado

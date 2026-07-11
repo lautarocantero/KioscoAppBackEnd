@@ -1,24 +1,4 @@
-
-/*──────────────────────────────
-📘 ProductTypes
-──────────────────────────────
-📜 Propósito:
-Definir tipados base y derivados para productos.  
-Incluye entidad principal, repositorio local (db-local), payloads y requests.
-
-🧩 Derivaciones:
-- ProductEntity → Product → ProductSchemaType
-- ProductEntity → ProductRepository → ProductModelType
-- ProductEntity → ProductPayloadUnknown → ProductPayload
-- ProductPayload → Payloads específicos (Get, Create, Delete, Edit)
-- Payloads → Requests tipados para controladores
-
-🛡️ Seguridad:
-- Usar ProductPublic para exponer datos sin campos sensibles.
-- Validar siempre los payloads antes de persistir o responder.
-──────────────────────────────*/
-
-import { presentation } from "../presentation/productVariantTypes";
+import type { Request } from 'express';
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔒 BASES PRIVADAS 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒           ║
@@ -34,7 +14,6 @@ interface ProductEntity {
     updated_at: string;
     image_url: string;
     brand: string;
-    presentations: presentation[];
 }
 
 //base con las funciones de db-local
@@ -47,6 +26,10 @@ interface ProductRepository extends ProductEntity {
 
 //base para payloads, no se de que dato seran, necesito validarlos.
 type ProductPayloadUnknown = Record<keyof ProductEntity, unknown>;
+
+type ProductParams = {
+  _id?: string;
+};
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🧩 DERIVADOS PUBLICOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩      ║

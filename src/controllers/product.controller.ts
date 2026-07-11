@@ -71,7 +71,7 @@ export async function getProducts( _req: Request,res: Response): Promise <void> 
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function getProductById(req: GetProductByIdRequest, res: Response): Promise<void> {
-    const _id = req.params._id ?? req.body._id;   // ← params primero, body como fallback
+    const _id = (req.params._id as string) ?? (req.query._id as string) ?? req.body._id;
 
     try {
         const productObject: Product[] = await ProductModel.getProductByField('_id', _id, 'string');
@@ -114,7 +114,8 @@ export async function getProductByName (req: GetProductByNameRequest, res: Respo
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function getProductByBrand (req: GetProductByBrandRequest, res: Response): Promise<void> {
-    const { brand } = req.body;
+    const brand = (req.query.brand as string) ?? req.body.brand;
+    
 
     try {
         const productsObject: Product[] = await ProductModel.getProductByField('brand',brand,'string');
@@ -174,7 +175,7 @@ export async function getProductStats(_req: Request, res: Response): Promise<voi
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 createProduct → Crea producto nuevo                                                                                    ║
-║ 📥 Entrada: { name, description, created_at, updated_at, image_url, brand, presentations }                       ║
+║ 📥 Entrada: { name, description, created_at, updated_at, image_url, brand }                       ║
 ║ 📤 Salida: JSON { _id, message }                                                                                          ║
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
@@ -182,13 +183,13 @@ export async function getProductStats(_req: Request, res: Response): Promise<voi
 export async function createProduct(req: CreateProductRequest, res: Response): Promise <void> {
     const {
         name, description, created_at, updated_at,
-        image_url, brand, presentations,
+        image_url, brand,
     } = req.body;
 
     try{
         const _id: string = await ProductModel.create({
             name, description, created_at, updated_at, image_url, 
-            brand, presentations
+            brand
         });
         res
             .status(200)
@@ -231,7 +232,7 @@ export async function deleteProduct (req: DeleteProductRequest, res: Response): 
 
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 editProduct → Edita producto existente                                                                                 ║
-║ 📥 Entrada: { _id, name, description, created_at, updated_at, image_url, brand, presentations }                  ║
+║ 📥 Entrada: { _id, name, description, created_at, updated_at, image_url, brand }                  ║
 ║ 📤 Salida: JSON { _id, message }                                                                                          ║
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
@@ -240,12 +241,12 @@ export async function editProduct (req: EditProductRequest, res: Response) : Pro
     const { 
         _id,name,description,created_at,
         updated_at,image_url,
-        brand,presentations 
+        brand 
     } = req.body;
                         
     try {
         await ProductModel.edit({_id,name,description,created_at,
-            updated_at,image_url, brand,presentations});
+            updated_at,image_url, brand});
         res
             .status(200)
             .json({
