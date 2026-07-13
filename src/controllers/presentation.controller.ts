@@ -174,10 +174,10 @@ export async function getPresentationAnalytics(
     res: Response,
 ): Promise<void> {
     const { presentation_id } = req.params;
-    const { start_date, end_date } = req.query;
+    const { start_date, end_date, seller_id } = req.query;
 
     try {
-        const analytics = await buildPresentationAnalytics(presentation_id, start_date, end_date);
+        const analytics = await buildPresentationAnalytics(presentation_id, start_date, end_date, seller_id);
         res.status(200).json(analytics);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -193,6 +193,7 @@ async function buildPresentationAnalytics(
     presentation_id: string,
     start_date?: string,
     end_date?: string,
+    seller_id?: string,
 ): Promise<PresentationAnalyticsRaw> {
 
     // ── Rango solicitado (default: últimos 30 días incluyendo hoy) ──
@@ -210,14 +211,20 @@ async function buildPresentationAnalytics(
     prevStart.setHours(0, 0, 0, 0);
     prevEnd.setHours(23, 59, 59, 999);
 
-    // Sólo filtramos en Mongo por presencia de la presentación en el array.
+    // Filtramos en Mongo por presencia de la presentación en el array y, si vino, por seller_id.
     // El resto (fechas, montos) se calcula en JS por el formato no-ISO de purchase_date.
-    const sells = await SellSchema.find({ 'products._id': presentation_id }).lean();
+    const sells = await SellSchema.find({
+        'products._id': presentation_id,
+        ...(seller_id ? { seller_id } : {}),
+    }).lean();
 
     type RawSell = {
         purchase_date: string;
+        seller_id: string;
         products: { _id: string; price: number; stock_required: number }[];
     };
+
+    // ... el resto de la función queda exactamente igual
 
     const buildBucket = (from: Date, to: Date) => {
         const perDay = new Map<string, { units: number; revenue: number }>();

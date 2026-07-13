@@ -94,6 +94,7 @@ declare module '@typings/sell' {
 export type PresentationAnalyticsQuery = {
     start_date?: string; // 'YYYY-MM-DD'
     end_date?: string;   // 'YYYY-MM-DD'
+    seller_id?: string;
 };
 
 export type GetPresentationAnalyticsRequest = Request<
