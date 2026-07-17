@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
-import { PresentationSchema } from './presentationModel';
+import { PresentationSchema } from 'schemas/presentationSchema';
 
 
 const ProductMongoSchema = new Schema({
@@ -15,49 +15,14 @@ const ProductMongoSchema = new Schema({
 }, { _id: false });
 
 // Evitar re-compilación del modelo en hot-reload
-const ProductMongo = mongoose.models.Product || mongoose.model('Product', ProductMongoSchema, 'products');
+export const ProductMongo = mongoose.models.Product || mongoose.model('Product', ProductMongoSchema, 'products');
 
 
 // ─── ProductModel ─────────────────────────────────────────────────
+// ⚠️ Este modelo solo conoce la colección "products".
+// Todo lo que combine products + presentations vive en services/catalogService.ts
 
 export class ProductModel {
-
-  //──────────────────────────────────────────── 🔧 HELPERS 🔧 ───────────────────────────────────────────//
-  // to do mover a presentation 
-  
-  /*══════════ 🎮 buildPresentationsLookupStage ══════════╗
-  ║ 📥 Entrada: ninguna                                    ║
-  ║ ⚙️ Proceso: arma el stage $lookup reutilizable que      ║
-  ║            trae presentations resumidas (sku, name,    ║
-  ║            description, model_type, model_size, stock) ║
-  ║            para el producto cuyo _id coincide con      ║
-  ║            product_id de la presentation                ║
-  ║ 📤 Salida: objeto stage $lookup para usar en aggregate  ║
-  ╚═══════════════════════════════════════════════════════╝*/
-
-  private static buildPresentationsLookupStage() {
-    return {
-      $lookup: {
-        from: 'presentations',
-        let: { productId: '$_id' },
-        pipeline: [
-          { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
-          {
-            $project: {
-              _id: 0,
-              sku: 1,
-              name: 1,
-              description: 1,
-              model_type: 1,
-              model_size: 1,
-              stock: 1,
-            },
-          },
-        ],
-        as: 'presentations',
-      },
-    };
-  }
 
   //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
@@ -93,7 +58,7 @@ export class ProductModel {
     return results as unknown as Product[];
   }
 
-    /*══════════ 🎮 searchByField ══════════╗
+  /*══════════ 🎮 searchByField ══════════╗
   ║ 📥 Entrada: field, value (string)      ║
   ║ ⚙️ Proceso: busca coincidencia parcial,║
   ║            case-insensitive            ║
@@ -112,87 +77,7 @@ export class ProductModel {
     }).lean();
 
     return results as unknown as Product[];
-}
-
-  /*══════════ 🎮 getProductsWithPresentations ══════════╗
-  ║ 📥 Entrada: ninguna                                   ║
-  ║ ⚙️ Proceso: trae productos + presentations (solo       ║
-  ║            sku, name, description, model_type,        ║
-  ║            model_size, stock) cuyo product_id          ║
-  ║            coincida con el _id del producto            ║
-  ║ 📤 Salida: Product[] (presentations resumidas)         ║
-  ╚════════════════════════════════════════════════════════╝*/
-
-  static async getProductsWithPresentations(): Promise<Product[]> {
-    const results = await ProductMongo.aggregate([
-      this.buildPresentationsLookupStage(),
-      { $limit: 100 },
-    ]);
-
-    return results as unknown as Product[];
   }
-
-  /*══════════ 🎮 searchProductsWithPresentations ══════════╗
-  ║ 📥 Entrada: term (string)                                ║
-  ║ ⚙️ Proceso: trae producto + presentations (igual que      ║
-  ║            getProductsWithPresentations) y filtra en DB   ║
-  ║            por $or: name del producto O name de alguna    ║
-  ║            presentation, case-insensitive                 ║
-  ║ 📤 Salida: Product[] (presentations resumidas)             ║
-  ╚════════════════════════════════════════════════════════════╝*/
-
-  static async searchProductsWithPresentations(term: string): Promise<Product[]> {
-    Validation.stringValidation(term, 'term');
-
-    const regex = { $regex: term, $options: 'i' };
-
-    const results = await ProductMongo.aggregate([
-      this.buildPresentationsLookupStage(),
-      {
-        $match: {
-          $or: [
-            { name: regex },
-            { 'presentations.name': regex },
-          ],
-        },
-      },
-      { $limit: 100 },
-    ]);
-
-    return results as unknown as Product[];
-  }
-
-  /*══════════ 🎮 getStats ══════════╗
-    ║ 📥 Entrada: ninguna                                        ║
-    ║ ⚙️ Proceso: cuenta el total de productos y cuántos de ellos ║
-    ║            tienen al menos una presentation con stock      ║
-    ║            por debajo de su min_stock                      ║
-    ║ 📤 Salida: { totalProducts, lowStockProducts }              ║
-    ╚═══════════════════════════════════════════════════════════╝*/
-
-    static async getStats(): Promise<{ totalProducts: number; lowStockProducts: number }> {
-      const totalProducts = await ProductMongo.countDocuments();
-
-      const lowStockResult = await ProductMongo.aggregate([
-        {
-          $addFields: {
-            lowStockPresentations: {
-              $filter: {
-                input: '$presentations',
-                as: 'p',
-                cond: { $lt: ['$$p.stock', '$$p.min_stock'] },
-              },
-            },
-          },
-        },
-        { $match: { 'lowStockPresentations.0': { $exists: true } } },
-        { $count: 'count' },
-      ]);
-
-      const lowStockProducts = lowStockResult[0]?.count ?? 0;
-
-      return { totalProducts, lowStockProducts };
-    }
 
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
@@ -239,6 +124,7 @@ export class ProductModel {
     ║ 📥 Entrada: DeleteProductPayload {_id}                    ║
     ║ ⚙️ Proceso: valida id, elimina el producto y en cascada    ║
     ║            todas las presentations con ese product_id      ║
+    ║            (regla de integridad del propio dominio product)║
     ║ 📤 Salida: void                                             ║
     ╚════════════════════════════════════════════════════════════╝*/
 
@@ -251,7 +137,7 @@ export class ProductModel {
 
     if (!deleted) throw new Error('There is not any product with that id');
 
-    await PresentationSchema.deleteMany({ product_id: _idResult });
+    await ProductMongo.deleteMany({ product_id: _idResult });
   }
 
   //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
@@ -272,7 +158,7 @@ export class ProductModel {
     const _idResult: string           = Validation.stringValidation(_id, '_id');
     const nameResult: string          = Validation.stringValidation(name, 'name');
     const descriptionResult: string   = Validation.stringValidation(description, 'description');
-    const createdResult: string     = Validation.date(created_at, 'createdAt');
+    const createdResult: string       = Validation.date(created_at, 'createdAt');
     const updatedAtResult: string     = Validation.date(updated_at, 'updatedAt');
     const brandResult: string         = Validation.stringValidation(brand, 'brand');
 
@@ -282,7 +168,7 @@ export class ProductModel {
         $set: {
           name:         nameResult,
           description:  descriptionResult,
-          created_at:   createdResult, // esto antes pasaba created_at, puede que haya una razon para eso pero no recuerdo.
+          created_at:   createdResult,
           updated_at:   updatedAtResult,
           image_url:    image_url as string,
           brand:        brandResult,
