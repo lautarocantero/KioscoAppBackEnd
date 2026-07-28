@@ -4,12 +4,6 @@
 general: 
 
 ---
-Productos:
-- [ xxx ] Refactorizar controlador / modelo. 
----
-Presentaciones:
-- [ xxx ] Refactorizar controlador / modelo. 
----
 ventas:
 - [ xxx ] Envolver createSell en transacción Mongo (session): actualmente la venta se crea
           ANTES de descontar stock de presentaciones. Si decreaseStock falla (stock insuficiente,
@@ -17,4 +11,3 @@ ventas:
           inconsistencia entre "sells" y "presentations". Ideal: validar/reservar stock antes de
           crear la venta, o mongoose.startSession() + transaction con rollback de ambas operaciones.
 ---
-vendedores:
