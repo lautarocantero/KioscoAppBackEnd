@@ -4,6 +4,8 @@ import {
     CreatePresentationRequest,
     DeletePresentationRequest,
     EditPresentationRequest,
+    GetPresentationByBarcodeRequest,
+    GetPresentationByCategoryRequest,
     GetPresentationByIdRequest,
     GetPresentationByModelSizeRequest,
     GetPresentationByPriceRequest,
@@ -14,6 +16,7 @@ import {
 import { handleControllerError } from '../utils/handleControllerError';
 import { GetPresentationAnalyticsRequest } from '@typings/sell';
 import { PresentationAnalyticsService } from '../services/presentationAnalysticsService';
+import { PRESENTATION_CATEGORY_VALUES } from '../typings/presentation/presentationEnum';
 
 //──────────────────────────────────────── GET ────────────────────────────────//
 
@@ -57,6 +60,16 @@ export async function getPresentationByProductId(req: GetPresentationByProductId
     const { product_id } = req.params;
     try {
         const presentations = await PresentationModel.getPresentationByField('product_id', product_id, 'string');
+        res.status(200).json(presentations);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+export async function getPresentationsWithStockByProductId(req: GetPresentationByProductIdRequest, res: Response): Promise<void> {
+    const { product_id } = req.params;
+    try {
+        const presentations = await PresentationModel.getPresentationsWithStockByProductId(product_id);
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -117,6 +130,35 @@ export async function searchPresentationsByProductId(
     }
 }
 
+export async function getPresentationByBarcode(req: GetPresentationByBarcodeRequest, res: Response): Promise<void> {
+    const { barcode } = req.params;
+    try {
+        const presentations = await PresentationModel.getPresentationByField('barcode', barcode, 'string');
+        res.status(200).json(presentations);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+//──────────────────────────────────────── CATEGORIES ──────────────────────────//
+
+export async function getPresentationByCategory(req: GetPresentationByCategoryRequest, res: Response): Promise<void> {
+    const { category } = req.body;
+    try {
+        const presentations = await PresentationModel.getPresentationsByCategory(category);
+        res.status(200).json(presentations);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+export async function getAvailableCategories(_req: Request, res: Response): Promise<void> {
+    try {
+        res.status(200).json(PRESENTATION_CATEGORY_VALUES);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
 //──────────────────────────────────────── ANALYTICS ──────────────────────────//
 
 export async function getPresentationAnalytics(
@@ -138,18 +180,19 @@ export async function getPresentationAnalytics(
 
 export async function createPresentation(req: CreatePresentationRequest, res: Response): Promise<void> {
     const {
-        product_id, sku, name, description, brand, image_url,
+        product_id, sku, barcode, name, description, brand, image_url,
         model_type, model_size, min_stock, stock, price, expiration_date,
+        category,
     } = req.body;
 
     const imageUrl = req.file ? req.file.path : image_url;
 
     try {
         const _id = await PresentationModel.create({
-            product_id, sku, name, description, brand,
+            product_id, sku, barcode, name, description, brand,
             image_url: imageUrl, model_type, model_size,
             min_stock: Number(min_stock), stock: Number(stock),
-            price: Number(price), expiration_date,
+            price: Number(price), expiration_date, category,
         });
         res.status(200).json({ _id, message: 'Product presentation created successfully' });
     } catch (error: unknown) {
@@ -162,16 +205,16 @@ export async function createPresentation(req: CreatePresentationRequest, res: Re
 export async function editPresentation(req: EditPresentationRequest, res: Response): Promise<void> {
     const { presentation_id } = req.params;
     const {
-        sku, price, expiration_date, stock, min_stock,
+        sku, barcode, price, expiration_date, stock, min_stock,
         model_type, model_size, image_url, brand, description,
-        name,
+        name, category,
     } = req.body;
 
     try {
         await PresentationModel.edit({
-            _id: presentation_id, sku, price: Number(price), stock: Number(stock),
+            _id: presentation_id, sku, barcode, price: Number(price), stock: Number(stock),
             min_stock: Number(min_stock), model_type, model_size,
-            image_url, brand, description, expiration_date, name,
+            image_url, brand, description, expiration_date, name, category,
         });
         res.status(200).json({ _id: presentation_id, message: 'Product presentation edited successfully' });
     } catch (error: unknown) {

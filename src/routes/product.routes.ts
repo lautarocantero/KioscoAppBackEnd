@@ -9,6 +9,7 @@ import {
   getProducts, 
   getProductStats, 
   getProductsWithPresentations, 
+  getProductsWithStock, 
   home, 
   searchProductsWithPresentations
 } from '../controllers/product.controller';
@@ -41,6 +42,7 @@ router.get('/get-product-by-id/:_id', getProductById);
 router.get('/get-product-by-name', getProductByName);
 router.get('/get-product-by-brand', getProductByBrand);
 router.get('/get-products-with-presentations', getProductsWithPresentations);
+router.get('/get-products-with-stock', getProductsWithStock);
 router.get('/get-product-stats', getProductStats);
 
 router.get('/search-products-with-presentations', searchProductsWithPresentations);

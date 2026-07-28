@@ -1,6 +1,8 @@
 import { Product } from "@typings/product";
-import { Validation } from "../models/validation";
 import { ProductMongo } from "../models/productModel";
+import { PresentationCategory, PRESENTATION_CATEGORY_VALUES } from "../typings/presentation/presentationEnum";
+import { PipelineStage } from "mongoose";
+import { PresentationMongo } from "../models/presentationModel";
 
 /*──────────────────────────────
 🗂️ CatalogService
@@ -23,12 +25,13 @@ export class CatalogService {
   ║ ⚙️ Proceso: arma el stage $lookup reutilizable que      ║
   ║            trae presentations resumidas (sku, name,    ║
   ║            description, model_type, model_size, stock, ║
-  ║            min_stock) para el producto cuyo _id         ║
-  ║            coincide con product_id de la presentation   ║
+  ║            min_stock, category) para el producto cuyo  ║
+  ║            _id coincide con product_id de la           ║
+  ║            presentation                                 ║
   ║ 📤 Salida: objeto stage $lookup para usar en aggregate  ║
   ╚═══════════════════════════════════════════════════════╝*/
 
-  private static buildPresentationsLookupStage() {
+  private static buildPresentationsLookupStage(): PipelineStage.Lookup {
     return {
       $lookup: {
         from: 'presentations',
@@ -45,6 +48,7 @@ export class CatalogService {
               model_size: 1,
               stock: 1,
               min_stock: 1,
+              category: 1,
             },
           },
         ],
@@ -72,69 +76,96 @@ export class CatalogService {
     return results as unknown as Product[];
   }
 
-  /*══════════ 🎮 searchProductsWithPresentations ══════════╗
-  ║ 📥 Entrada: term (string)                                ║
-  ║ ⚙️ Proceso: trae producto + presentations (igual que      ║
-  ║            getProductsWithPresentations) y filtra en DB   ║
-  ║            por $or: name del producto O name de alguna    ║
-  ║            presentation, case-insensitive                 ║
-  ║ 📤 Salida: Product[] (presentations resumidas)             ║
-  ╚════════════════════════════════════════════════════════════╝*/
+  /*══════════ 🎮 getProductsWithStock ══════════╗
+  ║ 📥 Entrada: ninguna                                   ║
+  ║ ⚙️ Proceso: idéntico a getProductsWithPresentations,   ║
+  ║            pero filtra dejando solo productos que      ║
+  ║            tengan al menos una presentation con        ║
+  ║            stock > 0                                   ║
+  ║ 📤 Salida: Product[] (presentations resumidas)         ║
+  ╚════════════════════════════════════════════════════════╝*/
 
-  static async searchProductsWithPresentations(term: string): Promise<Product[]> {
-    Validation.stringValidation(term, 'term');
-
-    const regex = { $regex: term, $options: 'i' };
-
+  static async getProductsWithStock(): Promise<Product[]> {
     const results = await ProductMongo.aggregate([
       this.buildPresentationsLookupStage(),
-      {
-        $match: {
-          $or: [
-            { name: regex },
-            { 'presentations.name': regex },
-          ],
-        },
-      },
+      { $match: { 'presentations.stock': { $gt: 0 } } },
       { $limit: 100 },
     ]);
 
     return results as unknown as Product[];
   }
 
+  /*══════════ 🎮 searchProductsWithPresentations ══════════╗
+  ║ 📥 Entrada: term (string), category (opcional)            ║
+  ║ ⚙️ Proceso: trae producto + presentations (igual que      ║
+  ║            getProductsWithPresentations), filtra en DB     ║
+  ║            por $or: name del producto O name de alguna     ║
+  ║            presentation, case-insensitive; si viene         ║
+  ║            category, además exige que al menos una         ║
+  ║            presentation la tenga en su array category      ║
+  ║ 📤 Salida: Product[] (presentations resumidas)             ║
+  ╚════════════════════════════════════════════════════════════╝*/
+
+    static async searchProductsWithPresentations(term: string, category?: string): Promise<Product[]> {
+    const hasTerm = term !== undefined && term.trim() !== "";
+    const hasCategory = category !== undefined;
+
+    if (!hasTerm && !hasCategory) {
+      throw new Error('Debe proveerse term o category');
+    }
+
+    if (hasCategory) {
+      const isValidCategory = PRESENTATION_CATEGORY_VALUES.includes(category as string);
+      if (!isValidCategory) throw new Error(`Categoría inválida: ${category}`);
+    }
+
+    const pipeline: PipelineStage[] = [
+      this.buildPresentationsLookupStage(),
+    ];
+
+    if (hasTerm) {
+      const regex = { $regex: term, $options: 'i' };
+      pipeline.push({
+        $match: {
+          $or: [
+            { name: regex },
+            { 'presentations.name': regex },
+          ],
+        },
+      });
+    }
+
+    if (hasCategory) {
+      pipeline.push({
+        $match: {
+          'presentations.category': category as PresentationCategory,
+        },
+      });
+    }
+
+    pipeline.push({ $limit: 100 });
+
+    const results = await ProductMongo.aggregate(pipeline);
+
+    return results as unknown as Product[];
+}
+
   /*══════════ 🎮 getStats ══════════╗
   ║ 📥 Entrada: ninguna                                        ║
-  ║ ⚙️ Proceso: cuenta el total de productos y cuántos de ellos ║
-  ║            tienen al menos una presentation con stock      ║
-  ║            por debajo de su min_stock                      ║
-  ║ 🐛 Fix: antes faltaba el $lookup, por lo que                ║
-  ║        "$presentations" siempre era undefined y             ║
-  ║        lowStockProducts daba 0 siempre.                     ║
-  ║ 📤 Salida: { totalProducts, lowStockProducts }              ║
+  ║ ⚙️ Proceso: cuenta el total de productos y cuántas          ║
+  ║            presentaciones (en total, no productos) tienen  ║
+  ║            stock por debajo de su min_stock                ║
+  ║ 📤 Salida: { totalProducts, lowStockPresentations }         ║
   ╚═══════════════════════════════════════════════════════════╝*/
 
-  static async getStats(): Promise<{ totalProducts: number; lowStockProducts: number }> {
+  static async getStats(): Promise<{ totalProducts: number; lowStockPresentations: number }> {
     const totalProducts = await ProductMongo.countDocuments();
 
-    const lowStockResult = await ProductMongo.aggregate([
-      this.buildPresentationsLookupStage(),
-      {
-        $addFields: {
-          lowStockPresentations: {
-            $filter: {
-              input: '$presentations',
-              as: 'p',
-              cond: { $lt: ['$$p.stock', '$$p.min_stock'] },
-            },
-          },
-        },
-      },
-      { $match: { 'lowStockPresentations.0': { $exists: true } } },
-      { $count: 'count' },
-    ]);
+    const lowStockPresentations = await PresentationMongo.countDocuments({
+      $expr: { $lt: ['$stock', '$min_stock'] },
+    });
 
-    const lowStockProducts = lowStockResult[0]?.count ?? 0;
-
-    return { totalProducts, lowStockProducts };
+    return { totalProducts, lowStockPresentations };
   }
+
 }

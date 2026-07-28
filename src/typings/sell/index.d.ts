@@ -49,7 +49,13 @@ declare module '@typings/sell' {
 
   //──────────────────────────────────────────── 🗂️ SCHEMA 🗂️ ───────────────────────────────────────────//
 
-  export type SellSchemaType = SellType;
+  export type SellSchemaType = SellType & {
+    createdAt?: Date;
+    updatedAt?: Date;
+    status: SellStatusEnum;
+    amount_paid: number | null;
+    debtor_name: string | null;
+  };
 
   //──────────────────────────────────────────── 📦 PAYLOAD 📦 ───────────────────────────────────────────//
 
@@ -61,7 +67,13 @@ declare module '@typings/sell' {
 
   export type GetSellsByProductPayloadType = Pick<SellPayloadType, '_id'>;
 
-  export type CreateSellPayloadType = Omit<SellPayloadType, '_id' | 'modification_date'>;
+  // 🔧 FIX: se excluye 'products' del Omit (quedaba en `unknown`) y se redefine como presentation[]
+  export type CreateSellPayloadType = Omit<SellPayloadType, '_id' | 'modification_date' | 'products'> & {
+    products: presentation[];
+    status: SellStatusEnum;
+    amount_paid: number | null;
+    debtor_name: string | null;
+  };
 
   export type DeleteSellPayloadType = Pick<SellPayloadType, '_id'>;
 
@@ -92,8 +104,8 @@ declare module '@typings/sell' {
   //──────────────────────────────────────────── 🔗 ANALYTICS 🔗 ───────────────────────────────────────────//
 
 export type PresentationAnalyticsQuery = {
-    start_date?: string; // 'YYYY-MM-DD'
-    end_date?: string;   // 'YYYY-MM-DD'
+    start_date?: string;
+    end_date?: string;
     seller_id?: string;
 };
 
@@ -106,13 +118,13 @@ export type GetPresentationAnalyticsRequest = Request<
 
 export interface DailySalePoint {
     isoDate: string;
-    date: string;   // '01 may'
+    date: string;
     units: number;
     revenue: number;
 }
 
 export interface WeeklySalePoint {
-    weekLabel: string; // '29 abr - 05 may'
+    weekLabel: string;
     units: number;
     revenue: number;
 }

@@ -135,6 +135,23 @@ export async function getProductByBrand(req: GetProductByBrandRequest, res: Resp
 //──────────────────────────────────────────── 🗂️ CATALOG (products + presentations) ───────────────────────────//
 // Estos 3 endpoints combinan dos dominios → delegan en CatalogService, no en ProductModel.
 
+
+/*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🎮 getProductsWithStock → Productos + presentations resumidas, solo con stock > 0                                        ║
+║ 📥 Entrada: -                                                                                                             ║
+║ 📤 Salida: JSON [Product] (presentations resumidas, solo con stock)                                                      ║
+║ 🛠️ Errores: handleControllerError                                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+
+export async function getProductsWithStock(_req: Request, res: Response): Promise<void> {
+    try {
+        const productsObject: Product[] = await CatalogService.getProductsWithStock();
+        res.status(200).json(productsObject);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
 /*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 getProductsWithPresentations → Productos + sus presentations resumidas                                                 ║
 ║ 📥 Entrada: -                                                                                                             ║
@@ -160,9 +177,10 @@ export async function getProductsWithPresentations(_req: Request, res: Response)
 
 export async function searchProductsWithPresentations(req: Request, res: Response): Promise<void> {
     const term = req.query.term as string;
+    const category = req.query.category as string | undefined;
 
     try {
-        const productsObject: Product[] = await CatalogService.searchProductsWithPresentations(term);
+        const productsObject: Product[] = await CatalogService.searchProductsWithPresentations(term, category);
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);

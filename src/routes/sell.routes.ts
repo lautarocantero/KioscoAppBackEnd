@@ -28,7 +28,8 @@ import {
   getSellsByProduct, 
   getSellsBySeller, 
   getTodaySellsCount,
-  home 
+  home, 
+  searchSells
 } from '../controllers/sell.controller';
 
 const router = express.Router();
@@ -41,7 +42,7 @@ router.get('/get-sells-by-seller', getSellsBySeller);
 router.get('/get-sells-by-date', getSellsByDate);
 router.get('/get-sells-by-product', getSellsByProduct);
 router.get('/get-today-sells-count', getTodaySellsCount);
-
+router.get('/search-sells', searchSells);
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 router.post('/create-sell', createSell);
 

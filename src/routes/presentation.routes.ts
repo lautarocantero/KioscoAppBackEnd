@@ -3,6 +3,7 @@ import {
     home,
     getPresentations,
     getPresentationById,
+    getPresentationByBarcode,
     getPresentationByProductId,
     getPresentationByStock,
     getPresentationByPrice,
@@ -13,6 +14,9 @@ import {
     deletePresentation,
     searchPresentationsByProductId,
     getPresentationAnalytics,
+    getAvailableCategories,
+    getPresentationByCategory,
+    getPresentationsWithStockByProductId,
 } from '../controllers/presentation.controller';
 import multer from 'multer';
 
@@ -27,12 +31,14 @@ Rutas de presentationes de producto. Sin multer — imagen removida del modelo.
 - GET    /                                           → home
 - GET    /get-product-presentations                       → todas
 - GET    /get-presentation-by-id/:id              → por ID
+- GET    /get-presentation-by-barcode/:barcode    → por código de barras
 - GET    /get-presentation-by-product-id/:pid     → por producto ← usado en el listado de presentaciones
 - GET    /get-presentation-by-stock               → body: { stock }
 - GET    /get-presentation-by-price               → body: { price }
 - GET    /get-presentation-by-status              → body: { status }
 - GET    /get-presentation-by-net-content         → body: { model_size }
 - GET    /get-presentation-by-product-id/:product_id/search        → body: { por ID }
+
 
 ── POST / PUT / DELETE ────────────────────────────────────────────────
 - POST   /create-presentation                     → body: { ...campos }
@@ -52,12 +58,16 @@ const upload = multer();
 router.get('/',                                    home);
 router.get('/get-product-presentations',                getPresentations);
 router.get('/get-presentation-by-id/:product_presentation_id', getPresentationById);
+router.get('/get-presentation-by-barcode/:barcode', getPresentationByBarcode);
 router.get('/get-presentation-by-product-id/:product_id', getPresentationByProductId);
 router.get('/get-presentation-by-stock',        getPresentationByStock);
 router.get('/get-presentation-by-price',        getPresentationByPrice);
 router.get('/get-presentation-by-status',       getPresentationByStatus);
 router.get('/get-presentation-by-model-size',   getPresentationByModelSize);
 router.get('/get-presentation-by-product-id/:product_id/search', searchPresentationsByProductId);
+router.get('/get-presentation-by-category', getPresentationByCategory);
+router.get('/get-presentations-with-stock-by-product-id/:product_id', getPresentationsWithStockByProductId);
+router.get('/get-available-categories', getAvailableCategories);
 router.get('/get-presentation-analytics/:presentation_id',getPresentationAnalytics);
 
 // ── POST / PUT / DELETE ───────────────────────────────────────────────────────

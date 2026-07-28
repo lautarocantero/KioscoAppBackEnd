@@ -1,45 +1,14 @@
-import mongoose, { Model, Schema } from 'mongoose';
 import { PresentationSchemaType, presentation } from '@typings/presentation';
 import { Validation } from './validation';
+import { PresentationCategory } from '../typings/presentation/presentationEnum';
+import { PresentationMongo } from '../schemas/presentationSchema';
 
-const PresentationMongoSchema = new Schema<PresentationSchemaType>({
-  _id:             { type: String,   required: true },
-  product_id:      { type: String,   required: true },
-  sku:             { type: String,   required: true },
-  name:            { type: String,   required: true },
-  description:     { type: String,   default: '' },
-  brand:           { type: String,   default: '' },
-  model_type:      { type: String,   required: true },
-  model_size:      { type: String,   required: true },
-  image_url:       { type: String,   default: '' },
-  price:           { type: Number,   required: true },
-  stock:           { type: Number,   required: true },
-  min_stock:       { type: Number,   required: true },
-  status: {
-    type:    String,
-    enum:    ['available', 'out_of_stock', 'unavailable'],
-    required: true,
-  },
-  created_at:      { type: String,   required: true },
-  updated_at:      { type: String,   required: true },
-  expiration_date: { type: String,   default: '' },
-}, { _id: false });
-
-// Evitar re-compilación del modelo en hot-reload
-export const PresentationMongo: Model<PresentationSchemaType> =
-  mongoose.models.presentation as Model<PresentationSchemaType> ||
-  mongoose.model<PresentationSchemaType>(
-    'presentation',
-    PresentationMongoSchema,
-    'presentations',
-  );
-
-
-// ─── PresentationModel ─────────────────────────────────────────────
-// ⚠️ Este modelo solo conoce la colección "presentations".
-// Todo lo que combine presentation + sell (analíticas) vive en
-// services/presentationAnalyticsService.ts — igual que CatalogService
-// combina product + presentation.
+/*──────────────────────────────
+🎭 PresentationModel — Mongoose
+──────────────────────────────
+📜 Propósito: Gestión completa de presentaciones de producto contra MongoDB
+🧩 Dependencias: PresentationMongo (schemas/presentationSchema), Validation
+──────────────────────────────*/
 
 export class PresentationModel {
 
@@ -65,6 +34,11 @@ export class PresentationModel {
     return results as unknown as presentation[];
   }
 
+  static async getPresentationsByCategory(category: PresentationCategory): Promise<presentation[]> {
+    const results = await PresentationMongo.find({ category }).lean();
+    return results as unknown as presentation[];
+  }
+
   static async searchByProductIdAndTerm(product_id: string, term: string): Promise<presentation[]> {
     Validation.stringValidation(product_id, 'product_id');
 
@@ -83,19 +57,33 @@ export class PresentationModel {
     return results as unknown as presentation[];
   }
 
+  static async getPresentationsWithStockByProductId(product_id: string): Promise<presentation[]> {
+      Validation.stringValidation(product_id, 'product_id');
+
+      const results = await PresentationMongo.find({
+        product_id,
+        stock: { $gt: 0 },
+      }).lean();
+
+      return results as unknown as presentation[];
+  }
+
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
   static async create(data: {
     product_id: string; sku: string; name: string; description?: string;
-    brand?: string; image_url?: string; model_type: string; model_size: string;
+    barcode?: string; brand?: string; image_url?: string; model_type: string; model_size: string;
     min_stock: number; stock: number; price: number; expiration_date?: string;
+    category?: PresentationCategory[];
   }): Promise<string> {
     const {
-      product_id, sku, name, description, brand, image_url,
+      product_id, sku, name, description, barcode, brand, image_url,
       model_type, model_size, min_stock, stock, price, expiration_date,
+      category,
     } = data;
 
     const productIdResult   = Validation.stringValidation(product_id, 'product_id');
+    const barcodeResult         = Validation.stringValidation(barcode, 'barcode');
     const skuResult         = Validation.stringValidation(sku, 'sku');
     const nameResult        = Validation.stringValidation(name, 'name');
     const descriptionResult = Validation.stringValidation(description, 'description');
@@ -112,6 +100,7 @@ export class PresentationModel {
       _id,
       product_id: productIdResult,
       sku: skuResult,
+      barcode: barcodeResult  ?? '',
       name: nameResult,
       description: descriptionResult ?? '',
       brand: brand ?? '',
@@ -121,6 +110,7 @@ export class PresentationModel {
       min_stock: minStockResult,
       stock: stockResult,
       price: priceResult,
+      category: category ?? [],
       status: stockResult > 0 ? 'available' : 'out_of_stock',
       created_at: now,
       updated_at: now,
@@ -128,6 +118,32 @@ export class PresentationModel {
     });
 
     return _id;
+  }
+
+  //──────────────────────────────────────────── 📦 STOCK 📦 ───────────────────────────────────────────//
+
+  static async decreaseStock(items: { _id: string; stock_required: number }[]): Promise<void> {
+    for (const { _id, stock_required } of items) {
+      const idResult = Validation.stringValidation(_id, '_id');
+      const qtyResult = Validation.number(stock_required, 'stock_required');
+
+      const presentation = await PresentationMongo.findOne({ _id: idResult }).lean();
+      if (!presentation) throw new Error(`No existe presentación con id ${idResult}`);
+
+      const newStock = presentation.stock - qtyResult;
+      if (newStock < 0) throw new Error(`Stock insuficiente para la presentación ${idResult}`);
+
+      await PresentationMongo.findOneAndUpdate(
+        { _id: idResult },
+        {
+          $set: {
+            stock: newStock,
+            status: newStock > 0 ? 'available' : 'out_of_stock',
+            updated_at: new Date().toISOString(),
+          },
+        },
+      );
+    }
   }
 
   //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
@@ -141,19 +157,22 @@ export class PresentationModel {
   //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
   static async edit(data: {
-    _id: string; sku: string; price: number; stock: number; min_stock: number;
+    _id: string; sku: string; barcode?: string; price: number; stock: number; min_stock: number;
     model_type: string; model_size: string; image_url?: string;
     brand?: string; description?: string; expiration_date?: string; name: string;
+    category?: PresentationCategory[];
   }): Promise<void> {
     const {
-      _id, sku, price, stock, min_stock,
+      _id, barcode, sku, price, stock, min_stock,
       model_type, model_size, image_url,
       brand, description, expiration_date, name,
+      category,
     } = data;
 
     const idResult         = Validation.stringValidation(_id, '_id');
     const nameResult       = Validation.stringValidation(name, 'name');
     const descriptionResult= Validation.stringValidation(description, 'description');
+    const barcodeResult    = Validation.stringValidation(barcode, 'barcode');
     const skuResult        = Validation.stringValidation(sku, 'sku');
     const modelTypeResult  = Validation.stringValidation(model_type, 'model_type');
     const modelSizeResult  = Validation.stringValidation(model_size, 'model_size');
@@ -166,6 +185,7 @@ export class PresentationModel {
       {
         $set: {
           sku: skuResult,
+          barcode: barcodeResult  ?? '',
           name: nameResult,
           model_type: modelTypeResult,
           model_size: modelSizeResult,
@@ -174,6 +194,7 @@ export class PresentationModel {
           price: priceResult,
           stock: stockResult,
           min_stock: minStockResult,
+          category: category ?? [],
           status: stockResult > 0 ? 'available' : 'out_of_stock',
           image_url: image_url ?? '',
           updated_at: new Date().toISOString(),

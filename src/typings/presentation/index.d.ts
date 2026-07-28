@@ -1,20 +1,4 @@
-/*──────────────────────────────
-📘 PresentationTypes
-──────────────────────────────
-📜 Propósito:
-Tipados base y derivados para presentationes de producto.
-La presentatione representa UNA presentación comercial de un producto
-(ej: Coca Cola Botella 2,25l / Coca Cola Lata 354ml).
-
-🧩 Campos propios de la presentatione (NO del producto padre):
-- Identificación:  _id, product_id, sku
-- Presentación:    name, description (opcional), brand, model_type, model_size
-- Imágenes:        image_url (opcional),
-- Precios y Stock: price (venta), stock, min_stock
-- Estado:          status → 'available' | 'out_of_stock' | 'unavailable'
-                   (out_of_stock se calcula; available/unavailable son manuales)
-- Fechas:          created_at, updated_at, expiration_date (opcional)
-──────────────────────────────*/
+import { PresentationCategory } from "./presentationEnum";
 
 declare module '@typings/presentation' {
 
@@ -29,13 +13,16 @@ interface PresentationEntity {
     _id:            string;
     product_id:     string;
     sku:            string;
-
+    barcode:        string;
     // ── Presentación ───────────────────────────────────────────────────
     name:           string;
     description:    string;          // opcional — vacío string si no aplica
     brand:          string;          // opcional — vacío string si no aplica
     model_type:     string;
     model_size:     string;          // ej: "2,25l" | "354ml" | "500g"
+
+    // ── Clasificación ──────────────────────────────────────────────────
+    category:       PresentationCategory[];   // un producto puede tener varias
 
     // ── Imágenes ───────────────────────────────────────────────────────
     image_url:      string;          // opcional — vacío string si no aplica
@@ -84,10 +71,12 @@ export type PresentationSchemaType = presentation;
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 export type GetPresentationByIdPayload          = Pick<PresentationPayload, '_id'>;
+export type GetPresentationByBarcodePayload     = Pick<PresentationPayload, 'barcode'>;
 export type GetPresentationByProductIdPayload   = Pick<PresentationPayload, 'product_id'>;
 export type GetPresentationByStockPayload       = Pick<PresentationPayload, 'stock'>;
 export type GetPresentationByPricePayload       = Pick<PresentationPayload, 'price'>;
 export type GetPresentationByStatusPayload      = Pick<PresentationPayload, 'status'>;
+export type GetPresentationByCategoryPayload    = Pick<PresentationPayload, 'category'>;
 export type GetPresentationByModelSizePayload   = Pick<PresentationPayload, 'model_size'>;
 
 export type CreatePresentationPayload = Omit<PresentationPayload,
@@ -103,13 +92,17 @@ export type EditPresentationPayload = PresentationPayload;
 
 interface PresentationParams { presentation_id: string; }
 interface ProductIdParams      { product_id: string; }
+interface BarcodeParams        { barcode: string; }
 
 export type GetPresentationByIdRequest        = Request<PresentationParams, unknown, GetPresentationByIdPayload>;
+export type GetPresentationByBarcodeRequest   = Request<BarcodeParams, unknown, GetPresentationByBarcodePayload>;
 export type GetPresentationByProductIdRequest = Request<ProductIdParams, unknown, GetPresentationByProductIdPayload>;
+
 export type GetPresentationByStockRequest     = Request<PresentationParams, unknown, GetPresentationByStockPayload>;
 export type GetPresentationByPriceRequest     = Request<PresentationParams, unknown, GetPresentationByPricePayload>;
 export type GetPresentationByStatusRequest    = Request<PresentationParams, unknown, GetPresentationByStatusPayload>;
 export type GetPresentationByModelSizeRequest = Request<PresentationParams, unknown, GetPresentationByModelSizePayload>;
+export type GetPresentationByCategoryRequest = Request<PresentationParams, unknown, GetPresentationByCategoryPayload>;
 export type CreatePresentationRequest         = Request<PresentationParams, unknown, CreatePresentationPayload>;
 export type DeletePresentationRequest         = Request<PresentationParams, unknown, GetPresentationByIdPayload>;
 export type EditPresentationRequest           = Request<PresentationParams, unknown, EditPresentationPayload>;

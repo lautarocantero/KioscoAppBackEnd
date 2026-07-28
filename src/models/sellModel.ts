@@ -22,7 +22,11 @@ export class SellModel {
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
     static async getSells(limit = 100, offset = 0): Promise<SellType[]> {
-        const results = await SellSchema.find().skip(offset).limit(limit).lean();
+        const results = await SellSchema.find()
+            .sort({ createdAt: -1 })
+            .skip(offset)
+            .limit(limit)
+            .lean();
         return results as unknown as SellType[];
     }
 
@@ -56,24 +60,79 @@ export class SellModel {
     ║ 📥 Entrada: -                               ║
     ║ ⚙️ Proceso: cuenta ventas cuya purchase_date ║
     ║    (guardada como Date.toString()) coincide  ║
-    ║    con el día de hoy. Filtrado en memoria    ║
-    ║    porque el campo no es un Date nativo.     ║
-    ║ 📤 Salida: number                            ║
+    ║    con el día de hoy, y calcula la fecha de  ║
+    ║    la venta más reciente del día (lastSaleAt)║
+    ║    Filtrado en memoria porque purchase_date  ║
+    ║    no es un Date nativo.                     ║
+    ║ 📤 Salida: { count, lastSaleAt }             ║
     ╚═══════════════════════════════════════════╝*/
 
-    static async getTodaySellsCount(): Promise<number> {
-        // Solo traemos purchase_date, para no cargar documentos completos innecesariamente.
-        const results = await SellSchema.find({}, { purchase_date: 1 }).lean();
+    static async getTodaySellsCount(): Promise<{ count: number; lastSaleAt: string | null }> {
+        // Traemos purchase_date y createdAt; nada más, para no cargar documentos completos.
+        const results = await SellSchema.find({}, { purchase_date: 1, createdAt: 1 }).lean();
 
         const todayStr: string = new Date().toDateString();
 
-        const todaySells = (results as unknown as { purchase_date: string }[]).filter((sell) => {
+        const todaySells = (results as unknown as { purchase_date: string; createdAt?: Date }[]).filter((sell) => {
             const parsedDate = new Date(sell.purchase_date);
             if (Number.isNaN(parsedDate.getTime())) return false;
             return parsedDate.toDateString() === todayStr;
         });
 
-        return todaySells.length;
+        if (todaySells.length === 0) {
+            return { count: 0, lastSaleAt: null };
+        }
+
+        const lastSaleAt = todaySells.reduce<Date | null>((latest, sell) => {
+            if (!sell.createdAt) return latest;
+            const createdAtDate = new Date(sell.createdAt);
+            if (!latest || createdAtDate > latest) return createdAtDate;
+            return latest;
+        }, null);
+
+        return {
+            count: todaySells.length,
+            lastSaleAt: lastSaleAt ? lastSaleAt.toISOString() : null,
+        };
+    }
+
+    //──────────────────────────────────────────── 🔎 SEARCH 🔎 ───────────────────────────────────────────//
+
+    /*══════════ 🔎 searchSells ══════════╗
+    ║ 📥 Entrada: term (string libre)      ║
+    ║ ⚙️ Proceso: matchea contra _id y      ║
+    ║    seller_name por regex; si el term  ║
+    ║    es numérico, matchea total_amount  ║
+    ║    exacto; si tiene forma dd/mm/yyyy, ║
+    ║    matchea purchase_date (guardado    ║
+    ║    como Date.toString())              ║
+    ║ 📤 Salida: SellType[]                 ║
+    ╚═══════════════════════════════════════╝*/
+
+    static async searchSells(term: unknown): Promise<SellType[]> {
+        const termResult: string = Validation.stringValidation(term, 'term');
+        const regex = { $regex: termResult, $options: 'i' };
+
+        const orConditions: Record<string, unknown>[] = [
+            { _id: regex },
+            { seller_name: regex },
+        ];
+
+        const numericTerm = Number(termResult);
+        if (termResult.trim() !== '' && !Number.isNaN(numericTerm)) {
+            orConditions.push({ total_amount: numericTerm });
+        }
+
+        const dateMatch = termResult.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (dateMatch) {
+            const [, day, month, year] = dateMatch;
+            const parsedDate = new Date(Number(year), Number(month) - 1, Number(day));
+            const dateStr = parsedDate.toDateString(); // ej: "Wed Jul 01 2026"
+            orConditions.push({ purchase_date: { $regex: dateStr, $options: 'i' } });
+        }
+
+        const results = await SellSchema.find({ $or: orConditions }).limit(100).lean();
+        return results as unknown as SellType[];
     }
 
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
@@ -83,11 +142,20 @@ export class SellModel {
             currency, iva, payment_method, products,
             purchase_date, seller_id, seller_name,
             sub_total, total_amount,
+            status, amount_paid, debtor_name,
         } = data;
 
         function parseDate(input: string): Date {
-          const [day, month, year] = input.split("/").map(Number);
-          return new Date(year, month - 1, day); // month es 0-indexado
+            const [day, month, year] = input.split("/").map(Number);
+            const now = new Date();
+            return new Date(
+                year,
+                month - 1,
+                day,
+                now.getHours(),
+                now.getMinutes(),
+                now.getSeconds(),
+            );
         }
 
         const purchaseDateObj: Date = parseDate(purchase_date as string);
@@ -101,6 +169,17 @@ export class SellModel {
         const totalAmountResult: number         = Validation.number(total_amount, 'total amount');
         const paymentMethodResult: string       = Validation.stringValidation(payment_method, 'payment method');
         const currencyResult: string            = Validation.stringValidation(currency, 'currency');
+        const statusResult: string              = Validation.stringValidation(status, 'status');
+
+        const isPartial: boolean = statusResult === 'parcial';
+
+        const amountPaidResult: number | null = isPartial
+            ? Validation.number(amount_paid, 'amount paid')
+            : null;
+
+        const debtorNameResult: string | null = isPartial
+            ? Validation.stringValidation(debtor_name, 'debtor name')
+            : null;
 
         const _id: string = crypto.randomUUID();
 
@@ -116,6 +195,9 @@ export class SellModel {
             iva:               ivaResult,
             total_amount:      totalAmountResult,
             currency:          currencyResult,
+            status:            statusResult,
+            amount_paid:       amountPaidResult,
+            debtor_name:       debtorNameResult,
         });
 
         return _id;

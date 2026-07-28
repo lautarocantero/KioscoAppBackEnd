@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { SellModel } from "../models/sellModel";
 import { handleControllerError } from "../utils/handleControllerError";
 import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, SellType } from "@typings/sell";
+import { PresentationModel } from "../models/presentationModel";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con ventas 🕹️                                                                    ║
@@ -16,20 +17,21 @@ import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetS
 ║ GET    | /get-sells-by-date       | getSellsByDate        | Ventas por fecha               | body: { purchase_date }   | {Sell[]}       | Sí       | 200,404,500     ║
 ║ GET    | /get-sells-by-product    | getSellsByProduct     | Ventas por producto            | body: { _id: string }     | {Sell[]}       | Sí       | 200,404,500     ║
 ║ GET    | /get-today-sells-count   | getTodaySellsCount    | Cantidad de ventas de hoy      | -                         | {count}        | Sí       | 200,500         ║
+║ GET    | /search-sells            | searchSells           | Búsqueda libre de ventas       | query: { term }           | {Sell[]}       | Sí       | 200,500         ║
 ║ POST   | /create-sell             | createSell            | Crear nueva venta              | body: {...venta}          | {_id,msg}      | Sí       | 200,400,500     ║
 ║ PUT    | /edit-sell               | editSell              | Editar venta existente         | body: {id, campos}        | {_id,msg}      | Sí       | 200,400,404,500 ║
-║ DELETE | /delete-sell             | deleteSell            | Eliminar venta                 | body: { _id: string }     | {_id,msg}      | Sí       | 200,404,500     ║
+║ DELETE | /delete-sell             | deleteSell            | Eliminar venta                 | params: { _id: string }   | {_id,msg}      | Sí       | 200,404,500     ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-/*══════════ 🎮 home() ══════════╗
-║ 📥 sin parámetros              ║
-║ ⚙️ lista endpoints de sell     ║
-║ 📤 salida: HTML                ║
-║ 🛠️ errores: N/A                ║
-╚════════════════════════════════╝*/
+/*══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🎮 home → Devuelve listado de endpoints disponibles                                                                       ║
+║ 📥 Entrada: -                                                                                                             ║
+║ 📤 Salida: HTML con endpoints                                                                                              ║
+║ 🛠️ Errores: No aplica                                                                                                     ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function home(_req: Request, res: Response): Promise<void> {
     res.status(200).send(` 
@@ -43,6 +45,7 @@ export async function home(_req: Request, res: Response): Promise<void> {
             <li><strong>GET</strong> – Ventas por fecha → <code>/sell/get-sells-by-date</code></li> 
             <li><strong>GET</strong> – Ventas por producto → <code>/sell/get-sells-by-product</code></li>
             <li><strong>GET</strong> – Cantidad de ventas de hoy → <code>/sell/get-today-sells-count</code></li>
+            <li><strong>GET</strong> – Búsqueda libre de ventas → <code>/sell/search-sells</code></li>
             <li><strong>POST</strong> – Crear nueva venta → <code>/sell/create-sell</code></li> 
             <li><strong>DELETE</strong> – Eliminar venta → <code>/sell/delete-sell</code></li> 
             <li><strong>PUT</strong> – Editar venta → <code>/sell/edit-sell</code></li> 
@@ -51,10 +54,10 @@ export async function home(_req: Request, res: Response): Promise<void> {
 }
 
 /*══════════ 🎮 getSells ══════════╗
-║ 📥 Entrada: -                    ║
-║ ⚙️ Proceso: obtiene ventas       ║
-║ 📤 Salida: {Sell[]}               ║
-║ 🛠️ Errores: handleControllerError║
+║ 📥 Entrada: query: { limit?, offset? } ║
+║ ⚙️ Proceso: obtiene ventas paginadas   ║
+║ 📤 Salida: { data: Sell[], pagination } ║
+║ 🛠️ Errores: handleControllerError      ║
 ╚═════════════════════════════════╝*/
 
 export async function getSells(_req: Request, res: Response): Promise<void> {
@@ -79,15 +82,14 @@ export async function getSells(_req: Request, res: Response): Promise<void> {
 }
 
 /*══════════ 🎮 getSellById ══════════╗
-║ 📥 Entrada: req.body._id (string)   ║
+║ 📥 Entrada: req.params._id           ║
 ║ ⚙️ Proceso: busca venta por _id     ║
 ║ 📤 Salida: {Sell}                     ║
 ║ 🛠️ Errores: handleControllerError   ║
 ╚════════════════════════════════════╝*/
 
-
 export async function getSellById (req: GetSellByIdRequestType, res: Response): Promise<void> {
-    const { _id } : { _id : unknown } = req.params;
+    const { _id } = req.params;
 
     try {
         // pese a ser un array de sell[], siempre devolvera uno solo.
@@ -107,9 +109,8 @@ export async function getSellById (req: GetSellByIdRequestType, res: Response): 
 ║ 🛠️ Errores: handleControllerError        ║
 ╚═════════════════════════════════════════╝*/
 
-
 export async function getSellsBySeller (req: GetSellsBySellerRequestType, res: Response): Promise<void> {
-    const { seller_name } : { seller_name : unknown } = req.body;
+    const { seller_name } = req.body;
 
     try {
         const SellObject: SellType[] = await SellModel.getSellsByField('seller_name',seller_name,'string');
@@ -128,9 +129,8 @@ export async function getSellsBySeller (req: GetSellsBySellerRequestType, res: R
 ║ 🛠️ Errores: handleControllerError      ║
 ╚═══════════════════════════════════════╝*/
 
-
 export async function getSellsByDate (req: GetSellsByDateRequestType, res: Response): Promise<void> {
-    const { purchase_date } : { purchase_date : unknown } = req.body;
+    const { purchase_date } = req.body;
 
     try {
         const SellObject: SellType[] = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
@@ -150,7 +150,7 @@ export async function getSellsByDate (req: GetSellsByDateRequestType, res: Respo
 ╚══════════════════════════════════════════╝*/
 
 export async function getSellsByProduct (req: GetSellsByProductRequestType, res: Response): Promise<void> {
-    const { _id } : { _id : unknown } = req.body;
+    const { _id } = req.body;
 
     try {
         const SellObject: SellType[] = await SellModel.getSellsByProduct({_id});
@@ -165,16 +165,36 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
 /*══════════ 🎮 getTodaySellsCount ══════════╗
 ║ 📥 Entrada: -                              ║
 ║ ⚙️ Proceso: cuenta ventas del día actual   ║
-║ 📤 Salida: { count: number }               ║
+║    y obtiene la hora de la última venta    ║
+║ 📤 Salida: { count, lastSaleAt }           ║
 ║ 🛠️ Errores: handleControllerError          ║
 ╚═══════════════════════════════════════════╝*/
 
 export async function getTodaySellsCount(_req: Request, res: Response): Promise<void> {
     try {
-        const count: number = await SellModel.getTodaySellsCount();
+        const stats: { count: number; lastSaleAt: string | null } = await SellModel.getTodaySellsCount();
         res
             .status(200)
-            .json({ count });
+            .json(stats);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+/*══════════ 🎮 searchSells ══════════╗
+║ 📥 Entrada: query: { term }          ║
+║ ⚙️ Proceso: busca por _id, vendedor, ║
+║    total o fecha (dd/mm/yyyy)        ║
+║ 📤 Salida: {Sell[]}                  ║
+║ 🛠️ Errores: handleControllerError    ║
+╚═══════════════════════════════════════╝*/
+
+export async function searchSells(req: Request, res: Response): Promise<void> {
+    const term = req.query.term as string;
+
+    try {
+        const sells: SellType[] = await SellModel.searchSells(term);
+        res.status(200).json(sells);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -184,25 +204,30 @@ export async function getTodaySellsCount(_req: Request, res: Response): Promise<
 /*══════════ 🎮 createSell ══════════╗
 ║ 📥 Entrada: products, date, seller, total ║
 ║ ⚙️ Proceso: crea venta en BD              ║
+║    y descuenta stock de cada presentación ║
 ║ 📤 Salida: {_id, message}            ║
 ║ 🛠️ Errores: handleControllerError         ║
 ╚══════════════════════════════════════════╝*/
 
 export async function createSell (req: CreateSellRequestType, res: Response): Promise<void> {
     const { 
-        currency,
-        iva,
-        payment_method,
-        products,
-        purchase_date, 
-        seller_id, 
-        seller_name,
-        sub_total,
-        total_amount, 
+        currency, iva, payment_method, products,
+        purchase_date, seller_id, seller_name,
+        sub_total, total_amount,
+        status, amount_paid, debtor_name,
     } = req.body;
 
     try{
-        const _id: string = await SellModel.create({purchase_date,seller_id,seller_name,payment_method,products,sub_total,iva,total_amount,currency});
+        const _id: string = await SellModel.create({
+            purchase_date, seller_id, seller_name, payment_method,
+            products, sub_total, iva, total_amount, currency,
+            status, amount_paid, debtor_name,
+        });
+
+        await PresentationModel.decreaseStock(
+            products.map(p => ({ _id: p._id, stock_required: p.stock }))
+        );
+
         res
             .status(200)
             .json({
@@ -217,15 +242,14 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
 //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
 /*══════════ 🎮 deleteSell ══════════╗
-║ 📥 Entrada: req.body._id (string)  ║
+║ 📥 Entrada: req.params._id (string)║
 ║ ⚙️ Proceso: elimina venta por _id  ║
 ║ 📤 Salida: {_id, message}     ║
 ║ 🛠️ Errores: handleControllerError  ║
 ╚═══════════════════════════════════╝*/
 
-
 export async function deleteSell (req: DeleteSellRequestType, res: Response): Promise<void> {
-    const { _id } : { _id : unknown } = req.params;
+    const { _id } = req.params;
 
     try{
         await SellModel.delete({ _id });
@@ -248,7 +272,6 @@ export async function deleteSell (req: DeleteSellRequestType, res: Response): Pr
 ║ 📤 Salida: {_id, message}                 ║
 ║ 🛠️ Errores: handleControllerError              ║
 ╚═══════════════════════════════════════════════╝*/
-
 
 export async function editSell (req: EditSellRequestType, res: Response) : Promise <void> {
     const { 
