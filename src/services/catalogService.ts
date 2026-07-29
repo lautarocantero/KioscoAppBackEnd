@@ -2,7 +2,7 @@ import { Product } from "@typings/product";
 import { ProductMongo } from "../models/productModel";
 import { PresentationCategory, PRESENTATION_CATEGORY_VALUES } from "../typings/presentation/presentationEnum";
 import { PipelineStage } from "mongoose";
-import { PresentationMongo } from "schemas/presentationSchema";
+import { PresentationMongo } from "../schemas/presentationSchema";
 
 /*──────────────────────────────
 🗂️ CatalogService
