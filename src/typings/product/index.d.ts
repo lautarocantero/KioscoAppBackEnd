@@ -31,6 +31,21 @@ type ProductParams = {
   _id?: string;
 };
 
+// base para ventas
+export interface ProductTicketType {
+    _id: string | null;
+    name: string;
+    description: string;
+    image_url: string;
+    brand: string;
+    sku: string;
+    model_type: string;
+    model_size: string;
+    price: number;
+    expiration_date: string;
+    stock_required: number;
+}
+
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🧩 DERIVADOS PUBLICOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩      ║
 ╚══════════════════════════════════════════════════════════════════════╝*/

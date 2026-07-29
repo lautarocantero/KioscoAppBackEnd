@@ -6,6 +6,7 @@
 ───────────────────────────────────────────────*/
 
 import { presentation } from "@typings/presentation";
+import { ProductTicketType } from "@typings/product";
 import { Request } from "express";
 
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
@@ -16,7 +17,7 @@ interface SellEntityInterface {
     iva: number; 
     modification_date: string; 
     payment_method: string; 
-    products: presentation[]; 
+    products: ProductTicketType[];
     purchase_date: string; 
     seller_id: string; 
     seller_name: string;
@@ -69,7 +70,7 @@ declare module '@typings/sell' {
 
   // 🔧 FIX: se excluye 'products' del Omit (quedaba en `unknown`) y se redefine como presentation[]
   export type CreateSellPayloadType = Omit<SellPayloadType, '_id' | 'modification_date' | 'products'> & {
-    products: presentation[];
+    products: ProductTicketType[];
     status: SellStatusEnum;
     amount_paid: number | null;
     debtor_name: string | null;

@@ -224,9 +224,15 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
             status, amount_paid, debtor_name,
         });
 
-        await PresentationModel.decreaseStock(
-            products.map(p => ({ _id: p._id, stock_required: p.stock }))
-        );
+        const productsForStockUpdate = products
+            .filter((p): p is typeof p & { _id: string } => p._id !== null)
+            .map(p => ({ _id: p._id, stock_required: p.stock_required }));
+
+        if (productsForStockUpdate.length !== products.length) {
+            throw new Error('Se encontraron productos sin _id válido al descontar stock');
+        }
+
+        await PresentationModel.decreaseStock(productsForStockUpdate);
 
         res
             .status(200)
