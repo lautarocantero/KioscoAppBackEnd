@@ -12,7 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.editAuth = exports.deleteAuth = exports.checkAuth = exports.logout = exports.login = exports.register = exports.home = void 0;
+exports.home = home;
+exports.register = register;
+exports.login = login;
+exports.logout = logout;
+exports.checkAuth = checkAuth;
+exports.deleteAuth = deleteAuth;
+exports.editAuth = editAuth;
 const authModel_1 = require("../models/authModel");
 const config_1 = require("../config");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
@@ -57,7 +63,6 @@ function home(_req, res) {
   `);
     });
 }
-exports.home = home;
 //─────────────────────────────────────────────────────────── 📥 GET 📥 ────────────────────────────────────────────────────────────────//
 //─────────────────────────────────────────────────────────── 📤 POST 📤 ────────────────────────────────────────────────────────────────//
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -83,7 +88,6 @@ function register(req, res) {
         }
     });
 }
-exports.register = register;
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 Función login 🎮 → Autentica usuario                                                                                   ║
 ║ 📥 Entrada: { email, password }                                                                                           ║
@@ -122,7 +126,6 @@ function login(req, res) {
         }
     });
 }
-exports.login = login;
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 Función logout 🎮 → Cierra sesión                                                                                      ║
 ║ 📥 Entrada: refresh_token (cookies)                                                                                       ║
@@ -130,8 +133,8 @@ exports.login = login;
 ║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 function logout(req, res) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         const refreshToken = (_a = req === null || req === void 0 ? void 0 : req.cookies) === null || _a === void 0 ? void 0 : _a.refresh_token;
         try {
             const payload = jsonwebtoken_1.default.verify(refreshToken, config_1.REFRESH_SECRET);
@@ -153,7 +156,6 @@ function logout(req, res) {
         }
     });
 }
-exports.logout = logout;
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🎮 Función checkAuth 🎮 → Valida sesión                                                                                   ║
 ║ 📥 Entrada: refresh_token (cookies)                                                                                       ║
@@ -161,8 +163,8 @@ exports.logout = logout;
 ║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 function checkAuth(req, res) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        var _a;
         const refreshToken = (_a = req.cookies) === null || _a === void 0 ? void 0 : _a.refresh_token;
         try {
             const accessPayload = jsonwebtoken_1.default.verify(refreshToken, config_1.REFRESH_SECRET);
@@ -178,7 +180,6 @@ function checkAuth(req, res) {
         }
     });
 }
-exports.checkAuth = checkAuth;
 //─────────────────────────────────────────────────────────── 📤 POST 📤 ────────────────────────────────────────────────────────────────//
 //─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -204,7 +205,6 @@ function deleteAuth(req, res) {
         }
     });
 }
-exports.deleteAuth = deleteAuth;
 //─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//
 //─────────────────────────────────────────────────────────── 🛠️ PUT 🛠️ ────────────────────────────────────────────────────────────────//
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -215,9 +215,9 @@ exports.deleteAuth = deleteAuth;
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 function editAuth(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { _id, username, email, password, profilePhoto } = req.body;
+        const { _id, username, email, password, profilePhoto, role } = req.body;
         try {
-            yield authModel_1.AuthModel.editAuth({ _id, username, email, password, profilePhoto });
+            yield authModel_1.AuthModel.editAuth({ _id, username, email, password, profilePhoto, role });
             res
                 .status(200)
                 .json({
@@ -230,5 +230,4 @@ function editAuth(req, res) {
         }
     });
 }
-exports.editAuth = editAuth;
 //─────────────────────────────────────────────────────────── 🛠️ PUT 🛠️ ────────────────────────────────────────────────────────────────//

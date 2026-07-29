@@ -1,7 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
-import { PresentationSchema } from 'schemas/presentationSchema';
 
 
 const ProductMongoSchema = new Schema({

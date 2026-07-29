@@ -28,6 +28,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const config_1 = require("../config");
 const authSchema_1 = require("../schemas/authSchema");
 const validation_1 = require("./validation");
+const enums_1 = require("../typings/auth/enums");
 /*──────────────────────────────
 🔐 AuthModel — Mongoose
 ──────────────────────────────
@@ -80,7 +81,8 @@ class AuthModel {
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
     /*══════════ 🎮 create ══════════╗
     ║ 📥 Entrada: AuthRegisterPayload ║
-    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password y guarda ║
+    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password, ║
+    ║    asigna role por default (Usuario) y guarda             ║
     ║ 📤 Salida: string _id generado  ║
     ╚══════════════════════════════════╝*/
     static create(data) {
@@ -96,6 +98,8 @@ class AuthModel {
                 throw new Error('username already exists');
             const _id = crypto.randomUUID();
             const hashedPassword = yield bcrypt_1.default.hash(passwordResult, config_1.SALT_ROUNDS);
+            // role nunca se toma del payload del cliente: se asigna acá por default para que
+            // nadie pueda auto-registrarse con un rol privilegiado.
             yield authSchema_1.AuthSchema.create({
                 _id,
                 username: usernameResult,
@@ -103,6 +107,7 @@ class AuthModel {
                 password: hashedPassword,
                 refreshToken: '',
                 profilePhoto: profileResult,
+                role: enums_1.AuthRoleEnum.Usuario,
             });
             return _id;
         });

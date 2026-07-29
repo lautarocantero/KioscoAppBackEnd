@@ -7,7 +7,7 @@ Centralizar todas las validaciones de datos usadas en los modelos y controladore
 Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto.
 
 🧩 Dependencias:
-- ProductVariant (tipado de variantes de producto)
+- presentation (tipado de presentationes de producto)
 
 📂 Funciones principales:
 - stringValidation → valida cadenas genéricas
@@ -20,7 +20,7 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 - image → valida URL de imagen
 - imageArray → valida arrays de imágenes
 - barcode → valida códigos de barras EAN-13
-- isVariantArray → valida arrays de variantes de producto
+- isVariantArray → valida arrays de presentationes de producto
 
 🛡️ Seguridad:
 - Todas las funciones lanzan errores descriptivos si la validación falla.
@@ -45,6 +45,8 @@ const isDate = (value) => {
     return false;
 };
 const isImageUrl = (value) => {
+    if (value.startsWith("data:image/"))
+        return true;
     try {
         const url = new URL(value);
         if (url.protocol !== "http:" && url.protocol !== "https:")
@@ -110,11 +112,11 @@ class Validation {
         return password;
     }
     /*══════════ 🎮 email ══════════╗
-  ║ 📥 Entrada: email (unknown)   ║
-  ║ ⚙️ Proceso: valida que sea string y >= 3 caracteres ║
-  ║ 📤 Salida: string validado    ║
-  ║ 🛠️ Errores: no provisto, no string, demasiado corto ║
-  ╚══════════════════════════════╝*/
+    ║ 📥 Entrada: email (unknown)   ║
+    ║ ⚙️ Proceso: valida que sea string y >= 3 caracteres ║
+    ║ 📤 Salida: string validado    ║
+    ║ 🛠️ Errores: no provisto, no string, demasiado corto ║
+    ╚══════════════════════════════╝*/
     static email(email) {
         if (!email)
             throw new Error(`No email provided`);
@@ -188,24 +190,22 @@ class Validation {
     }
     /*══════════ 🎮 image ══════════╗
     ║ 📥 Entrada: photo (unknown)   ║
-    ║ ⚙️ Proceso: valida que sea URL de imagen válida ║
-    ║ 📤 Salida: string (URL)       ║
-    ║ 🛠️ Errores: no provisto, no string, demasiado corto, URL inválida ║
+    ║ ⚙️ Proceso: valida URL http/https con extensión de imagen o base64 ║
+    ║ 📤 Salida: string (URL o base64) ║
+    ║ 🛠️ Errores: no provisto, no string, URL inválida ║
     ╚══════════════════════════════╝*/
     static image(photo) {
         if (!photo)
             throw new Error('No image provided');
         if (!isString(photo))
             throw new Error('image Url is not a string');
-        if (isShortString(photo))
-            throw new Error('image must be at least 3 characters long');
         if (!isImageUrl(photo))
             throw new Error('ImageUrl does not provide a valid url');
         return photo;
     }
     /*══════════ 🎮 imageArray ══════════╗
     ║ 📥 Entrada: images (unknown)       ║
-    ║ ⚙️ Proceso: valida array de URLs de imágenes ║
+    ║ ⚙️ Proceso: valida array de URLs de imágenes (puede ser vacío) ║
     ║ 📤 Salida: string[] validado       ║
     ║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
     ╚═══════════════════════════════════╝*/
@@ -214,6 +214,8 @@ class Validation {
             throw new Error("No images provided");
         if (!Array.isArray(images))
             throw new Error("images must be an array");
+        if (images.length === 0)
+            return [];
         images.forEach((image, index) => {
             if (!isImageUrl(image))
                 throw new Error(`Image at index ${index} is not a valid image URL`);
@@ -238,22 +240,22 @@ class Validation {
         return barcode;
     }
     /*══════════ 🎮 isVariantArray ══════════╗
-    ║ 📥 Entrada: variants (unknown)        ║
-    ║ ⚙️ Proceso: valida array de objetos ProductVariant ║
-    ║ 📤 Salida: ProductVariant[] validado  ║
+    ║ 📥 Entrada: presentations (unknown)        ║
+    ║ ⚙️ Proceso: valida array de objetos presentation ║
+    ║ 📤 Salida: presentation[] validado  ║
     ║ 🛠️ Errores: no provisto, no array, elementos inválidos ║
     ╚══════════════════════════════════════╝*/
-    static isVariantArray(variants) {
-        if (!variants)
-            throw new Error("No variants provided");
-        if (!Array.isArray(variants))
-            throw new Error("variants must be an array");
-        { /*─────────────────── 🔎 No son variantes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/ }
-        variants.forEach((variant, index) => {
-            if (!isTicket(variant))
-                throw new Error(`Variant Product at index ${index} is not a variant product`);
+    static isVariantArray(presentations) {
+        if (presentations === undefined || presentations === null)
+            return [];
+        if (!Array.isArray(presentations))
+            throw new Error("presentations must be an array");
+        { /*─────────────────── 🔎 No son presentationes en realidad, se envia una version que no muestra datos sensibles 🔎 ───────────────────*/ }
+        presentations.forEach((presentation, index) => {
+            if (!isTicket(presentation))
+                throw new Error(`presentation Product at index ${index} is not a presentation product`);
         });
-        return variants;
+        return presentations;
     }
 }
 exports.Validation = Validation;
