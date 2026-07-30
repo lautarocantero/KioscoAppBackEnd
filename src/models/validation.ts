@@ -33,6 +33,7 @@ Garantiza consistencia, seguridad y mensajes de error claros en todo el proyecto
 
 import { ProductTicket } from "@typings/product";
 import { presentation } from "@typings/presentation";
+import { SaleType } from "@typings/presentation/presentationEnum";
 
 const isString = (string: unknown): boolean => typeof string === 'string';
 const isNumber = (number: unknown): boolean => typeof number === 'number';
@@ -231,4 +232,17 @@ export class Validation {
     });
     return presentations as presentation[];
   }
+
+  /*══════════ 🎮 saletype ══════════╗
+  ║ 📥 Entrada: value (unknown)   ║
+  ║ ⚙️ Proceso: valida que el tipo de peso exista ║
+  ║ 📤 Salida: SaleType validado      ║
+  ║ 🛠️ Errores: formato inválido ║
+  ╚════════════════════════════════╝*/
+
+  static saleType(value: unknown): SaleType {
+    if (value !== 'unit' && value !== 'weight') throw new Error('Invalid sale_type');
+    return value;
+  }
+
 }

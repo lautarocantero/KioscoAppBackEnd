@@ -1,6 +1,6 @@
 import { PresentationSchemaType, presentation } from '@typings/presentation';
 import { Validation } from './validation';
-import { PresentationCategory } from '../typings/presentation/presentationEnum';
+import { PresentationCategory, SaleType } from '../typings/presentation/presentationEnum';
 import { PresentationMongo } from '../schemas/presentationSchema';
 
 /*──────────────────────────────
@@ -71,53 +71,59 @@ export class PresentationModel {
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
   static async create(data: {
-    product_id: string; sku: string; name: string; description?: string;
-    barcode?: string; brand?: string; image_url?: string; model_type: string; model_size: string;
-    min_stock: number; stock: number; price: number; expiration_date?: string;
-    category?: PresentationCategory[];
+      product_id: string; sku: string; name: string; description?: string;
+      barcode?: string; brand?: string; image_url?: string; model_type?: string; model_size?: string;
+      min_stock: number; stock: number; price: number; expiration_date?: string;
+      category?: PresentationCategory[]; sale_type: SaleType;
   }): Promise<string> {
-    const {
-      product_id, sku, name, description, barcode, brand, image_url,
-      model_type, model_size, min_stock, stock, price, expiration_date,
-      category,
-    } = data;
+      const {
+          product_id, sku, name, description, barcode, brand, image_url,
+          model_type, model_size, min_stock, stock, price, expiration_date,
+          category, sale_type,
+      } = data;
 
-    const productIdResult   = Validation.stringValidation(product_id, 'product_id');
-    const barcodeResult         = Validation.stringValidation(barcode, 'barcode');
-    const skuResult         = Validation.stringValidation(sku, 'sku');
-    const nameResult        = Validation.stringValidation(name, 'name');
-    const descriptionResult = Validation.stringValidation(description, 'description');
-    const modelTypeResult   = Validation.stringValidation(model_type, 'model_type');
-    const modelSizeResult   = Validation.stringValidation(model_size, 'model_size');
-    const minStockResult    = Validation.number(min_stock, 'min_stock');
-    const stockResult       = Validation.number(stock, 'stock');
-    const priceResult       = Validation.number(price, 'price');
+      const productIdResult    = Validation.stringValidation(product_id, 'product_id');
+      const barcodeResult      = Validation.stringValidation(barcode, 'barcode');
+      const skuResult          = Validation.stringValidation(sku, 'sku');
+      const nameResult         = Validation.stringValidation(name, 'name');
+      const descriptionResult  = Validation.stringValidation(description, 'description');
+      const saleTypeResult     = Validation.saleType(sale_type);
 
-    const _id = crypto.randomUUID();
-    const now = new Date().toISOString();
+      // model_type/model_size ya no se validan como obligatorios acá:
+      // el schema de Mongoose decide si son requeridos según sale_type.
+      const modelTypeResult = model_type ?? '';
+      const modelSizeResult = model_size ?? '';
 
-    await PresentationMongo.create({
-      _id,
-      product_id: productIdResult,
-      sku: skuResult,
-      barcode: barcodeResult  ?? '',
-      name: nameResult,
-      description: descriptionResult ?? '',
-      brand: brand ?? '',
-      image_url: image_url ?? '',
-      model_type: modelTypeResult,
-      model_size: modelSizeResult,
-      min_stock: minStockResult,
-      stock: stockResult,
-      price: priceResult,
-      category: category ?? [],
-      status: stockResult > 0 ? 'available' : 'out_of_stock',
-      created_at: now,
-      updated_at: now,
-      expiration_date: expiration_date ?? '',
-    });
+      const minStockResult = Validation.number(min_stock, 'min_stock', true); // isZeroValid: 0 kg/g de stock inicial es válido
+      const stockResult    = Validation.number(stock, 'stock', true);
+      const priceResult    = Validation.number(price, 'price');
 
-    return _id;
+      const _id = crypto.randomUUID();
+      const now = new Date().toISOString();
+
+      await PresentationMongo.create({
+          _id,
+          product_id: productIdResult,
+          sku: skuResult,
+          barcode: barcodeResult ?? '',
+          name: nameResult,
+          description: descriptionResult ?? '',
+          brand: brand ?? '',
+          image_url: image_url ?? '',
+          model_type: modelTypeResult,
+          model_size: modelSizeResult,
+          sale_type: saleTypeResult,
+          min_stock: minStockResult,
+          stock: stockResult,
+          price: priceResult,
+          category: category ?? [],
+          status: stockResult > 0 ? 'available' : 'out_of_stock',
+          created_at: now,
+          updated_at: now,
+          expiration_date: expiration_date ?? '',
+      });
+
+      return _id;
   }
 
   //──────────────────────────────────────────── 📦 STOCK 📦 ───────────────────────────────────────────//
@@ -130,7 +136,13 @@ export class PresentationModel {
       const presentation = await PresentationMongo.findOne({ _id: idResult }).lean();
       if (!presentation) throw new Error(`No existe presentación con id ${idResult}`);
 
-      const newStock = presentation.stock - qtyResult;
+      const isWeight = presentation.sale_type === 'weight';
+
+      // ⬇️ stock_required viene en "unidades de 100g" para productos por peso,
+      // pero presentation.stock está en gramos → hay que reconvertir antes de restar
+      const realQty = isWeight ? qtyResult * 100 : qtyResult;
+
+      const newStock = presentation.stock - realQty;
       if (newStock < 0) throw new Error(`Stock insuficiente para la presentación ${idResult}`);
 
       await PresentationMongo.findOneAndUpdate(
@@ -138,6 +150,7 @@ export class PresentationModel {
         {
           $set: {
             stock: newStock,
+            ...(isWeight ? { model_size: String(newStock) } : {}),
             status: newStock > 0 ? 'available' : 'out_of_stock',
             updated_at: new Date().toISOString(),
           },
@@ -158,15 +171,15 @@ export class PresentationModel {
 
   static async edit(data: {
     _id: string; sku: string; barcode?: string; price: number; stock: number; min_stock: number;
-    model_type: string; model_size: string; image_url?: string;
+    model_type?: string; model_size: string; image_url?: string;
     brand?: string; description?: string; expiration_date?: string; name: string;
-    category?: PresentationCategory[];
+    category?: PresentationCategory[]; sale_type: string;
   }): Promise<void> {
     const {
       _id, barcode, sku, price, stock, min_stock,
       model_type, model_size, image_url,
       brand, description, expiration_date, name,
-      category,
+      category, sale_type,
     } = data;
 
     const idResult         = Validation.stringValidation(_id, '_id');
@@ -174,11 +187,15 @@ export class PresentationModel {
     const descriptionResult= Validation.stringValidation(description, 'description');
     const barcodeResult    = Validation.stringValidation(barcode, 'barcode');
     const skuResult        = Validation.stringValidation(sku, 'sku');
-    const modelTypeResult  = Validation.stringValidation(model_type, 'model_type');
     const modelSizeResult  = Validation.stringValidation(model_size, 'model_size');
     const priceResult      = Validation.number(price, 'price');
     const stockResult      = Validation.number(stock, 'stock');
     const minStockResult   = Validation.number(min_stock, 'min_stock');
+
+    // ⬇️ model_type solo se valida/exige si NO es venta por peso
+    const modelTypeResult = sale_type === "weight"
+      ? (model_type ?? '')
+      : Validation.stringValidation(model_type, 'model_type');
 
     const updated = await PresentationMongo.findOneAndUpdate(
       { _id: idResult },
@@ -199,6 +216,7 @@ export class PresentationModel {
           image_url: image_url ?? '',
           updated_at: new Date().toISOString(),
           expiration_date: expiration_date ?? '',
+          sale_type,
         },
       },
       { new: true },

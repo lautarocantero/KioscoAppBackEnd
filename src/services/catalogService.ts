@@ -49,6 +49,7 @@ export class CatalogService {
               stock: 1,
               min_stock: 1,
               category: 1,
+              sale_type: 1,
             },
           },
         ],

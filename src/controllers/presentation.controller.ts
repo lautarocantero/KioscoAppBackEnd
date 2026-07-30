@@ -182,7 +182,7 @@ export async function createPresentation(req: CreatePresentationRequest, res: Re
     const {
         product_id, sku, barcode, name, description, brand, image_url,
         model_type, model_size, min_stock, stock, price, expiration_date,
-        category,
+        category, sale_type,
     } = req.body;
 
     const imageUrl = req.file ? req.file.path : image_url;
@@ -190,7 +190,7 @@ export async function createPresentation(req: CreatePresentationRequest, res: Re
     try {
         const _id = await PresentationModel.create({
             product_id, sku, barcode, name, description, brand,
-            image_url: imageUrl, model_type, model_size,
+            image_url: imageUrl, model_type, model_size, sale_type,
             min_stock: Number(min_stock), stock: Number(stock),
             price: Number(price), expiration_date, category,
         });
@@ -207,7 +207,7 @@ export async function editPresentation(req: EditPresentationRequest, res: Respon
     const {
         sku, barcode, price, expiration_date, stock, min_stock,
         model_type, model_size, image_url, brand, description,
-        name, category,
+        name, category, sale_type,
     } = req.body;
 
     try {
@@ -215,6 +215,7 @@ export async function editPresentation(req: EditPresentationRequest, res: Respon
             _id: presentation_id, sku, barcode, price: Number(price), stock: Number(stock),
             min_stock: Number(min_stock), model_type, model_size,
             image_url, brand, description, expiration_date, name, category,
+            sale_type,
         });
         res.status(200).json({ _id: presentation_id, message: 'Product presentation edited successfully' });
     } catch (error: unknown) {

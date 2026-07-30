@@ -36,3 +36,6 @@ export enum PresentationCategory {
 }
 
 export const PRESENTATION_CATEGORY_VALUES: string[] = Object.values(PresentationCategory);
+
+export const SALE_TYPE_VALUES = ['unit', 'weight'] as const;
+export type SaleType = typeof SALE_TYPE_VALUES[number];

@@ -1,4 +1,4 @@
-import { PresentationCategory } from "./presentationEnum";
+import { PresentationCategory, SaleType } from "./presentationEnum";
 
 declare module '@typings/presentation' {
 
@@ -23,6 +23,7 @@ interface PresentationEntity {
 
     // ── Clasificación ──────────────────────────────────────────────────
     category:       PresentationCategory[];   // un producto puede tener varias
+    sale_type: SaleType; 
 
     // ── Imágenes ───────────────────────────────────────────────────────
     image_url:      string;          // opcional — vacío string si no aplica

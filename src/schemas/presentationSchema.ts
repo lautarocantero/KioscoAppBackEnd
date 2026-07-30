@@ -1,6 +1,6 @@
 import mongoose, { Model, Schema } from 'mongoose';
 import { PresentationSchemaType } from '@typings/presentation';
-import { PRESENTATION_CATEGORY_VALUES } from '../typings/presentation/presentationEnum';
+import { PRESENTATION_CATEGORY_VALUES, SALE_TYPE_VALUES } from '../typings/presentation/presentationEnum';
 
 /*──────────────────────────────
 🎭 PresentationMongoSchema
@@ -35,12 +35,28 @@ const PresentationMongoSchema = new Schema<PresentationSchemaType>({
   name:            { type: String,   required: true },
   description:     { type: String,   default: '' },
   brand:           { type: String,   default: '' },
-  model_type:      { type: String,   required: true },
-  model_size:      { type: String,   required: true },
+  model_type: {
+    type: String,
+    required: function (this: PresentationSchemaType) {
+      return this.sale_type !== 'weight';
+    },
+  },
+  model_size: {
+    type: String,
+    required: function (this: PresentationSchemaType) {
+      return this.sale_type !== 'weight';
+    },
+  },
   category: {
     type:    [String],
     enum:    PRESENTATION_CATEGORY_VALUES,
     default: [],
+  },
+  sale_type: {
+    type: String,
+    enum: SALE_TYPE_VALUES,
+    default: 'unit',
+    required: true,
   },
   image_url:       { type: String,   default: '' },
   price:           { type: Number,   required: true },
