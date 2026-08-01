@@ -257,5 +257,16 @@ class Validation {
         });
         return presentations;
     }
+    /*══════════ 🎮 saletype ══════════╗
+    ║ 📥 Entrada: value (unknown)   ║
+    ║ ⚙️ Proceso: valida que el tipo de peso exista ║
+    ║ 📤 Salida: SaleType validado      ║
+    ║ 🛠️ Errores: formato inválido ║
+    ╚════════════════════════════════╝*/
+    static saleType(value) {
+        if (value !== 'unit' && value !== 'weight')
+            throw new Error('Invalid sale_type');
+        return value;
+    }
 }
 exports.Validation = Validation;

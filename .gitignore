@@ -6,4 +6,5 @@ node_modules/
 
 # Ignorar compilados
 build/
+build
 dist/
