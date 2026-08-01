@@ -138,11 +138,9 @@ export class PresentationModel {
 
       const isWeight = presentation.sale_type === 'weight';
 
-      // ⬇️ stock_required viene en "unidades de 100g" para productos por peso,
-      // pero presentation.stock está en gramos → hay que reconvertir antes de restar
-      const realQty = isWeight ? qtyResult * 100 : qtyResult;
-
-      const newStock = presentation.stock - realQty;
+      // stock_required ya viene en gramos reales para productos por peso
+      // (el frontend dejó de mandarlo en bloques de 100g).
+      const newStock = presentation.stock - qtyResult;
       if (newStock < 0) throw new Error(`Stock insuficiente para la presentación ${idResult}`);
 
       await PresentationMongo.findOneAndUpdate(

@@ -6,6 +6,8 @@ import { DailySalePoint, PresentationAnalyticsRaw, WeeklySalePoint } from '@typi
 // modelo solo debe conocer la colección "presentations" — misma regla
 // que separa CatalogService de ProductModel.
 
+const GRAMS_PER_WEIGHT_UNIT = 100; // el precio de las presentaciones "weight" está expresado por cada 100g
+
 export class PresentationAnalyticsService {
 
   static async getAnalytics(
@@ -37,8 +39,17 @@ export class PresentationAnalyticsService {
     type RawSell = {
       purchase_date: string;
       seller_id: string;
-      products: { _id: string; price: number; stock_required: number }[];
+      products: { _id: string; price: number; stock_required: number; sale_type?: string }[];
     };
+
+    // El precio de las presentaciones "weight" está expresado por cada 100g,
+    // mientras que stock_required guarda los gramos reales — hay que dividir
+    // por GRAMS_PER_WEIGHT_UNIT antes de multiplicar por el precio, igual que
+    // en el resto de los cálculos de importe del front (calculateItemAmount).
+    const calculateRevenue = (price: number, quantity: number, saleType?: string): number =>
+      saleType === 'weight'
+        ? (quantity * price) / GRAMS_PER_WEIGHT_UNIT
+        : quantity * price;
 
     const buildBucket = (from: Date, to: Date) => {
       const perDay = new Map<string, { units: number; revenue: number }>();
@@ -58,8 +69,9 @@ export class PresentationAnalyticsService {
 
         for (const product of matching) {
           const units = Number(product.stock_required) || 1;
+          const price = Number(product.price ?? 0);
           bucket.units += units;
-          bucket.revenue += units * Number(product.price ?? 0);
+          bucket.revenue += calculateRevenue(price, units, product.sale_type);
         }
         perDay.set(dayKey, bucket);
       }
