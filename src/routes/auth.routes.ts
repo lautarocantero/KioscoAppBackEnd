@@ -6,6 +6,7 @@ import {
   home, 
   login, 
   logout, 
+  refresh, 
   register 
 } from '../controllers/auth.controller';
 
@@ -23,6 +24,7 @@ Define las rutas de autenticación y las conecta con sus controladores.
 - POST   /login       → iniciar sesión
 - POST   /logout      → cerrar sesión
 - POST   /check-auth  → verificar autenticación
+- POST   /refresh  → renovar token de acceso
 - DELETE /delete-auth → eliminar credenciales
 - PUT    /edit-auth   → editar credenciales
 ──────────────────────────────*/
@@ -32,6 +34,7 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/logout', logout);
 router.post('/check-auth', checkAuth);
+router.post('/refresh', refresh);
 router.delete('/delete-auth', deleteAuth);
 router.put('/edit-auth', editAuth);
 

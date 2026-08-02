@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 // import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
 // import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/index";
 import { handleControllerError } from "../utils/handleControllerError";
-import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
+import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRefreshRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
 
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -83,10 +83,10 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function login ( req: AuthLoginRequest, res: Response ) : Promise <void>  {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     try{
-        const user: AuthPublic = await AuthModel.login({email, password});
+        const user: AuthPublic = await AuthModel.login({email, password, rememberMe});
 
         const token = jwt.sign(
           { id: user._id, email: user.email },
@@ -94,27 +94,33 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
           { expiresIn: '5m' }
         );
 
+        const refreshExpiresIn = rememberMe ? '30d' : '1d';
+
         const refreshToken = jwt.sign(
           { id: user._id, email: user.email },
           REFRESH_SECRET,
-          { expiresIn: '7d' }
+          { expiresIn: refreshExpiresIn }
         );
 
         await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
+
+        const refreshCookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as 'none' | 'lax',
+            // Si rememberMe es false, no seteamos maxAge → cookie de sesión,
+            // se borra sola al cerrar el navegador.
+            ...(rememberMe && { maxAge: 1000 * 60 * 60 * 24 * 30 }),
+        };
 
         res
           .cookie('access_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite:  process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 1000 * 60 * 5,
           })
-          .cookie('refresh_token', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-          })
+          .cookie('refresh_token', refreshToken, refreshCookieOptions)
           .status(200)
           .json({ 
             user, 
@@ -187,7 +193,48 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
         handleControllerError(res, error);
     }
 }
-//─────────────────────────────────────────────────────────── 📤 POST 📤 ────────────────────────────────────────────────────────────────//
+
+/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║ 🎮 Función refresh 🎮 → Emite un nuevo access_token a partir del refresh_token                                            ║
+║ 📥 Entrada: refresh_token (cookies)                                                                                       ║
+║ 📤 Salida: JSON { message }, cookie access_token renovada                                                                 ║
+║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
+╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+
+export async function refresh(req: AuthRefreshRequest, res: Response): Promise<void> {
+  const refreshToken = req.cookies?.refresh_token;
+
+  if (!refreshToken) {
+    res.status(401).json({ message: 'Not authenticated' });
+    return;
+  }
+
+  try {
+    const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; email: string };
+
+    const user: AuthPublicSchema = await AuthModel.checkAuth({ _id: payload.id });
+    if (!user) throw new Error('No se encuentra ese usuario');
+
+    const newAccessToken = jwt.sign(
+      { id: payload.id, email: payload.email },
+      ACCESS_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    res
+      .cookie('access_token', newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 1000 * 60 * 5,
+      })
+      .status(200)
+      .json({ message: 'Token refreshed' });
+  } catch (error: unknown) {
+    handleControllerError(res, error);
+  }
+}
+
 //─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗

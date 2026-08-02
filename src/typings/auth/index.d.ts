@@ -81,7 +81,9 @@ export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profil
 // role NO forma parte de AuthRegisterPayload a propósito (ver nota de seguridad arriba).
 export type AuthRegisterPayload = Pick<AuthPayload, 'username' | 'email' | 'profilePhoto' | 'password' | 'repeatPassword'>;
 
-export type AuthLoginPayload = Pick<AuthPayload, 'email' | 'password' >;
+export type AuthLoginPayload = Pick<Auth, 'email' | 'password'> & {
+    rememberMe: boolean;
+};
 
 export interface AuthLogoutPayload {
   cookies: {
@@ -113,6 +115,8 @@ export type AuthLoginRequest = Request<AuthParams, unknown, AuthLoginPayload>;
 export type AuthLogoutRequest = Request<AuthParams, unknown, AuthLogoutPayload>;
 
 export type AuthCheckAuthRequest = Request<AuthParams, unknown, AuthCheckAuthPayload>;
+
+export type AuthRefreshRequest = Request<AuthParams, unknown, unknown>;
 
 export type DeleteAuthRequest = Request<AuthParams, unknown, DeleteAuthPayload>;
 
