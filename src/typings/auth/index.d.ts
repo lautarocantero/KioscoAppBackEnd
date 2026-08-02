@@ -85,6 +85,12 @@ export type AuthLoginPayload = Pick<Auth, 'email' | 'password'> & {
     rememberMe: boolean;
 };
 
+export interface AuthGoogleLoginPayload {
+    email: string;
+    username: string;
+    profilePhoto?: string;
+}
+
 export interface AuthLogoutPayload {
   cookies: {
     refresh_token: unknown,
@@ -111,6 +117,8 @@ export interface AuthRefreshTokenPayload {
 export type AuthRegisterRequest = Request<AuthParams, unknown, AuthRegisterPayload>;
 
 export type AuthLoginRequest = Request<AuthParams, unknown, AuthLoginPayload>;
+
+export type AuthGoogleRequest = Request<unknown,unknown,{ accessToken: string }>;
 
 export type AuthLogoutRequest = Request<AuthParams, unknown, AuthLogoutPayload>;
 

@@ -5,7 +5,8 @@ import jwt from 'jsonwebtoken';
 // import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
 // import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/index";
 import { handleControllerError } from "../utils/handleControllerError";
-import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRefreshRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
+import { AuthCheckAuthRequest, AuthGoogleRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRefreshRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
+import axios from "axios";
 
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -127,6 +128,62 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
             message: "User Logged successfully",
           });
     } catch(error: unknown){
+        handleControllerError(res, error);
+    }
+}
+
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 Función googleLogin 🎮 → Autentica o registra usuario vía Google        ║
+║ 📥 Entrada: { accessToken }                                                ║
+║ 📤 Salida: JSON { user, message }, cookies con access_token y refresh_token║
+║ 🛠️ Errores: Delegados a handleControllerError                             ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
+
+export async function googleLogin(req: AuthGoogleRequest, res: Response): Promise<void> {
+    const { accessToken } = req.body;
+
+    try {
+        const { data: googleUser } = await axios.get(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+
+        const user: AuthPublic = await AuthModel.loginOrCreateWithGoogle({
+            email: googleUser.email,
+            username: googleUser.name,
+            profilePhoto: googleUser.picture,
+        });
+
+        const token = jwt.sign(
+            { id: user._id, email: user.email },
+            ACCESS_SECRET,
+            { expiresIn: '5m' }
+        );
+
+        const refreshToken = jwt.sign(
+            { id: user._id, email: user.email },
+            REFRESH_SECRET,
+            { expiresIn: '30d' }
+        );
+
+        await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
+
+        res
+          .cookie('access_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 1000 * 60 * 5,
+          })
+          .cookie('refresh_token', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            maxAge: 1000 * 60 * 60 * 24 * 30,
+          })
+          .status(200)
+          .json({ user, message: "User logged in with Google successfully" });
+    } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }

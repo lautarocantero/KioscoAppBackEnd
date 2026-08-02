@@ -13,6 +13,7 @@ import {
     DeleteAuthPayload, 
     EditAuthPayload,
     AuthPublicSchema,
+    AuthGoogleLoginPayload,
 } from '../typings/auth';
 import { AuthRoleEnum } from '../typings/auth/enums';
 
@@ -134,6 +135,47 @@ export class AuthModel {
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _password, refreshToken: _refreshToken, ...publicUser } = authObject as AuthSchemaType;
+        return publicUser as AuthPublic;
+    }
+
+
+    /*══════════ 🎮 loginOrCreateWithGoogle ══════════╗
+    ║ 📥 Entrada: AuthGoogleLoginPayload {email, username, profilePhoto} ║
+    ║ ⚙️ Proceso: busca por email; si no existe, crea usuario nuevo      ║
+    ║    con password random hasheada (nunca se usa para login manual)   ║
+    ║ 📤 Salida: AuthPublic                                               ║
+    ╚══════════════════════════════════════════════════════════════════╝*/
+
+    static async loginOrCreateWithGoogle(data: AuthGoogleLoginPayload): Promise<AuthPublic> {
+        const { email, username, profilePhoto } = data;
+
+        const emailResult: string = Validation.email(email);
+
+        const existing = await AuthSchema.findOne({ email: emailResult }).lean();
+
+        if (existing) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { password: _password, refreshToken: _refreshToken, ...publicUser } = existing as AuthSchemaType;
+            return publicUser as AuthPublic;
+        }
+
+        const _id: string = crypto.randomUUID();
+        const randomPassword: string = crypto.randomUUID();
+        const hashedPassword: string = await bcrypt.hash(randomPassword, SALT_ROUNDS);
+
+        await AuthSchema.create({
+            _id,
+            username:     username,
+            email:        emailResult,
+            password:     hashedPassword,
+            refreshToken: '',
+            profilePhoto: profilePhoto ?? '',
+            role:         AuthRoleEnum.Usuario,
+        });
+
+        const created = await AuthSchema.findOne({ _id }).lean();
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password: _password, refreshToken: _refreshToken, ...publicUser } = created as AuthSchemaType;
         return publicUser as AuthPublic;
     }
 

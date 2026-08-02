@@ -3,6 +3,7 @@ import {
   checkAuth, 
   deleteAuth, 
   editAuth, 
+  googleLogin, 
   home, 
   login, 
   logout, 
@@ -32,6 +33,7 @@ Define las rutas de autenticación y las conecta con sus controladores.
 router.get('/', home);
 router.post('/register', register);
 router.post('/login', login);
+router.post('/google', googleLogin);
 router.post('/logout', logout);
 router.post('/check-auth', checkAuth);
 router.post('/refresh', refresh);
