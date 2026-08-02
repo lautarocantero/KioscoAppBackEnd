@@ -135,6 +135,11 @@ export async function login ( req: AuthLoginRequest, res: Response ) : Promise <
 export async function logout(req: AuthLogoutRequest, res: Response): Promise<void> {
   const refreshToken = req?.cookies?.refresh_token;
 
+  if (!refreshToken) {
+    res.status(401).json({ message: 'Not authenticated' });
+    return;
+  }
+
   try {
     const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id?: string };
     if (!payload?.id) {
@@ -165,18 +170,20 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
 
 export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promise<void> {                                            
     const refreshToken = req.cookies?.refresh_token;
-    
-    try{
 
-      const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; };
-      const user: AuthPublicSchema = await AuthModel.checkAuth({ _id: accessPayload.id});
-      
-      if(!user) throw new Error('No se encuentra ese usuario');
+    if (!refreshToken) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
 
-      res
-        .status(200)
-        .json(user);
-    } catch(error: unknown) {
+    try {
+      const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string };
+      const user: AuthPublicSchema = await AuthModel.checkAuth({ _id: accessPayload.id });
+
+      if (!user) throw new Error('No se encuentra ese usuario');
+
+      res.status(200).json(user);
+    } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
