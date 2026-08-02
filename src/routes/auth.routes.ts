@@ -8,7 +8,9 @@ import {
   login, 
   logout, 
   refresh, 
-  register 
+  register, 
+  requestPasswordReset, 
+  resetPassword
 } from '../controllers/auth.controller';
 
 const router = express.Router();
@@ -37,6 +39,8 @@ router.post('/google', googleLogin);
 router.post('/logout', logout);
 router.post('/check-auth', checkAuth);
 router.post('/refresh', refresh);
+router.post('/request-password-reset', requestPasswordReset);
+router.post('/reset-password', resetPassword);
 router.delete('/delete-auth', deleteAuth);
 router.put('/edit-auth', editAuth);
 

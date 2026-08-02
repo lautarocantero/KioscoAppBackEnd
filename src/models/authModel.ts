@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../config';
 import { AuthSchema } from '../schemas/authSchema';
 import { Validation } from './validation';
+import crypto from 'crypto';
 import { 
     AuthRegisterPayload,
     AuthLoginPayload, 
@@ -14,6 +15,8 @@ import {
     EditAuthPayload,
     AuthPublicSchema,
     AuthGoogleLoginPayload,
+    RequestPasswordResetPayload,
+    ResetPasswordPayload,
 } from '../typings/auth';
 import { AuthRoleEnum } from '../typings/auth/enums';
 
@@ -179,7 +182,71 @@ export class AuthModel {
         return publicUser as AuthPublic;
     }
 
-    //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
+    /*══════════ 🎮 requestPasswordReset ══════════╗
+    ║ 📥 Entrada: RequestPasswordResetPayload {email} ║
+    ║ ⚙️ Proceso: busca user por email, genera token, ║
+    ║    guarda con expiración de 1hs                  ║
+    ║ 📤 Salida: {username, resetToken} | null          ║
+    ╚═══════════════════════════════════════════════╝*/
+
+    static async requestPasswordReset(data: RequestPasswordResetPayload): Promise<{ username: string; resetToken: string } | null> {
+        const { email } = data;
+
+        const emailResult: string = Validation.email(email);
+
+        const user = await AuthSchema.findOne({ email: emailResult }).lean();
+
+        // No revelamos si el email existe o no: devolvemos null silenciosamente
+        // y el controller responde siempre el mismo mensaje genérico.
+        if (!user) return null;
+
+        const resetToken: string = crypto.randomBytes(32).toString('hex');
+        const resetPasswordTokenExpires: Date = new Date(Date.now() + 60 * 60 * 1000); // 1hs
+
+        await AuthSchema.findOneAndUpdate(
+            { _id: user._id },
+            { $set: { resetPasswordToken: resetToken, resetPasswordTokenExpires } },
+        );
+
+        return { username: user.username as string, resetToken };
+    }
+
+    /*══════════ 🎮 resetPassword ══════════╗
+    ║ 📥 Entrada: ResetPasswordPayload {token,newPassword,repeatNewPassword} ║
+    ║ ⚙️ Proceso: valida token+expiración, valida password, ║
+    ║    hashea y guarda, limpia token e invalida sesión     ║
+    ║ 📤 Salida: void                                        ║
+    ╚══════════════════════════════════════════════════════╝*/
+
+    static async resetPassword(data: ResetPasswordPayload): Promise<void> {
+        const { token, newPassword, repeatNewPassword } = data;
+
+        const tokenResult: string = Validation.stringValidation(token, 'token');
+        const passwordResult: string = Validation.password(newPassword);
+        Validation.password(repeatNewPassword);
+
+        if (newPassword !== repeatNewPassword) throw new Error('Passwords do not match');
+
+        const user = await AuthSchema.findOne({ resetPasswordToken: tokenResult }).lean();
+        if (!user) throw new Error('Invalid reset token');
+
+        if (!user.resetPasswordTokenExpires || user.resetPasswordTokenExpires < new Date()) {
+            throw new Error('Reset token has expired');
+        }
+
+        const hashedPassword: string = await bcrypt.hash(passwordResult, SALT_ROUNDS);
+
+        await AuthSchema.findOneAndUpdate(
+            { _id: user._id },
+            {
+                $set: { password: hashedPassword },
+                // Invalidamos el refreshToken existente: si alguien más tenía sesión abierta,
+                // se cierra al cambiar la password. Buena práctica de seguridad.
+                $unset: { resetPasswordToken: '', resetPasswordTokenExpires: '', refreshToken: '' },
+            },
+        );
+    }
+
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
     /*══════════ 🎮 deleteAuth ══════════╗

@@ -4,7 +4,7 @@
 📜 Propósito:
 Tipado base para autenticación.  
 Define entidades, esquemas, repositorios, payloads y requests.
-c
+
 🧩 Derivaciones:
 - AuthEntity → AuthSchema → AuthRepository → AuthModelType
 - AuthEntity → AuthPublic → AuthPublicSchema
@@ -16,6 +16,8 @@ c
 - `role` NUNCA debe aceptarse desde AuthRegisterPayload ni desde el body de un request de
   registro: se asigna un default en AuthModel.create para evitar que un usuario se auto-asigne
   un rol privilegiado. Solo EditAuthPayload (uso administrativo) lo permite editar.
+- verificationToken/verificationTokenExpires y resetPasswordToken/resetPasswordTokenExpires
+  NUNCA deben exponerse al cliente: quedan excluidos de AuthPublic.
 ──────────────────────────────*/
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -33,10 +35,19 @@ interface AuthEntity {
   refreshToken: string | undefined;
   profilePhoto: string | null;
   role: AuthRoleEnum;
+  isVerified: boolean;
+  verificationToken: string | null;
+  verificationTokenExpires: Date | null;
+  resetPasswordToken: string | null;
+  resetPasswordTokenExpires: Date | null;
 }
 
 // base para el schema
-type AuthSchema = Pick<AuthEntity, '_id' | 'username' | 'email' | 'password' | 'refreshToken' | 'profilePhoto' | 'role'>;
+type AuthSchema = Pick<AuthEntity,
+  | '_id' | 'username' | 'email' | 'password' | 'refreshToken' | 'profilePhoto' | 'role'
+  | 'isVerified' | 'verificationToken' | 'verificationTokenExpires'
+  | 'resetPasswordToken' | 'resetPasswordTokenExpires'
+>;
 
 //base con las funciones del schema
 interface AuthRepository extends AuthSchema {
@@ -63,7 +74,11 @@ export type AuthSchemaType = AuthSchema;
 export type AuthModelType = AuthRepository;
 
 // derivado para los datos publicos
-export type AuthPublic = Omit<AuthEntity, 'password' | 'repeatPassword' | 'authToken' | 'refreshToken'>
+export type AuthPublic = Omit<AuthEntity,
+  | 'password' | 'repeatPassword' | 'authToken' | 'refreshToken'
+  | 'verificationToken' | 'verificationTokenExpires'
+  | 'resetPasswordToken' | 'resetPasswordTokenExpires'
+>;
 
 //derivado para data de payloads y posterior validacion
 export type AuthPayload = AuthPayloadUnknown;
@@ -72,7 +87,7 @@ export type AuthPayload = AuthPayloadUnknown;
 ║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profilePhoto' | 'role'>;
+export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profilePhoto' | 'role' | 'isVerified'>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
@@ -103,12 +118,31 @@ export type DeleteAuthPayload = Pick<AuthPayload, '_id'>;
 
 // EditAuthPayload SÍ incluye 'role' (hereda de AuthPayload sin excluirlo) para permitir
 // que un flujo administrativo edite el rol de un usuario existente.
-export type EditAuthPayload = Omit<AuthPayload, 'repeatPassword' | 'authToken' | 'refreshToken'>;
+export type EditAuthPayload = Omit<AuthPayload,
+  | 'repeatPassword' | 'authToken' | 'refreshToken'
+  | 'isVerified' | 'verificationToken' | 'verificationTokenExpires'
+  | 'resetPasswordToken' | 'resetPasswordTokenExpires'
+>;
 
 export interface AuthRefreshTokenPayload {
   _id: unknown,
   token?: unknown,
 }
+
+// email de verificación (post-registro)
+export type VerifyEmailPayload = {
+  token: string;
+};
+
+// solicitud de reset de password (paso 1: pedir el link por mail)
+export type RequestPasswordResetPayload = Pick<Auth, 'email'>;
+
+// reset de password (paso 2: setear la nueva password con el token del mail)
+export type ResetPasswordPayload = {
+  token: string;
+  newPassword: string;
+  repeatNewPassword: string;
+};
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
@@ -130,6 +164,11 @@ export type DeleteAuthRequest = Request<AuthParams, unknown, DeleteAuthPayload>;
 
 export type EditAuthRequest = Request<AuthParams, unknown, EditAuthPayload>;
 
+export type VerifyEmailRequest = Request<AuthParams, unknown, VerifyEmailPayload>;
+
+export type RequestPasswordResetRequest = Request<AuthParams, unknown, RequestPasswordResetPayload>;
+
+export type ResetPasswordRequest = Request<AuthParams, unknown, ResetPasswordPayload>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🪙 TOKEN 🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙                     ║

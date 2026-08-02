@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { handleControllerError } from "../utils/handleControllerError";
 import { AuthCheckAuthRequest, AuthGoogleRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRefreshRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
 import axios from "axios";
+import { EmailService } from "services/emailService";
 
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
@@ -290,6 +291,38 @@ export async function refresh(req: AuthRefreshRequest, res: Response): Promise<v
   } catch (error: unknown) {
     handleControllerError(res, error);
   }
+}
+
+export async function requestPasswordReset(req: Request, res: Response): Promise<void> {
+    const { email } = req.body;
+
+    try {
+        const result = await AuthModel.requestPasswordReset({ email });
+
+        if (result) {
+            try {
+                await EmailService.sendPasswordResetEmail({ to: email, username: result.username, token: result.resetToken });
+            } catch (emailError) {
+                console.error('Failed to send password reset email:', emailError);
+            }
+        }
+
+        // Mismo mensaje exista o no el email: evita filtrar qué emails están registrados.
+        res.status(200).json({ message: 'If that email exists, a reset link has been sent' });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+export async function resetPassword(req: Request, res: Response): Promise<void> {
+    const { token, newPassword, repeatNewPassword } = req.body;
+
+    try {
+        await AuthModel.resetPassword({ token, newPassword, repeatNewPassword });
+        res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
 }
 
 //─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//

@@ -1,26 +1,3 @@
-/*──────────────────────────────
-🗂️ AuthSchema (DB Local)
-──────────────────────────────
-📜 Propósito:
-Definir el esquema de autenticación para la base de datos **local**.  
-Este esquema se utiliza únicamente en casos de **falta de internet** como respaldo offline.  
-Cuando haya conexión, las consultas se realizarán contra la base de datos **SQL** oficial.
-
-🧩 Campos:
-- _id          → Identificador único (String, requerido)
-- username     → Nombre de usuario (String, requerido)
-- email        → Correo electrónico (String, requerido)
-- password     → Contraseña encriptada (String, requerido)
-- refreshToken → Token de refresco (String, opcional)
-- profilePhoto → URL de foto de perfil (String, opcional)
-- role         → Rol del usuario (String, requerido, enum AuthRoleEnum, default "Usuario")
-
-🛡️ Notas:
-- Este esquema NO reemplaza la base de datos SQL, solo actúa como fallback local.
-- Los datos almacenados aquí son temporales y se sincronizan con SQL cuando hay conexión.
-- `role` tiene default "Usuario" a nivel de Mongoose como segunda barrera de seguridad,
-  además del default explícito que asigna AuthModel.create.
-──────────────────────────────*/
 import { AuthSchemaType } from '../typings/auth';
 import { AuthRoleEnum } from '../typings/auth/enums';
 import mongoose, { Schema } from 'mongoose';
@@ -37,6 +14,16 @@ const AuthMongoSchema = new Schema<AuthSchemaType>({
     enum: Object.values(AuthRoleEnum),
     required: true,
     default: AuthRoleEnum.Usuario,
+  },
+  resetPasswordToken: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  resetPasswordTokenExpires: {
+    type: Date,
+    required: false,
+    default: null,
   },
 }, { _id: false });
 
