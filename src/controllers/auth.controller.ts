@@ -65,11 +65,19 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
     const { username, email, profilePhoto, password, repeatPassword } = req.body;
 
     try{
-        const _id: string = await AuthModel.create({username, email, profilePhoto, password , repeatPassword});
+        const { _id, verificationToken } = await AuthModel.create({ username, email, profilePhoto, password, repeatPassword });
+
+        // No dejamos que un fallo de mail tumbe el registro: el user ya fue creado.
+        try {
+            await EmailService.sendVerificationEmail({ to: email, username, token: verificationToken });
+        } catch (emailError) {
+            console.error('Failed to send verification email:', emailError);
+        }
+
         res
           .status(200)
           .json({
-            id:_id,
+            id: _id,
             message: "User Registered successfully",
           });
     } catch(error: unknown){
@@ -320,6 +328,17 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
     try {
         await AuthModel.resetPassword({ token, newPassword, repeatNewPassword });
         res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+export async function verifyEmail(req: Request, res: Response): Promise<void> {
+    const { token } = req.body;
+
+    try {
+        await AuthModel.verifyEmail({ token });
+        res.status(200).json({ message: 'Email verified successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

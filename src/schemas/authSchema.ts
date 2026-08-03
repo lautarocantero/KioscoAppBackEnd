@@ -4,8 +4,8 @@ import mongoose, { Schema } from 'mongoose';
 
 const AuthMongoSchema = new Schema<AuthSchemaType>({
   _id:          { type: String, required: true },
-  username:     { type: String, required: true },
-  email:        { type: String, required: true },
+  username:     { type: String, required: true, unique: true },
+  email:        { type: String, required: true, unique: true },
   password:     { type: String, required: true },
   refreshToken: { type: String, required: false },
   profilePhoto: { type: String, required: false },
@@ -21,6 +21,21 @@ const AuthMongoSchema = new Schema<AuthSchemaType>({
     default: null,
   },
   resetPasswordTokenExpires: {
+    type: Date,
+    required: false,
+    default: null,
+  },
+  isVerified: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    required: false,
+    default: null,
+  },
+  verificationTokenExpires: {
     type: Date,
     required: false,
     default: null,

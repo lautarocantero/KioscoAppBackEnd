@@ -17,6 +17,7 @@ import {
     AuthGoogleLoginPayload,
     RequestPasswordResetPayload,
     ResetPasswordPayload,
+    VerifyEmailPayload,
 } from '../typings/auth';
 import { AuthRoleEnum } from '../typings/auth/enums';
 
@@ -84,12 +85,13 @@ export class AuthModel {
 
     /*══════════ 🎮 create ══════════╗
     ║ 📥 Entrada: AuthRegisterPayload ║
-    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password, ║
-    ║    asigna role por default (Usuario) y guarda             ║
-    ║ 📤 Salida: string _id generado  ║
+    ║ ⚙️ Proceso: valida, verifica duplicados, hashea password,  ║
+    ║    genera token de verificación, asigna role por default    ║
+    ║    (Usuario) y guarda                                        ║
+    ║ 📤 Salida: { _id, verificationToken }                        ║
     ╚══════════════════════════════════╝*/
 
-    static async create(data: AuthRegisterPayload): Promise<string> {
+    static async create(data: AuthRegisterPayload): Promise<{ _id: string; verificationToken: string }> {
         const { username, email, password, repeatPassword, profilePhoto } = data;
 
         const usernameResult: string = Validation.stringValidation(username, 'username');
@@ -98,11 +100,21 @@ export class AuthModel {
         Validation.password(repeatPassword);
         const profileResult: string  = profilePhoto ? Validation.image(profilePhoto) : '';
 
-        const existing = await AuthSchema.findOne({ username: usernameResult }).lean();
-        if (existing) throw new Error('username already exists');
+        // Chequeamos username Y email en un solo query con $or
+        const existing = await AuthSchema.findOne({
+            $or: [{ username: usernameResult }, { email: emailResult }],
+        }).lean();
+
+        if (existing) {
+            if (existing.username === usernameResult) throw new Error('username already exists');
+            if (existing.email === emailResult) throw new Error('email already exists');
+        }
 
         const _id: string = crypto.randomUUID();
         const hashedPassword: string = await bcrypt.hash(passwordResult, SALT_ROUNDS);
+
+        const verificationToken: string = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires: Date = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24hs
 
         // role nunca se toma del payload del cliente: se asigna acá por default para que
         // nadie pueda auto-registrarse con un rol privilegiado.
@@ -114,9 +126,12 @@ export class AuthModel {
             refreshToken: '',
             profilePhoto: profileResult,
             role:         AuthRoleEnum.Usuario,
+            isVerified:   false,
+            verificationToken,
+            verificationTokenExpires,
         });
 
-        return _id;
+        return { _id, verificationToken };
     }
 
     /*══════════ 🎮 login ══════════╗
@@ -135,6 +150,8 @@ export class AuthModel {
 
         const isValid = await bcrypt.compare(password as string, authObject.password as string);
         if (!isValid) throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
+
+        if (!authObject.isVerified) throw new Error('Please verify your email before logging in');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _password, refreshToken: _refreshToken, ...publicUser } = authObject as AuthSchemaType;
@@ -243,6 +260,36 @@ export class AuthModel {
                 // Invalidamos el refreshToken existente: si alguien más tenía sesión abierta,
                 // se cierra al cambiar la password. Buena práctica de seguridad.
                 $unset: { resetPasswordToken: '', resetPasswordTokenExpires: '', refreshToken: '' },
+            },
+        );
+    }
+
+    /*══════════ 🎮 verifyEmail ══════════╗
+    ║ 📥 Entrada: VerifyEmailPayload {token}         ║
+    ║ ⚙️ Proceso: busca por token, valida expiración, ║
+    ║    marca isVerified y limpia el token           ║
+    ║ 📤 Salida: void                                 ║
+    ╚═════════════════════════════════════════════════╝*/
+
+    static async verifyEmail(data: VerifyEmailPayload): Promise<void> {
+        const { token } = data;
+
+        const tokenResult: string = Validation.stringValidation(token, 'token');
+
+        const user = await AuthSchema.findOne({ verificationToken: tokenResult }).lean();
+        if (!user) throw new Error('Invalid verification token');
+
+        if (user.isVerified) throw new Error('Email is already verified');
+
+        if (!user.verificationTokenExpires || user.verificationTokenExpires < new Date()) {
+            throw new Error('Verification token has expired');
+        }
+
+        await AuthSchema.findOneAndUpdate(
+            { _id: user._id },
+            {
+                $set: { isVerified: true },
+                $unset: { verificationToken: '', verificationTokenExpires: '' },
             },
         );
     }
