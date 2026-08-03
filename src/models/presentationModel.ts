@@ -183,7 +183,7 @@ export class PresentationModel {
     const idResult         = Validation.stringValidation(_id, '_id');
     const nameResult       = Validation.stringValidation(name, 'name');
     const descriptionResult= Validation.stringValidation(description, 'description');
-    const barcodeResult    = Validation.stringValidation(barcode, 'barcode');
+    const barcodeResult    = barcode?.trim() || '';
     const skuResult        = Validation.stringValidation(sku, 'sku');
     const modelSizeResult  = Validation.stringValidation(model_size, 'model_size');
     const priceResult      = Validation.number(price, 'price');
