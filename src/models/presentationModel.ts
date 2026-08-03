@@ -83,7 +83,7 @@ export class PresentationModel {
       } = data;
 
       const productIdResult    = Validation.stringValidation(product_id, 'product_id');
-      const barcodeResult      = Validation.stringValidation(barcode, 'barcode');
+      const barcodeResult      = barcode?.trim() || '';
       const skuResult          = Validation.stringValidation(sku, 'sku');
       const nameResult         = Validation.stringValidation(name, 'name');
       const descriptionResult  = Validation.stringValidation(description, 'description');
