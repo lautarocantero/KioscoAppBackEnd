@@ -65,14 +65,14 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
     const { username, email, profilePhoto, password, repeatPassword } = req.body;
 
     try{
-        const { _id, verificationToken } = await AuthModel.create({ username, email, profilePhoto, password, repeatPassword });
+        const { _id } = await AuthModel.create({ username, email, profilePhoto, password, repeatPassword });
 
-        // No dejamos que un fallo de mail tumbe el registro: el user ya fue creado.
-        try {
-            await EmailService.sendVerificationEmail({ to: email, username, token: verificationToken });
-        } catch (emailError) {
-            console.error('Failed to send verification email:', emailError);
-        }
+        // TODO(email-verification): reactivar cuando se pague Resend.
+        // try {
+        //     await EmailService.sendVerificationEmail({ to: email, username, token: verificationToken });
+        // } catch (emailError) {
+        //     console.error('Failed to send verification email:', emailError);
+        // }
 
         res
           .status(200)
@@ -333,16 +333,16 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
     }
 }
 
-export async function verifyEmail(req: Request, res: Response): Promise<void> {
-    const { token } = req.body;
-
-    try {
-        await AuthModel.verifyEmail({ token });
-        res.status(200).json({ message: 'Email verified successfully' });
-    } catch (error: unknown) {
-        handleControllerError(res, error);
-    }
-}
+// TODO(email-verification): reactivar cuando se pague Resend.
+// export async function verifyEmail(req: Request, res: Response): Promise<void> {
+//     const { token } = req.body;
+//     try {
+//         await AuthModel.verifyEmail({ token });
+//         res.status(200).json({ message: 'Email verified successfully' });
+//     } catch (error: unknown) {
+//         handleControllerError(res, error);
+//     }
+// }
 
 //─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//
 

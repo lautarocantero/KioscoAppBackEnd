@@ -100,7 +100,6 @@ export class AuthModel {
         Validation.password(repeatPassword);
         const profileResult: string  = profilePhoto ? Validation.image(profilePhoto) : '';
 
-        // Chequeamos username Y email en un solo query con $or
         const existing = await AuthSchema.findOne({
             $or: [{ username: usernameResult }, { email: emailResult }],
         }).lean();
@@ -113,11 +112,12 @@ export class AuthModel {
         const _id: string = crypto.randomUUID();
         const hashedPassword: string = await bcrypt.hash(passwordResult, SALT_ROUNDS);
 
-        const verificationToken: string = crypto.randomBytes(32).toString('hex');
-        const verificationTokenExpires: Date = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24hs
+        // TODO(email-verification): reactivar generación de verificationToken
+        // cuando se pague Resend. Mientras tanto no hay forma de verificar el
+        // mail, así que el usuario se crea ya verificado.
+        // const verificationToken: string = crypto.randomBytes(32).toString('hex');
+        // const verificationTokenExpires: Date = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-        // role nunca se toma del payload del cliente: se asigna acá por default para que
-        // nadie pueda auto-registrarse con un rol privilegiado.
         await AuthSchema.create({
             _id,
             username:     usernameResult,
@@ -126,12 +126,12 @@ export class AuthModel {
             refreshToken: '',
             profilePhoto: profileResult,
             role:         AuthRoleEnum.Usuario,
-            isVerified:   false,
-            verificationToken,
-            verificationTokenExpires,
+            isVerified:   true, // TODO(email-verification): volver a `false` cuando se reactive el flujo
+            // verificationToken,
+            // verificationTokenExpires,
         });
 
-        return { _id, verificationToken };
+        return { _id, verificationToken: '' };
     }
 
     /*══════════ 🎮 login ══════════╗
@@ -151,7 +151,8 @@ export class AuthModel {
         const isValid = await bcrypt.compare(password as string, authObject.password as string);
         if (!isValid) throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
 
-        if (!authObject.isVerified) throw new Error('Please verify your email before logging in');
+        // TODO(email-verification): reactivar cuando se pague Resend.
+        // if (!authObject.isVerified) throw new Error('Please verify your email before logging in');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _password, refreshToken: _refreshToken, ...publicUser } = authObject as AuthSchemaType;
