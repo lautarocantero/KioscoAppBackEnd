@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { handleControllerError } from "../utils/handleControllerError";
 import { AuthCheckAuthRequest, AuthGoogleRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRefreshRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
 import axios from "axios";
-import { EmailService } from "../services/emailService";
+// import { EmailService } from "../services/emailService";
 
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
