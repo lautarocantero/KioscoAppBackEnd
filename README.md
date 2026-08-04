@@ -1,85 +1,185 @@
-# 🍫🏪💰 KioscoApp Backend 🖥️🗄️📡
+![Stoko ilustration](/public/images/stocko-banner.png)
 
-Este repositorio contiene el backend de [**KioscoApp**](https://github.com/lautarocantero/KioscoApp), una aplicación diseñada para la gestión de kioscos. Está desarrollado con **Node.js**, **Express** y **TypeScript**, y proporciona una API RESTful para autenticación, gestión de vendedores, productos, proveedores y ventas.
+# 🏪 Stocko Backend
 
-## 🧱 Arquitectura
+API RESTful para la gestión de Stocko construida con **Node.js**, **Express** y **TypeScript**.
 
-| Componente      | Propósito                                                   | Ejemplo                  |
-|-----------------|-------------------------------------------------------------|--------------------------|
-| **Modelos**     | Encapsulan la lógica de acceso a datos y validación         | `AuthModel`              |
-| **Controladores** | Manejan la lógica de negocio y las respuestas HTTP        | `auth.controller.ts`     |
-| **Rutas**       | Definen los endpoints y delegan a los controladores         | `auth.routes.ts`         |
+## 📝 Descripción
 
+Este backend administra:
+- 🔐 autenticación y gestión de usuarios
+- 🧑‍💼 vendedores
+- 📦 productos
+- 🏷️ presentaciones de productos
+- 🚚 proveedores
+- 🛒 ventas
 
-## 🧬 Diagrama Entidad-Relación (DER)
+Incluye documentación Swagger (`/api-docs`) y una arquitectura modular basada en rutas, controladores, modelos y esquemas.
 
-Este diagrama representa la estructura de datos de [**KioscoApp**](https://github.com/lautarocantero/KioscoApp):
+## 🧩 Tecnologías
 
-![Diagrama ER](src/documentation/kiosco-base-der.png) 
+- Node.js
+- Express
+- TypeScript
+- MongoDB / Mongoose
+- JWT
+- bcrypt
+- dotenv
+- cors
+- swagger-jsdoc + swagger-ui-express
+- db-local (fallback local)
 
-## 🚀 Tecnologías utilizadas
+## 🔧 Instalación
 
-- [Node.js](https://nodejs.org/)
-- [Express](https://expressjs.com/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [bcrypt](https://github.com/kelektiv/node.bcrypt.js) para el hash de contraseñas
-- [db-local](https://www.npmjs.com/package/db-local) como base de datos local para desarrollo
-- [JWT](https://www.jwt.io/) para autenticacion segura.
+```bash
+npm install
+```
 
-## 📦 Scripts disponibles
+## ⚙️ Configuración
 
-| Comando       | Descripción                                               |
-|---------------|-----------------------------------------------------------|
-| `npm run dev` | Inicia el servidor en modo desarrollo con `ts-node-dev`   |
-| `npm run tsc` | Compila el proyecto TypeScript a JavaScript               |
-| `npm start`   | Ejecuta el servidor desde la carpeta `build`              |
+Crea un archivo `.env` en la raíz con al menos estas variables:
 
-## 📁 Estructura del proyecto
+```env
+PORT=3000
+MONGODB_URI=mongodb://admin:secret@localhost:27017/mi_base?authSource=admin
+RESEND_API_KEY=tu_resend_api_key
+EMAIL_FROM="Stocko <onboarding@resend.dev>"
+FRONTEND_URL=http://localhost:5173
+SALT_ROUNDS=10
+NODE_ENV=development
+```
 
-src/  
-├── controllers/   # Lógica de negocio (controladores)    
-├── documentation/ # documentacion del proyecto  
-├── models/        # Modelos y acceso a datos    
-├── routes/        # Definición de rutas Express    
-├── schemas/       # Definición de esquemas para db local    
-├── typings/       # Tipos y contratos TypeScript    
-├── utils/         # Funciones útiles compartidas    
-├── config/        # Configuración general (ej: constantes)    
-└── index.ts       # Punto de entrada principal    
+> ⚠️ Nota: `RESEND_API_KEY` es obligatorio, ya que el servicio de correo usa la librería `resend`.
 
-## 🔐 Autenticación
+## 🚀 Ejecución
 
-El sistema de autenticación incluye:
+Modo desarrollo:
 
-- Registro de usuarios con validación de datos
-- Hash de contraseñas con `bcrypt`
-- Inicio de sesión y generación de tokens JWT
+```bash
+npm run dev
+```
 
-## 📚 Documentación
+Compilar TypeScript:
 
-- Bloques teatrales con ASCII art para cada archivo (index, routes, controllers, models)
-- Narrativa clara del flujo de datos: Client → Routes → Controllers → Models → DB
-- Filosofía uniforme de local fallback vs SQL principal en todos los modelos
-- Minimización en routers y archivos simples para evitar redundancia
-- Meta‑guías y mapas arquitectónicos que muestran la relación entre capas (Schemas.md, Routes.md)
-- Uso de emojis para dramatizar y hacer el onboarding más memorable
+```bash
+npm run build
+```
 
-![Documentación](src/documentation/documentation.png) 
+Ejecutar el código compilado:
 
-## 📌 Próximos pasos
+```bash
+npm start
+```
 
-- Validaciones adicionales con middlewares
-- Agregar testing a los endpoints
-- Agregar funciones que utilizen sql
+## 🛣️ Rutas principales
 
-## 🛠 Requisitos
+### 🔐 Autenticación (`/auth`)
+- `GET /auth/`
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/google`
+- `POST /auth/logout`
+- `POST /auth/check-auth`
+- `POST /auth/refresh`
+- `POST /auth/request-password-reset`
+- `POST /auth/reset-password`
+- `DELETE /auth/delete-auth`
+- `PUT /auth/edit-auth`
 
-- Node.js v18+
-- npm o yarn
+### 📦 Productos (`/product`)
+- `GET /product/`
+- `GET /product/get-products`
+- `GET /product/get-product-by-id/:_id`
+- `GET /product/get-product-by-name?name=...`
+- `GET /product/get-product-by-brand?brand=...`
+- `GET /product/get-products-with-presentations`
+- `GET /product/get-products-with-stock`
+- `GET /product/get-product-stats`
+- `GET /product/search-products-with-presentations?term=...&category=...`
+- `POST /product/create-product`
+- `PUT /product/edit-product`
+- `DELETE /product/delete-product`
 
-## 🐛 Trouble Shouting
+### 🏷️ Presentaciones (`/presentation`)
+- `GET /presentation/`
+- `GET /presentation/get-product-presentations`
+- `GET /presentation/get-presentation-by-id/:product_presentation_id`
+- `GET /presentation/get-presentation-by-barcode/:barcode`
+- `GET /presentation/get-presentation-by-product-id/:product_id`
+- `GET /presentation/get-presentation-by-stock?stock=...`
+- `GET /presentation/get-presentation-by-price?price=...`
+- `GET /presentation/get-presentation-by-status?status=...`
+- `GET /presentation/get-presentation-by-model-size?model_size=...`
+- `GET /presentation/get-presentation-by-category?category=...`
+- `GET /presentation/get-presentations-with-stock-by-product-id/:product_id`
+- `GET /presentation/get-presentation-analytics/:presentation_id`
+- `POST /presentation/create-presentation`
+- `PUT /presentation/edit-presentation/:presentation_id`
+- `DELETE /presentation/delete-presentation`
 
-- Error de CORS
-    El caso más normal donde tengo un error de CORS en los endpoints, se debe a que trato de acceder a los endpoints desde una ruta que no
-    esta incluida en los cors.
-    En Index.ts agregar la ruta que utilizo en el FrontEnd a allowedOrigins
+### 🚚 Proveedores (`/provider`)
+- `GET /provider/`
+- `GET /provider/get-providers`
+- `GET /provider/get-provider-by-id`
+- `GET /provider/get-provider-by-name`
+- `GET /provider/get-provider-by-valoration`
+- `GET /provider/get-providers-by-contact`
+- `GET /provider/get-providers-stats`
+- `POST /provider/create-provider`
+- `PUT /provider/edit-provider`
+- `DELETE /provider/delete-provider`
+
+### 🛒 Ventas (`/sell`)
+- `GET /sell/`
+- `GET /sell/get-sells`
+- `GET /sell/get-sell-by-id/:_id`
+- `GET /sell/get-sells-by-seller`
+- `GET /sell/get-sells-by-date`
+- `GET /sell/get-sells-by-product`
+- `GET /sell/get-today-sells-count`
+- `GET /sell/search-sells`
+- `POST /sell/create-sell`
+- `PUT /sell/edit-sell`
+- `DELETE /sell/delete-sell/:_id`
+
+### 🧑‍💼 Vendedores (`/seller`)
+- `GET /seller/`
+- `GET /seller/get-sellers`
+- `GET /seller/get-seller-by-id`
+- `GET /seller/get-seller-by-name`
+- `GET /seller/get-seller-by-email`
+- `GET /seller/get-seller-by-rol`
+- `POST /seller/create-seller`
+- `PUT /seller/edit-seller`
+- `DELETE /seller/delete-seller`
+
+## 📚 Documentación adicional
+
+- Swagger UI disponible en `http://localhost:3000/api-docs`
+- Documentación técnica en `src/docs/Architecture.md`, `src/docs/Routes.md`, `src/docs/Models.md`, `src/docs/Controllers.md`, `src/docs/Utils.md`
+
+## 📁 Estructura principal
+
+- `src/index.ts`: entrada principal, configuración de CORS, rutas y documentación Swagger.
+- `src/config/db.ts`: conexión a MongoDB.
+- `src/controllers/`: lógica de negocio por recurso.
+- `src/routes/`: routers con endpoints.
+- `src/models/`: acceso a datos y abstracción de persistencia.
+- `src/schemas/`: esquemas Mongoose y respaldos locales.
+- `src/typings/`: tipados y contratos TypeScript.
+- `src/utils/`: utilidades compartidas.
+
+## 🛠️ Notas importantes
+
+- El proyecto usa cookies `access_token` y `refresh_token` para manejar sesión.
+- CORS está configurado en `src/index.ts` con una lista de orígenes permitidos.
+- Si `RESEND_API_KEY` no está presente, el servidor no arranca.
+- La conexión a MongoDB se verifica antes de iniciar el servidor.
+
+## 📦 Comandos
+
+- `npm run dev`
+- `npm run build`
+- `npm start`
+- `npm run tsc`
+- `npm run docgen`

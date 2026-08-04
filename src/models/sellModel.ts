@@ -57,30 +57,31 @@ export class SellModel {
     }
 
     /*══════════ 📊 getTodaySellsCount ══════════╗
-    ║ 📥 Entrada: -                               ║
-    ║ ⚙️ Proceso: cuenta ventas cuya purchase_date ║
-    ║    (guardada como Date.toString()) coincide  ║
-    ║    con el día de hoy, y calcula la fecha de  ║
-    ║    la venta más reciente del día (lastSaleAt)║
-    ║    Filtrado en memoria porque purchase_date  ║
-    ║    no es un Date nativo.                     ║
-    ║ 📤 Salida: { count, lastSaleAt }             ║
-    ╚═══════════════════════════════════════════╝*/
+    ║ 📥 Entrada: -                                          ║
+    ║ ⚙️ Proceso: cuenta ventas cuya purchase_date            ║
+    ║    (guardada como Date.toString()) coincide             ║
+    ║    con el día de hoy, calcula la fecha de la venta       ║
+    ║    más reciente del día (lastSaleAt) y suma              ║
+    ║    total_amount de esas ventas (todaySellsTotalAmount)   ║
+    ║    Filtrado en memoria porque purchase_date no es         ║
+    ║    un Date nativo.                                         ║
+    ║ 📤 Salida: { count, lastSaleAt, totalAmount }              ║
+    ╚═════════════════════════════════════════════════════════╝*/
 
-    static async getTodaySellsCount(): Promise<{ count: number; lastSaleAt: string | null }> {
-        // Traemos purchase_date y createdAt; nada más, para no cargar documentos completos.
-        const results = await SellSchema.find({}, { purchase_date: 1, createdAt: 1 }).lean();
+    static async getTodaySellsCount(): Promise<{ count: number; lastSaleAt: string | null; totalAmount: number }> {
+        // Traemos purchase_date, createdAt y total_amount; nada más, para no cargar documentos completos.
+        const results = await SellSchema.find({}, { purchase_date: 1, createdAt: 1, total_amount: 1 }).lean();
 
         const todayStr: string = new Date().toDateString();
 
-        const todaySells = (results as unknown as { purchase_date: string; createdAt?: Date }[]).filter((sell) => {
+        const todaySells = (results as unknown as { purchase_date: string; createdAt?: Date; total_amount?: number }[]).filter((sell) => {
             const parsedDate = new Date(sell.purchase_date);
             if (Number.isNaN(parsedDate.getTime())) return false;
             return parsedDate.toDateString() === todayStr;
         });
 
         if (todaySells.length === 0) {
-            return { count: 0, lastSaleAt: null };
+            return { count: 0, lastSaleAt: null, totalAmount: 0 };
         }
 
         const lastSaleAt = todaySells.reduce<Date | null>((latest, sell) => {
@@ -90,9 +91,12 @@ export class SellModel {
             return latest;
         }, null);
 
+        const totalAmount = todaySells.reduce((sum, sell) => sum + (sell.total_amount ?? 0), 0);
+
         return {
             count: todaySells.length,
             lastSaleAt: lastSaleAt ? lastSaleAt.toISOString() : null,
+            totalAmount,
         };
     }
 

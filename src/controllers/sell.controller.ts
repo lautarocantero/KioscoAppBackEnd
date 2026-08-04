@@ -172,7 +172,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
 
 export async function getTodaySellsCount(_req: Request, res: Response): Promise<void> {
     try {
-        const stats: { count: number; lastSaleAt: string | null } = await SellModel.getTodaySellsCount();
+        const stats: { count: number; lastSaleAt: string | null; totalAmount: number } = await SellModel.getTodaySellsCount();
         res
             .status(200)
             .json(stats);
