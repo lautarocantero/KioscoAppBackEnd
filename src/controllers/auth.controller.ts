@@ -307,16 +307,32 @@ export async function requestPasswordReset(req: Request, res: Response): Promise
     try {
         const result = await AuthModel.requestPasswordReset({ email });
 
-        if (result) {
-            try {
-                await EmailService.sendPasswordResetEmail({ to: email, username: result.username, token: result.resetToken });
-            } catch (emailError) {
-                console.error('Failed to send password reset email:', emailError);
-            }
-        }
+        // 🚧 BYPASS TEMPORAL (sin Resend pago): comentamos el envío real de
+        // mail y devolvemos el token directo en la respuesta para que el
+        // frontend pueda navegar a /reset-password sin depender del email.
+        //
+        // ⚠️ SEGURIDAD: esto rompe a propósito la protección de "no revelar
+        // si el email existe" (antes el mensaje era idéntico exista o no el
+        // email; ahora `token` viene presente solo si existe). NO DEJAR
+        // este bypass en producción.
+        //
+        // Para reactivar cuando se pague Resend:
+        // 1. Descomentar el bloque de EmailService de abajo.
+        // 2. Sacar `token` del response.status(200).json(...).
+        // 3. Restaurar el mensaje genérico sin datos condicionales.
+        //
+        // if (result) {
+        //     try {
+        //         await EmailService.sendPasswordResetEmail({ to: email, username: result.username, token: result.resetToken });
+        //     } catch (emailError) {
+        //         console.error('Failed to send password reset email:', emailError);
+        //     }
+        // }
 
-        // Mismo mensaje exista o no el email: evita filtrar qué emails están registrados.
-        res.status(200).json({ message: 'If that email exists, a reset link has been sent' });
+        res.status(200).json({
+            message: 'If that email exists, a reset link has been sent',
+            token: result ? result.resetToken : null,
+        });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
