@@ -71,7 +71,7 @@ export class PresentationModel {
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
   static async create(data: {
-      product_id: string; sku: string; name: string; description?: string;
+      product_id: string; sku?: string; name: string; description?: string;
       barcode?: string; brand?: string; image_url?: string; model_type?: string; model_size?: string;
       min_stock: number; stock: number; price: number; expiration_date?: string;
       category?: PresentationCategory[]; sale_type: SaleType;
@@ -84,7 +84,7 @@ export class PresentationModel {
 
       const productIdResult    = Validation.stringValidation(product_id, 'product_id');
       const barcodeResult      = barcode?.trim() || '';
-      const skuResult          = Validation.stringValidation(sku, 'sku');
+      const skuResult          = sku?.trim() || '';
       const nameResult         = Validation.stringValidation(name, 'name');
       const descriptionResult  = Validation.stringValidation(description, 'description');
       const saleTypeResult     = Validation.saleType(sale_type);
@@ -168,7 +168,7 @@ export class PresentationModel {
   //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
   static async edit(data: {
-    _id: string; sku: string; barcode?: string; price: number; stock: number; min_stock: number;
+    _id: string; sku?: string; barcode?: string; price: number; stock: number; min_stock: number;
     model_type?: string; model_size: string; image_url?: string;
     brand?: string; description?: string; expiration_date?: string; name: string;
     category?: PresentationCategory[]; sale_type: string;
@@ -184,7 +184,7 @@ export class PresentationModel {
     const nameResult       = Validation.stringValidation(name, 'name');
     const descriptionResult= Validation.stringValidation(description, 'description');
     const barcodeResult    = barcode?.trim() || '';
-    const skuResult        = Validation.stringValidation(sku, 'sku');
+    const skuResult        = sku?.trim() || '';
     const modelSizeResult  = Validation.stringValidation(model_size, 'model_size');
     const priceResult      = Validation.number(price, 'price');
     const stockResult      = Validation.number(stock, 'stock');
