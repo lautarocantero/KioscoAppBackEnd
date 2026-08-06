@@ -73,7 +73,7 @@ const isTicket = (value: ProductTicket): boolean => {
     typeof v.product_id === "string" &&
     typeof v.sku === "string" &&
     typeof v.model_type === "string" &&
-    typeof v.model_size === "string" &&
+    typeof v.model_size === "number" &&
     typeof v.price === "number" &&
     typeof v.expiration_date === "string" &&
     typeof v.stock_required === "number"
