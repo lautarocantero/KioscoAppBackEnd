@@ -1,6 +1,6 @@
 import { PresentationSchemaType, presentation } from '@typings/presentation';
 import { Validation } from './validation';
-import { PresentationCategory, SaleType } from '../typings/presentation/presentationEnum';
+import { ModelType, ModelUnit, PresentationCategory, SaleType } from '../typings/presentation/presentationEnum';
 import { PresentationMongo } from '../schemas/presentationSchema';
 
 /*──────────────────────────────
@@ -50,7 +50,6 @@ export class PresentationModel {
         { name: regex },
         { sku: regex },
         { model_type: regex },
-        { model_size: regex },
       ],
     }).lean();
 
@@ -72,13 +71,13 @@ export class PresentationModel {
 
   static async create(data: {
       product_id: string; sku?: string; name: string; description?: string;
-      barcode?: string; brand?: string; image_url?: string; model_type?: string; model_size?: string;
-      min_stock: number; stock: number; price: number; expiration_date?: string;
-      category?: PresentationCategory[]; sale_type: SaleType;
+      barcode?: string; brand?: string; image_url?: string; model_type?: ModelType; model_size?: number;
+      model_unit?: ModelUnit; is_perishable: boolean; min_stock: number; stock: number; price: number;
+      expiration_date?: string; category?: PresentationCategory[]; sale_type: SaleType;
   }): Promise<string> {
       const {
           product_id, sku, name, description, barcode, brand, image_url,
-          model_type, model_size, min_stock, stock, price, expiration_date,
+          model_type, model_size, model_unit, is_perishable, min_stock, stock, price, expiration_date,
           category, sale_type,
       } = data;
 
@@ -89,14 +88,22 @@ export class PresentationModel {
       const descriptionResult  = Validation.stringValidation(description, 'description');
       const saleTypeResult     = Validation.saleType(sale_type);
 
-      // model_type/model_size ya no se validan como obligatorios acá:
+      // model_type/model_size/model_unit ya no se validan como obligatorios acá:
       // el schema de Mongoose decide si son requeridos según sale_type.
-      const modelTypeResult = model_type ?? '';
-      const modelSizeResult = model_size ?? '';
+      // undefined (no '') para que Mongoose no corra el enum-check en presentaciones por peso.
+      const modelTypeResult = model_type || undefined;
+      const modelSizeResult = model_size !== undefined ? Number(model_size) : undefined;
+      const modelUnitResult = model_unit || undefined;
+      const isPerishableResult = Boolean(is_perishable);
 
       const minStockResult = Validation.number(min_stock, 'min_stock', true); // isZeroValid: 0 kg/g de stock inicial es válido
       const stockResult    = Validation.number(stock, 'stock', true);
       const priceResult    = Validation.number(price, 'price');
+
+      // expiration_date solo se exige si el producto es perecedero
+      const expirationDateResult = isPerishableResult
+        ? Validation.stringValidation(expiration_date, 'expiration_date')
+        : (expiration_date ?? '');
 
       const _id = crypto.randomUUID();
       const now = new Date().toISOString();
@@ -112,7 +119,9 @@ export class PresentationModel {
           image_url: image_url ?? '',
           model_type: modelTypeResult,
           model_size: modelSizeResult,
+          model_unit: modelUnitResult,
           sale_type: saleTypeResult,
+          is_perishable: isPerishableResult,
           min_stock: minStockResult,
           stock: stockResult,
           price: priceResult,
@@ -120,7 +129,7 @@ export class PresentationModel {
           status: stockResult > 0 ? 'available' : 'out_of_stock',
           created_at: now,
           updated_at: now,
-          expiration_date: expiration_date ?? '',
+          expiration_date: expirationDateResult,
       });
 
       return _id;
@@ -148,7 +157,7 @@ export class PresentationModel {
         {
           $set: {
             stock: newStock,
-            ...(isWeight ? { model_size: String(newStock) } : {}),
+            ...(isWeight ? { model_size: newStock } : {}),
             status: newStock > 0 ? 'available' : 'out_of_stock',
             updated_at: new Date().toISOString(),
           },
@@ -169,13 +178,13 @@ export class PresentationModel {
 
   static async edit(data: {
     _id: string; sku?: string; barcode?: string; price: number; stock: number; min_stock: number;
-    model_type?: string; model_size: string; image_url?: string;
-    brand?: string; description?: string; expiration_date?: string; name: string;
+    model_type?: ModelType; model_size: number; model_unit?: ModelUnit; is_perishable: boolean;
+    image_url?: string; brand?: string; description?: string; expiration_date?: string; name: string;
     category?: PresentationCategory[]; sale_type: string;
   }): Promise<void> {
     const {
       _id, barcode, sku, price, stock, min_stock,
-      model_type, model_size, image_url,
+      model_type, model_size, model_unit, is_perishable, image_url,
       brand, description, expiration_date, name,
       category, sale_type,
     } = data;
@@ -185,15 +194,21 @@ export class PresentationModel {
     const descriptionResult= Validation.stringValidation(description, 'description');
     const barcodeResult    = barcode?.trim() || '';
     const skuResult        = sku?.trim() || '';
-    const modelSizeResult  = Validation.stringValidation(model_size, 'model_size');
     const priceResult      = Validation.number(price, 'price');
     const stockResult      = Validation.number(stock, 'stock');
     const minStockResult   = Validation.number(min_stock, 'min_stock');
+    const isPerishableResult = Boolean(is_perishable);
 
-    // ⬇️ model_type solo se valida/exige si NO es venta por peso
-    const modelTypeResult = sale_type === "weight"
-      ? (model_type ?? '')
-      : Validation.stringValidation(model_type, 'model_type');
+    // ⬇️ model_type/model_size/model_unit solo se validan/exigen si NO es venta por peso
+    const isWeight = sale_type === 'weight';
+    const modelTypeResult = isWeight ? undefined : Validation.stringValidation(model_type, 'model_type');
+    const modelSizeResult = isWeight ? Number(model_size) : Validation.number(model_size, 'model_size');
+    const modelUnitResult = isWeight ? undefined : Validation.stringValidation(model_unit, 'model_unit');
+
+    // expiration_date solo se exige si el producto es perecedero
+    const expirationDateResult = isPerishableResult
+      ? Validation.stringValidation(expiration_date, 'expiration_date')
+      : (expiration_date ?? '');
 
     const updated = await PresentationMongo.findOneAndUpdate(
       { _id: idResult },
@@ -204,6 +219,8 @@ export class PresentationModel {
           name: nameResult,
           model_type: modelTypeResult,
           model_size: modelSizeResult,
+          model_unit: modelUnitResult,
+          is_perishable: isPerishableResult,
           brand: brand ?? '',
           description: descriptionResult ?? '',
           price: priceResult,
@@ -213,7 +230,7 @@ export class PresentationModel {
           status: stockResult > 0 ? 'available' : 'out_of_stock',
           image_url: image_url ?? '',
           updated_at: new Date().toISOString(),
-          expiration_date: expiration_date ?? '',
+          expiration_date: expirationDateResult,
           sale_type,
         },
       },

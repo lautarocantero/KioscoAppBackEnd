@@ -109,7 +109,7 @@ export async function getPresentationByStatus(req: GetPresentationByStatusReques
 export async function getPresentationByModelSize(req: GetPresentationByModelSizeRequest, res: Response): Promise<void> {
     const { model_size } = req.body;
     try {
-        const presentations = await PresentationModel.getPresentationByField('model_size', model_size, 'string');
+        const presentations = await PresentationModel.getPresentationByField('model_size', model_size, 'number');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -181,7 +181,7 @@ export async function getPresentationAnalytics(
 export async function createPresentation(req: CreatePresentationRequest, res: Response): Promise<void> {
     const {
         product_id, sku, barcode, name, description, brand, image_url,
-        model_type, model_size, min_stock, stock, price, expiration_date,
+        model_type, model_size, model_unit, is_perishable, min_stock, stock, price, expiration_date,
         category, sale_type,
     } = req.body;
 
@@ -190,7 +190,8 @@ export async function createPresentation(req: CreatePresentationRequest, res: Re
     try {
         const _id = await PresentationModel.create({
             product_id, sku, barcode, name, description, brand,
-            image_url: imageUrl, model_type, model_size, sale_type,
+            image_url: imageUrl, model_type, model_size: Number(model_size), model_unit, sale_type,
+            is_perishable: is_perishable === true || is_perishable === 'true',
             min_stock: Number(min_stock), stock: Number(stock),
             price: Number(price), expiration_date, category,
         });
@@ -206,14 +207,15 @@ export async function editPresentation(req: EditPresentationRequest, res: Respon
     const { presentation_id } = req.params;
     const {
         sku, barcode, price, expiration_date, stock, min_stock,
-        model_type, model_size, image_url, brand, description,
+        model_type, model_size, model_unit, is_perishable, image_url, brand, description,
         name, category, sale_type,
     } = req.body;
 
     try {
         await PresentationModel.edit({
             _id: presentation_id, sku, barcode, price: Number(price), stock: Number(stock),
-            min_stock: Number(min_stock), model_type, model_size,
+            min_stock: Number(min_stock), model_type, model_size: Number(model_size), model_unit,
+            is_perishable: is_perishable === true || is_perishable === 'true',
             image_url, brand, description, expiration_date, name, category,
             sale_type,
         });

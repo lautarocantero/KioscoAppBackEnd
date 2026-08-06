@@ -1,4 +1,4 @@
-import { PresentationCategory, SaleType } from "./presentationEnum";
+import { ModelUnit, PresentationCategory, SaleType } from "./presentationEnum";
 
 declare module '@typings/presentation' {
 
@@ -19,7 +19,8 @@ interface PresentationEntity {
     description:    string;          // opcional — vacío string si no aplica
     brand:          string;          // opcional — vacío string si no aplica
     model_type:     string;
-    model_size:     string;          // ej: "2,25l" | "354ml" | "500g"
+    model_size:     number;          // ej: 500 | 25 | 6 — se combina con model_unit
+    model_unit:     ModelUnit;       // ej: ml | l | units | sheets
 
     // ── Clasificación ──────────────────────────────────────────────────
     category:       PresentationCategory[];   // un producto puede tener varias
@@ -33,13 +34,16 @@ interface PresentationEntity {
     stock:          number;          // unidades disponibles
     min_stock:      number;          // punto mínimo de reposición
 
+    // ── Vencimiento ────────────────────────────────────────────────────
+    is_perishable:  boolean;         // si false, no requiere expiration_date
+
     // ── Estado ─────────────────────────────────────────────────────────
     status:         PresentationStatus;
 
     // ── Fechas ─────────────────────────────────────────────────────────
     created_at:      string;
     updated_at:      string;
-    expiration_date: string;         // opcional — vacío string si no aplica
+    expiration_date: string;         // opcional — vacío string si is_perishable es false
 }
 
 interface PresentationRepository extends PresentationEntity {
