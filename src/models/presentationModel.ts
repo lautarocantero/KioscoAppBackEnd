@@ -199,11 +199,16 @@ export class PresentationModel {
     const minStockResult   = Validation.number(min_stock, 'min_stock');
     const isPerishableResult = Boolean(is_perishable);
 
-    // ⬇️ model_type/model_size/model_unit solo se validan/exigen si NO es venta por peso
+    // ⬇️ model_type/model_size/model_unit solo se validan/exigen si NO es venta por peso.
+    // model_unit NO pasa por Validation.stringValidation: esa validación exige mínimo 3
+    // caracteres (pensada para name/description), y valores válidos como "l" o "g" tienen 1.
+    // El propio enum de Mongoose ya garantiza que sea un ModelUnit válido.
     const isWeight = sale_type === 'weight';
     const modelTypeResult = isWeight ? undefined : Validation.stringValidation(model_type, 'model_type');
     const modelSizeResult = isWeight ? Number(model_size) : Validation.number(model_size, 'model_size');
-    const modelUnitResult = isWeight ? undefined : Validation.stringValidation(model_unit, 'model_unit');
+    const modelUnitResult = isWeight
+      ? undefined
+      : (model_unit ? model_unit : (() => { throw new Error('model_unit es requerido'); })());
 
     // expiration_date solo se exige si el producto es perecedero
     const expirationDateResult = isPerishableResult
