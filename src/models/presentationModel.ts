@@ -199,7 +199,7 @@ export class PresentationModel {
     const skuResult         = sku?.trim() || '';
     const priceResult       = Validation.number(price, 'price');
     const stockResult       = Validation.number(stock, 'stock');
-    const minStockResult    = Validation.number(min_stock, 'min_stock');
+    const minStockResult    = Validation.number(min_stock, 'min_stock', true);
     const isPerishableResult = Boolean(is_perishable);
     // antes: sale_type se guardaba directo sin pasar por Validation, a diferencia de create().
     const saleTypeResult    = Validation.saleType(sale_type);
