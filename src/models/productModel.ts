@@ -1,25 +1,15 @@
-import mongoose, { Schema } from 'mongoose';
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
+import { ProductMongo } from "../schemas/productSchema";
 
-
-const ProductMongoSchema = new Schema({
-  _id:          { type: String, required: true },
-  name:         { type: String, required: true },
-  description:  { type: String },
-  created_at:   { type: String },
-  updated_at:   { type: String },
-  image_url:    { type: String },
-  brand:        { type: String },
-}, { _id: false });
-
-// Evitar re-compilación del modelo en hot-reload
-export const ProductMongo = mongoose.models.Product || mongoose.model('Product', ProductMongoSchema, 'products');
-
-
-// ─── ProductModel ─────────────────────────────────────────────────
-// ⚠️ Este modelo solo conoce la colección "products".
-// Todo lo que combine products + presentations vive en services/catalogService.ts
+/*──────────────────────────────
+📦 ProductModel — Mongoose
+──────────────────────────────
+📜 Propósito: Gestión completa de productos contra MongoDB
+🧩 Dependencias: ProductMongo (schemas/productSchema), Validation
+⚠️ Este modelo solo conoce la colección "products".
+Todo lo que combine products + presentations vive en services/catalogService.ts
+──────────────────────────────*/
 
 export class ProductModel {
 

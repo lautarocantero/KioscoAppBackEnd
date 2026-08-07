@@ -162,6 +162,9 @@ export class PresentationModel {
             updated_at: new Date().toISOString(),
           },
         },
+        // runValidators acá es seguro: ninguno de los paths tocados (stock, model_size,
+        // status, updated_at) depende de sibling fields no incluidos en el $set.
+        { runValidators: true },
       );
     }
   }
@@ -180,7 +183,7 @@ export class PresentationModel {
     _id: string; sku?: string; barcode?: string; price: number; stock: number; min_stock: number;
     model_type?: ModelType; model_size: number; model_unit?: ModelUnit; is_perishable: boolean;
     image_url?: string; brand?: string; description?: string; expiration_date?: string; name: string;
-    category?: PresentationCategory[]; sale_type: string;
+    category?: PresentationCategory[]; sale_type: SaleType;
   }): Promise<void> {
     const {
       _id, barcode, sku, price, stock, min_stock,
@@ -189,21 +192,23 @@ export class PresentationModel {
       category, sale_type,
     } = data;
 
-    const idResult         = Validation.stringValidation(_id, '_id');
-    const nameResult       = Validation.stringValidation(name, 'name');
-    const descriptionResult= Validation.stringValidation(description, 'description');
-    const barcodeResult    = barcode?.trim() || '';
-    const skuResult        = sku?.trim() || '';
-    const priceResult      = Validation.number(price, 'price');
-    const stockResult      = Validation.number(stock, 'stock');
-    const minStockResult   = Validation.number(min_stock, 'min_stock');
+    const idResult          = Validation.stringValidation(_id, '_id');
+    const nameResult        = Validation.stringValidation(name, 'name');
+    const descriptionResult = Validation.stringValidation(description, 'description');
+    const barcodeResult     = barcode?.trim() || '';
+    const skuResult         = sku?.trim() || '';
+    const priceResult       = Validation.number(price, 'price');
+    const stockResult       = Validation.number(stock, 'stock');
+    const minStockResult    = Validation.number(min_stock, 'min_stock');
     const isPerishableResult = Boolean(is_perishable);
+    // antes: sale_type se guardaba directo sin pasar por Validation, a diferencia de create().
+    const saleTypeResult    = Validation.saleType(sale_type);
 
     // ⬇️ model_type/model_size/model_unit solo se validan/exigen si NO es venta por peso.
     // model_unit NO pasa por Validation.stringValidation: esa validación exige mínimo 3
     // caracteres (pensada para name/description), y valores válidos como "l" o "g" tienen 1.
     // El propio enum de Mongoose ya garantiza que sea un ModelUnit válido.
-    const isWeight = sale_type === 'weight';
+    const isWeight = saleTypeResult === 'weight';
     const modelTypeResult = isWeight ? undefined : Validation.stringValidation(model_type, 'model_type');
     const modelSizeResult = isWeight ? Number(model_size) : Validation.number(model_size, 'model_size');
     const modelUnitResult = isWeight
@@ -236,10 +241,13 @@ export class PresentationModel {
           image_url: image_url ?? '',
           updated_at: new Date().toISOString(),
           expiration_date: expirationDateResult,
-          sale_type,
+          sale_type: saleTypeResult,
         },
       },
-      { new: true },
+      // runValidators + context:'query' para que los required condicionales (model_type,
+      // model_size, model_unit, expiration_date) puedan leer this.sale_type / this.is_perishable
+      // desde el propio $set — acá es seguro porque edit() siempre manda todos esos campos juntos.
+      { new: true, runValidators: true, context: 'query' },
     );
 
     if (!updated) throw new Error('There is not any presentation with that id');

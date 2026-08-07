@@ -26,6 +26,16 @@ export enum PresentationCategory {
   HouseholdCleaning = "household_cleaning",
   Disposables = "disposables",
 
+  Bijouterie = "bijouterie",
+  Toys = "toys",
+  Bazaar = "bazaar",
+  VirtualTopUp = "virtual_topup",
+  // mercería
+  Haberdashery = "haberdashery",
+  Accessories = "accessories",
+  // insumos
+  Supplies = "supplies", 
+
   // Other
   Baby = "baby",
   Pets = "pets",
@@ -33,6 +43,7 @@ export enum PresentationCategory {
   TobaccoAndCigarettes = "tobacco_and_cigarettes",
   StationeryAndKiosk = "stationery_and_kiosk",
   Deli = "deli",
+  Miscellaneous = "miscellaneous",
 }
 
 export const PRESENTATION_CATEGORY_VALUES: string[] = Object.values(PresentationCategory);

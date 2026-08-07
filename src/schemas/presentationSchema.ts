@@ -8,7 +8,7 @@ import { MODEL_TYPE_VALUES, MODEL_UNIT_VALUES, PRESENTATION_CATEGORY_VALUES, SAL
 📜 Propósito: Definición del schema Mongoose de presentaciones de producto.
 🧩 Campos:
 - _id             → Identificador único (String, requerido)
-- product_id      → ID del producto padre (String, requerido)
+- product_id      → ID del producto padre (String, requerido, indexado)
 - sku             → Código SKU de la presentación (String, requerido)
 - barcode         → Código de barras (String, opcional)
 - name            → Nombre de la presentación (String, requerido)
@@ -26,11 +26,15 @@ import { MODEL_TYPE_VALUES, MODEL_UNIT_VALUES, PRESENTATION_CATEGORY_VALUES, SAL
 - created_at      → Fecha de creación (String, requerido)
 - updated_at      → Fecha de última actualización (String, requerido)
 - expiration_date → Fecha de vencimiento (String, opcional)
+
+🛡️ Notas:
+- "product_id" está indexado: se filtra por él en searchByProductIdAndTerm,
+  getPresentationsWithStockByProductId, y en el delete en cascada de ProductModel.
 ──────────────────────────────*/
 
 const PresentationMongoSchema = new Schema<PresentationSchemaType>({
   _id:             { type: String,   required: true },
-  product_id:      { type: String,   required: true },
+  product_id:      { type: String,   required: true, index: true },
   sku:             { type: String,   required: true },
   barcode:         { type: String,   default: '' },
   name:            { type: String,   required: true },
@@ -75,7 +79,7 @@ const PresentationMongoSchema = new Schema<PresentationSchemaType>({
     type:    String,
     enum:    ['available', 'out_of_stock', 'unavailable'],
     required: true,
-  },  
+  },
   created_at:      { type: String,   required: true },
   updated_at:      { type: String,   required: true },
   is_perishable:   { type: Boolean, required: true, default: true },

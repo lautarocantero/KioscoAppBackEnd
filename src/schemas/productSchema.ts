@@ -1,38 +1,44 @@
-import DBLocal from "db-local";
-import { ProductSchemaType } from "@typings/product";
-
-const { Schema } = new DBLocal({ path: './db'});
+import mongoose, { Model, Schema } from 'mongoose';
+import { Product } from "@typings/product";
 
 /*──────────────────────────────
-📦 ProductSchema (DB Local)
+📦 ProductMongoSchema
 ──────────────────────────────
-📜 Propósito:
-Definir el esquema de productos para la base de datos **local**.  
-Este esquema se utiliza únicamente en casos de **falta de internet** como respaldo offline.  
-Cuando haya conexión, las consultas se realizarán contra la base de datos **SQL** oficial.
-
+📜 Propósito: Definición del schema Mongoose de productos.
 🧩 Campos:
 - _id           → Identificador único (String, requerido)
 - name          → Nombre del producto (String, requerido)
-- description   → Descripción del producto (String, requerido)
-- created_at    → Fecha de creación (String, requerido)
-- updated_at    → Fecha de última actualización (String, requerido)
-- image_url     → URL de imagen principal (String, requerido)
-- brand         → Marca del producto (String, requerido)
-- presentations      → Variantes asociadas al producto (Array, requerido)
+- description   → Descripción del producto (String, opcional)
+- created_at    → Fecha de creación (String, opcional)
+- updated_at    → Fecha de última actualización (String, opcional)
+- image_url     → URL de imagen principal (String, opcional)
+- brand         → Marca del producto (String, opcional)
 
 🛡️ Notas:
-- Este esquema NO reemplaza la base de datos SQL, solo actúa como fallback local.
-- Los datos almacenados aquí son temporales y se sincronizan con SQL cuando hay conexión.
+- Este schema NO tiene campo "presentations". La relación producto↔presentación
+  vive del lado de PresentationMongoSchema mediante "product_id".
+- A diferencia de PresentationMongoSchema, acá NO se usa `Schema<T>` con un tipo
+  genérico todavía: `ProductSchemaType` (typings/product) incluye "presentations"
+  como campo requerido, pensado para el fallback de db-local, y forzaría ese campo
+  también acá. Si se define un tipo específico para Mongo (sin "presentations"),
+  reemplazar `Schema({...})` por `Schema<ProductMongoSchemaType>({...})`.
 ──────────────────────────────*/
 
-export const ProductSchema = Schema<ProductSchemaType>('Product', {
-    _id: { type: String, required: true },
-    name: { type: String, required: true },
-    description: { type: String, required: true }, 
-    created_at: { type: String, required: true }, 
-    updated_at: { type: String, required: true },
-    image_url: { type: String, required: true }, 
-    brand: { type: String, required: true }, 
-    presentations: { type: Array, required: true }, 
-});
+const ProductMongoSchema = new Schema({
+  _id:          { type: String, required: true },
+  name:         { type: String, required: true },
+  description:  { type: String },
+  created_at:   { type: String },
+  updated_at:   { type: String },
+  image_url:    { type: String },
+  brand:        { type: String },
+}, { _id: false });
+
+// Evitar re-compilación del modelo en hot-reload
+export const ProductMongo: Model<Product> =
+  mongoose.models.Product as Model<Product> ||
+  mongoose.model<Product>(
+    'Product',
+    ProductMongoSchema,
+    'products',
+  );
