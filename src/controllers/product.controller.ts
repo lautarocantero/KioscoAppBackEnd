@@ -178,9 +178,10 @@ export async function getProductsWithPresentations(_req: Request, res: Response)
 export async function searchProductsWithPresentations(req: Request, res: Response): Promise<void> {
     const term = req.query.term as string;
     const category = req.query.category as string | undefined;
+    const exact = req.query.exact === 'true';
 
     try {
-        const productsObject: Product[] = await CatalogService.searchProductsWithPresentations(term, category);
+        const productsObject: Product[] = await CatalogService.searchProductsWithPresentations(term, category, exact);
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);

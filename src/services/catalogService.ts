@@ -25,9 +25,9 @@ export class CatalogService {
   ║ ⚙️ Proceso: arma el stage $lookup reutilizable que      ║
   ║            trae presentations resumidas (sku, name,    ║
   ║            description, model_type, model_size, stock, ║
-  ║            min_stock, category) para el producto cuyo  ║
-  ║            _id coincide con product_id de la           ║
-  ║            presentation                                 ║
+  ║            min_stock, category, barcode) para el        ║
+  ║            producto cuyo _id coincide con product_id    ║
+  ║            de la presentation                           ║
   ║ 📤 Salida: objeto stage $lookup para usar en aggregate  ║
   ╚═══════════════════════════════════════════════════════╝*/
 
@@ -50,12 +50,39 @@ export class CatalogService {
               min_stock: 1,
               category: 1,
               sale_type: 1,
+              barcode: 1,
             },
           },
         ],
         as: 'presentations',
       },
     };
+  }
+
+  /*══════════ 🎮 escapeRegex ══════════╗
+  ║ 📥 Entrada: value (string)                             ║
+  ║ ⚙️ Proceso: escapa caracteres especiales de regex, para ║
+  ║            que un term como "3.2" o "3+2" no rompa la   ║
+  ║            query ni matchee de forma inesperada          ║
+  ║ 📤 Salida: string escapado, seguro para usar en $regex  ║
+  ╚═══════════════════════════════════════════════════════╝*/
+
+  private static escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /*══════════ 🎮 buildTermRegex ══════════╗
+  ║ 📥 Entrada: term (string), exact (boolean)              ║
+  ║ ⚙️ Proceso: escapa el term y arma el regex; si exact es  ║
+  ║            true, ancla con ^...$ para exigir match       ║
+  ║            literal completo del campo, no substring       ║
+  ║ 📤 Salida: objeto { $regex, $options } para usar en $or  ║
+  ╚═══════════════════════════════════════════════════════╝*/
+
+  private static buildTermRegex(term: string, exact: boolean): { $regex: string; $options: string } {
+    const escaped = this.escapeRegex(term);
+    const pattern = exact ? `^${escaped}$` : escaped;
+    return { $regex: pattern, $options: 'i' };
   }
 
   //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
@@ -97,17 +124,20 @@ export class CatalogService {
   }
 
   /*══════════ 🎮 searchProductsWithPresentations ══════════╗
-  ║ 📥 Entrada: term (string), category (opcional)            ║
+  ║ 📥 Entrada: term (string), category (opcional),           ║
+  ║            exact (opcional, default false)                ║
   ║ ⚙️ Proceso: trae producto + presentations (igual que      ║
   ║            getProductsWithPresentations), filtra en DB     ║
-  ║            por $or: name del producto O name de alguna     ║
-  ║            presentation, case-insensitive; si viene         ║
-  ║            category, además exige que al menos una         ║
-  ║            presentation la tenga en su array category      ║
+  ║            por $or: name/description del producto O        ║
+  ║            name/description/sku/barcode de alguna          ║
+  ║            presentation. Si exact=true, el match es         ║
+  ║            literal (^term$); si no, substring parcial.      ║
+  ║            Si viene category, además exige que al menos     ║
+  ║            una presentation la tenga en su array category   ║
   ║ 📤 Salida: Product[] (presentations resumidas)             ║
   ╚════════════════════════════════════════════════════════════╝*/
 
-    static async searchProductsWithPresentations(term: string, category?: string): Promise<Product[]> {
+    static async searchProductsWithPresentations(term: string, category?: string, exact = false): Promise<Product[]> {
     const hasTerm = term !== undefined && term.trim() !== "";
     const hasCategory = category !== undefined;
 
@@ -125,12 +155,16 @@ export class CatalogService {
     ];
 
     if (hasTerm) {
-      const regex = { $regex: term, $options: 'i' };
+      const regex = this.buildTermRegex(term, exact);
       pipeline.push({
         $match: {
           $or: [
             { name: regex },
+            { description: regex },
             { 'presentations.name': regex },
+            { 'presentations.description': regex },
+            { 'presentations.sku': regex },
+            { 'presentations.barcode': regex },
           ],
         },
       });
