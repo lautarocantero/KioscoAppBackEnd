@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import { mapCategory } from "./categoryMap";
 import { extractSize, extractModelType, baseName } from "./extract";
 import { cleanString, classifyCode, normalizeDate, toNumber } from "./normalize";
-import { clusterProducts, type Clusterable } from "./cluster";
+import { clusterProducts } from "./cluster";
 import { ProductMongo } from "../../schemas/productSchema";
 import { PresentationMongo } from "../../schemas/presentationSchema";
 import { ModelType, ModelUnit } from "@typings/presentation/presentationEnum";
@@ -15,6 +15,7 @@ import type {
   ReceiptStatsType,
   ReceiptPendingReviewType,
   ReceiptImportResultType,
+  Clusterable,
 } from "@typings/receipt";
 import type { Product } from "@typings/product";
 import type { presentation as PresentationEntity } from "@typings/presentation";
