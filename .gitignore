@@ -4,6 +4,11 @@ node_modules/
 # Ignorar archivos de entorno
 .env
 
+# Ignorar ciertos docs
+
+docs/usefull
+docs/usefull/*
+
 # Ignorar compilados
 build/
 build

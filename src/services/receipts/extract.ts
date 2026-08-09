@@ -1,10 +1,6 @@
-import { ModelType, ModelUnit } from "../typings/presentation/presentationEnum";
+import { ModelType, ModelUnit } from "@typings/presentation/presentationEnum";
+import { ExtractedSize } from "@typings/receipt";
 
-export interface ExtractedSize {
-  model_size?: number;
-  model_unit?: ModelUnit;
-  matchedText?: string;
-}
 
 const UNIT_ALIASES: Record<string, ModelUnit> = {
   gs: ModelUnit.Grams,

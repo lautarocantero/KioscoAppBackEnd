@@ -3,9 +3,6 @@ export function cleanString(v: unknown): string {
   return String(v).replace(/^'/, "").trim();
 }
 
-// CODIGO trae a veces un EAN real (7790...) y a veces un código interno secuencial
-// (0000000001). Si son solo dígitos y tienen pinta de EAN (8, 12 o 13 dígitos), lo
-// tratamos como barcode real; si no, es un sku interno.
 export function classifyCode(rawCodigo: string): { sku: string; barcode: string } {
   const code = cleanString(rawCodigo);
   const digitsOnly = /^\d+$/.test(code);
@@ -16,7 +13,6 @@ export function classifyCode(rawCodigo: string): { sku: string; barcode: string 
   };
 }
 
-// CREADO/MODIFICADO llegan mezclados: "18/04/2022", datetime de Excel, o "  /  /    " vacío.
 export function normalizeDate(v: unknown): string {
   if (v instanceof Date) return v.toISOString();
   const s = cleanString(v);

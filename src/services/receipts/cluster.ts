@@ -1,13 +1,4 @@
-export interface Clusterable {
-  index: number;
-  base: string;
-  rubro: string;
-}
-
-export interface Cluster {
-  base: string;
-  memberIndexes: number[];
-}
+import { Cluster, Clusterable } from "@typings/receipt";
 
 function tokenSet(s: string): Set<string> {
   return new Set(s.split(" ").filter(Boolean));
