@@ -1,5 +1,5 @@
-import { ModelType, ModelUnit } from "@typings/presentation/presentationEnum";
-import { ExtractedSize } from "@typings/receipt";
+import { ModelType, ModelUnit } from "../../typings/presentation/presentationEnum";
+import { ExtractedSize } from "../../typings/receipt";
 
 
 const UNIT_ALIASES: Record<string, ModelUnit> = {

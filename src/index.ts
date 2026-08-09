@@ -10,6 +10,7 @@ import productVariantRoutes from './routes/presentation.routes';
 import providerRoutes from './routes/provider.routes';
 import sellRoutes from './routes/sell.routes';
 import sellerRoutes from './routes/seller.routes';
+import receiptsRoutes from './routes/receipts.routes';
 import { connectDB } from './config/db';
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/seller', sellerRoutes);
 app.use('/provider', providerRoutes);
 app.use('/product', productRoutes);
 app.use('/presentation', productVariantRoutes);
+app.use('/receipts', receiptsRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

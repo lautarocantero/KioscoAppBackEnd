@@ -2,7 +2,7 @@
 // Mapeo RUBRO (excel) -> PresentationCategory. Basado en los 23 rubros reales
 // encontrados en productos_010826.xls. Si aparece un RUBRO nuevo que no está acá,
 
-import { PresentationCategory } from "@typings/presentation/presentationEnum";
+import { PresentationCategory } from "../../typings/presentation/presentationEnum";
 
 // cae en Miscellaneous y se marca en el reporte para que lo revises.
 export const CATEGORY_MAP: Record<string, PresentationCategory> = {

@@ -6,8 +6,8 @@ import { cleanString, classifyCode, normalizeDate, toNumber } from "./normalize"
 import { clusterProducts } from "./cluster";
 import { ProductMongo } from "../../schemas/productSchema";
 import { PresentationMongo } from "../../schemas/presentationSchema";
-import { ModelType, ModelUnit } from "@typings/presentation/presentationEnum";
-import { NeedsReviewReason } from "@typings/receipt/receiptEnum";
+import { ModelType, ModelUnit } from "../../typings/presentation/presentationEnum";
+import { NeedsReviewReason } from "../../typings/receipt/receiptEnum";
 import type {
   receiptRawRow,
   ReceiptReportCluster,

@@ -1,8 +1,9 @@
-import { Router } from "express";
+import express from 'express';
 import { uploadReceipt } from "../controllers/receipt.controller";
 
-const router = Router();
+const router = express.Router();
 
-router.post("/receipts", uploadReceipt);
+// ── POST / PUT / DELETE ───────────────────────────────────────────────────────
+router.post("/", uploadReceipt);
 
 export default router;
