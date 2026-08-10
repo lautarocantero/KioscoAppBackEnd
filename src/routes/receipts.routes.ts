@@ -1,9 +1,9 @@
 import express from 'express';
-import { uploadReceipt } from "../controllers/receipt.controller";
+import { previewReceipt, confirmReceipt } from "../controllers/receipt.controller";
 
 const router = express.Router();
 
-// ── POST / PUT / DELETE ───────────────────────────────────────────────────────
-router.post("/", uploadReceipt);
+router.post("/preview", previewReceipt);
+router.post("/confirm", confirmReceipt);
 
 export default router;

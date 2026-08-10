@@ -16,6 +16,9 @@ import type {
   ReceiptPendingReviewType,
   ReceiptImportResultType,
   Clusterable,
+  ReceiptPreviewResultType,
+  ReceiptProductDocType,
+  ReceiptPresentationDocType,
 } from "@typings/receipt";
 import type { Product } from "@typings/product";
 import type { presentation as PresentationEntity } from "@typings/presentation";
@@ -213,11 +216,22 @@ export async function insertDocs(products: ProductDoc[], presentations: Presenta
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 processReceiptFile → orquestador único, esto llama el controller   ║
+║ 🎮 previewReceiptImport → analiza el archivo y arma los docs,         ║
+║    SIN insertar en Mongo. El front confirma antes de aplicar cambios. ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-export async function processReceiptFile(buffer: Buffer): Promise<ReceiptImportResultType> {
+export async function previewReceiptImport(buffer: Buffer): Promise<ReceiptPreviewResultType> {
   const { report, stats } = analyzeWorkbook(buffer);
   const { products, presentations, pendingReview } = buildDocsFromReport(report);
-  const insertResult = await insertDocs(products, presentations);
-  return { stats, pendingReview, insertResult };
+  return { stats, pendingReview, products, presentations };
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 confirmReceiptImport → recibe los docs ya armados (del preview)    ║
+║    y los inserta en Mongo. No vuelve a analizar el archivo.           ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+export async function confirmReceiptImport(
+  products: ReceiptProductDocType[],
+  presentations: ReceiptPresentationDocType[]
+) {
+  return insertDocs(products, presentations);
 }

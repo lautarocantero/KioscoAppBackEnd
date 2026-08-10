@@ -103,6 +103,14 @@ export interface Cluster {
   memberIndexes: number[];
 }
 
+interface ReceiptPreviewResult {
+    stats:         ReceiptStats;
+    pendingReview: ReceiptPendingReview[];
+    products:      ReceiptProductDoc[];
+    presentations: ReceiptPresentationDoc[];
+}
+
+
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🧩 DERIVADOS                                                         ║
@@ -117,5 +125,6 @@ export type ReceiptBulkInsertResult   = BulkInsertResult;
 export type ReceiptImportResultType   = ReceiptImportResult;
 export type ReceiptProductDocType      = ReceiptProductDoc;
 export type ReceiptPresentationDocType = ReceiptPresentationDoc;
+export type ReceiptPreviewResultType = ReceiptPreviewResult;
 
 }
