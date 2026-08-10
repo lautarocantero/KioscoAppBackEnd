@@ -46,10 +46,14 @@ export async function previewReceipt(req: Request, res: Response): Promise<void>
 }
 
 interface ConfirmReceiptBody {
-  stats:         ReceiptPreviewResultType["stats"];
-  pendingReview: ReceiptPreviewResultType["pendingReview"];
-  products:      ReceiptProductDoc[];
-  presentations: ReceiptMatchedPresentationDocType[];
+  stats:                    ReceiptPreviewResultType["stats"];
+  pendingReview:            ReceiptPreviewResultType["pendingReview"];
+  products:                 ReceiptProductDoc[];
+  presentations:            ReceiptMatchedPresentationDocType[];
+  // El front reenvía tal cual lo que recibió en el preview: no se
+  // recalcula acá, solo se transporta hasta el resultado final para
+  // que el resumen pueda mostrar el total real de productos.
+  productsAlreadyExisting:  string[];
 }
 
 export async function confirmReceipt(req: Request, res: Response): Promise<void> {
@@ -69,6 +73,7 @@ export async function confirmReceipt(req: Request, res: Response): Promise<void>
       },
       pendingReview: body.pendingReview ?? [],
       insertResult,
+      productsAlreadyExisting: body.productsAlreadyExisting ?? [],
     };
     res.status(200).json(result);
   } catch (error: unknown) {

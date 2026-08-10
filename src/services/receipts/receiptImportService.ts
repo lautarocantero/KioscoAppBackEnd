@@ -423,8 +423,17 @@ export async function previewReceiptImport(buffer: Buffer): Promise<ReceiptPrevi
   const { report, stats } = analyzeWorkbook(buffer);
   const { products, presentations, pendingReview } = buildDocsFromReport(report);
   const matchedPresentations = await matchPresentations(presentations);
-  const { productsToInsert, resolvedPresentations } = resolveProductInserts(products, matchedPresentations);
-  return { stats, pendingReview, products: productsToInsert, presentations: resolvedPresentations };
+  const { productsToInsert, productsAlreadyExisting, resolvedPresentations } = resolveProductInserts(
+    products,
+    matchedPresentations
+  );
+  return {
+    stats,
+    pendingReview,
+    products: productsToInsert,
+    presentations: resolvedPresentations,
+    productsAlreadyExisting,
+  };
 }
 
 /*══════════════════════════════════════════════════════════════════════╗

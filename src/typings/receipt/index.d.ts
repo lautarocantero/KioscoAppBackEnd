@@ -73,35 +73,35 @@ interface ReceiptBulkWriteResult {
     failed:  { _id: string; error: string }[];
 }
 
-interface ReceiptImportResult {
-    stats:         ReceiptStats;
-    pendingReview: ReceiptPendingReview[];
-    insertResult: {
-        products:      BulkInsertResult;
-        presentations: BulkInsertResult;
-    };
-}
-
 interface MatchedPresentationDoc extends ReceiptPresentationDoc {
     action:           ReceiptDocAction;
     existingId:       string | null;
     existingProductId: string | null;
 }
 
+// Preview: además de products/presentations a aplicar, expone
+// productsAlreadyExisting (ids reales de productos que ya estaban en la
+// BD, resueltos por resolveProductInserts) para poder mostrar el total
+// real de productos del archivo, no solo los nuevos.
 interface PreviewResultV2 {
-    stats:         ReceiptStats;
-    pendingReview: ReceiptPendingReview[];
-    products:      ReceiptProductDoc[];
-    presentations: MatchedPresentationDoc[];
+    stats:                    ReceiptStats;
+    pendingReview:            ReceiptPendingReview[];
+    products:                 ReceiptProductDoc[];
+    presentations:            MatchedPresentationDoc[];
+    productsAlreadyExisting:  string[];
 }
 
+// El front reenvía productsAlreadyExisting tal cual al confirmar (igual
+// que ya hace con stats/pendingReview), y el controller lo devuelve en
+// el resultado final sin volver a calcularlo.
 interface ReceiptImportResultV2 {
-    stats:         ReceiptStats;
-    pendingReview: ReceiptPendingReview[];
+    stats:                    ReceiptStats;
+    pendingReview:            ReceiptPendingReview[];
     insertResult: {
         products:      ReceiptBulkInsertResult;
         presentations: ReceiptBulkWriteResult;
     };
+    productsAlreadyExisting:  string[];
 }
 
 // Doc de producto en memoria, previo a insertar: extiende la entidad real
@@ -131,15 +131,6 @@ export interface Cluster {
   base: string;
   memberIndexes: number[];
 }
-
-interface ReceiptPreviewResult {
-    stats:         ReceiptStats;
-    pendingReview: ReceiptPendingReview[];
-    products:      ReceiptProductDoc[];
-    presentations: ReceiptPresentationDoc[];
-}
-
-
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🧩 DERIVADOS                                                         ║
