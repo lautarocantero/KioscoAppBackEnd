@@ -83,8 +83,9 @@ interface ReceiptImportResult {
 }
 
 interface MatchedPresentationDoc extends ReceiptPresentationDoc {
-    action:     ReceiptDocAction;
-    existingId: string | null;
+    action:           ReceiptDocAction;
+    existingId:       string | null;
+    existingProductId: string | null;
 }
 
 interface PreviewResultV2 {

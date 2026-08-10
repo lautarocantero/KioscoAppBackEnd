@@ -168,25 +168,74 @@ export async function matchPresentations(
 ): Promise<ReceiptMatchedPresentationDocType[]> {
   const skus = presentations.map((p) => p.sku).filter(Boolean);
 
+  // Traemos también product_id: si esta presentation ya existe, necesitamos
+  // saber a qué producto real pertenece para resolver el cluster completo
+  // (ver resolveProductInserts) y no crear un producto duplicado.
   const existing = skus.length > 0
-    ? await PresentationMongo.find({ sku: { $in: skus } }, { _id: 1, sku: 1 }).lean()
+    ? await PresentationMongo.find({ sku: { $in: skus } }, { _id: 1, sku: 1, product_id: 1 }).lean()
     : [];
 
-  const bySku = new Map(existing.map((e: any) => [e.sku, e._id]));
+  const bySku = new Map(existing.map((e: any) => [e.sku, e]));
 
   return presentations.map((p) => {
-    const existingId = p.sku ? bySku.get(p.sku) ?? null : null;
+    const match: any = p.sku ? bySku.get(p.sku) : undefined;
     return {
       ...p,
-      action: existingId ? ReceiptDocAction.Update : ReceiptDocAction.Create,
-      existingId,
+      action: match ? ReceiptDocAction.Update : ReceiptDocAction.Create,
+      existingId: match ? match._id : null,
+      existingProductId: match ? match.product_id : null,
     };
   });
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 insertProducts → sin cambios respecto al comportamiento original:  ║
-║    inserta, saltea duplicados por _id (en la práctica siempre nuevo). ║
+║ 🎮 resolveProductInserts → si CUALQUIER presentation de un cluster    ║
+║    matcheó por sku contra la BD, el producto de ese cluster YA        ║
+║    EXISTE (aunque el resto de sus presentations sean nuevas). En ese  ║
+║    caso: no insertamos el producto de nuevo, y reasignamos el         ║
+║    product_id real de la BD a TODAS las presentations del cluster     ║
+║    (matcheadas o no), para que las nuevas cuelguen del producto       ║
+║    correcto en vez de un product_id placeholder que nunca se inserta.║
+╚══════════════════════════════════════════════════════════════════════╝*/
+function resolveProductInserts(
+  products: ProductDoc[],
+  matchedPresentations: ReceiptMatchedPresentationDocType[]
+): {
+  productsToInsert: ProductDoc[];
+  productsAlreadyExisting: string[];
+  resolvedPresentations: ReceiptMatchedPresentationDocType[];
+} {
+  const resolvedProductIdByPlaceholder = new Map<string, string>();
+
+  for (const p of matchedPresentations) {
+    if (p.existingProductId && !resolvedProductIdByPlaceholder.has(p.product_id)) {
+      resolvedProductIdByPlaceholder.set(p.product_id, p.existingProductId as string);
+    }
+  }
+
+  const resolvedPresentations = matchedPresentations.map((p) => {
+    const resolvedId = resolvedProductIdByPlaceholder.get(p.product_id);
+    return resolvedId ? { ...p, product_id: resolvedId } : p;
+  });
+
+  const productsAlreadyExisting: string[] = [];
+  const productsToInsert = products.filter((prod) => {
+    const resolvedId = resolvedProductIdByPlaceholder.get(prod._id);
+    if (resolvedId) {
+      productsAlreadyExisting.push(resolvedId);
+      return false;
+    }
+    return true;
+  });
+
+  return { productsToInsert, productsAlreadyExisting, resolvedPresentations };
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 insertProducts → inserta los productos genuinamente nuevos (los    ║
+║    que ya existían fueron filtrados antes por resolveProductInserts). ║
+║    El chequeo por _id acá queda como red de seguridad, no como el     ║
+║    mecanismo principal de dedupe.                                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 function chunk<T>(arr: T[], size: number): T[][] {
   const out: T[][] = [];
@@ -374,7 +423,8 @@ export async function previewReceiptImport(buffer: Buffer): Promise<ReceiptPrevi
   const { report, stats } = analyzeWorkbook(buffer);
   const { products, presentations, pendingReview } = buildDocsFromReport(report);
   const matchedPresentations = await matchPresentations(presentations);
-  return { stats, pendingReview, products, presentations: matchedPresentations };
+  const { productsToInsert, resolvedPresentations } = resolveProductInserts(products, matchedPresentations);
+  return { stats, pendingReview, products: productsToInsert, presentations: resolvedPresentations };
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
