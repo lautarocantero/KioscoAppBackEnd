@@ -230,10 +230,48 @@ async function insertProducts(products: ProductDoc[]): Promise<ReceiptBulkInsert
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 applyPresentations → inserta las "create" y actualiza las         ║
-║    "update" (por existingId, campos vía $set). No toca product_id     ║
-║    en un update: la presentation sigue colgada del producto que ya    ║
-║    tenía en la BD.                                                    ║
+║ 🎮 presentationHasChanges → compara los campos "editables" del doc    ║
+║    entrante contra el doc existente en Mongo. Si nada difiere, el     ║
+║    update se saltea (no se escribe ni se cuenta como "actualizada"). ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+const PRESENTATION_FIELDS_TO_COMPARE = [
+  "sku",
+  "barcode",
+  "name",
+  "description",
+  "brand",
+  "model_type",
+  "model_size",
+  "model_unit",
+  "category",
+  "sale_type",
+  "image_url",
+  "price",
+  "stock",
+  "min_stock",
+  "status",
+  "updated_at",
+  "is_perishable",
+  "expiration_date",
+] as const;
+
+function presentationHasChanges(existing: any, incoming: Record<string, any>): boolean {
+  return PRESENTATION_FIELDS_TO_COMPARE.some((field) => {
+    const a = existing?.[field];
+    const b = incoming[field];
+    if (Array.isArray(a) || Array.isArray(b)) {
+      return JSON.stringify(a ?? []) !== JSON.stringify(b ?? []);
+    }
+    return a !== b;
+  });
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 applyPresentations → inserta las "create" y actualiza SOLO las     ║
+║    "update" cuyo contenido realmente difiere del doc existente (por   ║
+║    existingId, campos vía $set). No toca product_id ni created_at en  ║
+║    un update: la presentation sigue colgada del producto que ya       ║
+║    tenía en la BD y conserva su fecha de alta original.               ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 async function applyPresentations(
   presentations: ReceiptMatchedPresentationDocType[],
@@ -241,6 +279,7 @@ async function applyPresentations(
 ): Promise<ReceiptBulkWriteResultType> {
   const created: string[] = [];
   const updated: string[] = [];
+  const unchanged: string[] = [];
   const failed: { _id: string; error: string }[] = [];
 
   const toCreate = presentations
@@ -262,13 +301,35 @@ async function applyPresentations(
     }
   }
 
-  const toUpdate = presentations.filter((p) => p.action === ReceiptDocAction.Update && p.existingId);
+  const updateCandidates = presentations.filter((p) => p.action === ReceiptDocAction.Update && p.existingId);
+
+  // Traemos los docs actuales para poder comparar campo por campo y
+  // descartar del bulkWrite los que no cambiaron en absoluto.
+  const existingIds = updateCandidates.map((p) => p.existingId as string);
+  const existingDocs = existingIds.length > 0
+    ? await PresentationMongo.find({ _id: { $in: existingIds } }).lean()
+    : [];
+  const existingById = new Map(existingDocs.map((d: any) => [d._id, d]));
+
+  const toUpdate: ReceiptMatchedPresentationDocType[] = [];
+  for (const p of updateCandidates) {
+    // created_at nunca debe pisarse en un update, así que ni siquiera
+    // entra en la comparación ni en el $set.
+    const { _id, action, existingId, product_id, created_at, ...fields } = p;
+    const existing = existingById.get(p.existingId);
+
+    if (existing && !presentationHasChanges(existing, fields)) {
+      unchanged.push(p.existingId as string);
+    } else {
+      toUpdate.push(p);
+    }
+  }
 
   for (const batch of chunk(toUpdate, 500)) {
-    // product_id se excluye del $set: un update no debe mover la
-    // presentation a otro producto, solo refrescar sus datos.
+    // product_id y created_at se excluyen del $set: un update no debe
+    // mover la presentation a otro producto ni pisar su fecha de alta.
     const ops = batch.map((p) => {
-      const { _id, action, existingId, product_id, ...fields } = p;
+      const { _id, action, existingId, product_id, created_at, ...fields } = p;
       return { updateOne: { filter: { _id: existingId }, update: { $set: fields } } };
     });
 
@@ -289,8 +350,10 @@ async function applyPresentations(
     }
   }
 
-  console.log(`[presentations] creadas: ${created.length} | actualizadas: ${updated.length} | fallidas: ${failed.length}`);
-  return { created, updated, failed };
+  console.log(
+    `[presentations] creadas: ${created.length} | actualizadas: ${updated.length} | sin cambios: ${unchanged.length} | fallidas: ${failed.length}`
+  );
+  return { created, updated, unchanged, failed };
 }
 
 export async function applyReceiptDocs(

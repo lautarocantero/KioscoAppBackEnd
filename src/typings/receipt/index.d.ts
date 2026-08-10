@@ -69,6 +69,7 @@ interface ReceiptBulkInsertResult {
 interface ReceiptBulkWriteResult {
     created: string[];
     updated: string[];
+    unchanged: string[];
     failed:  { _id: string; error: string }[];
 }
 
