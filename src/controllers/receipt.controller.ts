@@ -5,13 +5,13 @@ import { previewReceiptImport, confirmReceiptImport } from "../services/receipts
 import type {
   ReceiptPreviewResultType,
   ReceiptImportResultType,
-  ReceiptProductDocType,
-  ReceiptPresentationDocType,
+  ReceiptProductDoc,
+  ReceiptMatchedPresentationDocType,
 } from "@typings/receipt";
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB, igual al front
+  limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const ok = /\.(xlsx|xls)$/i.test(file.originalname);
     if (ok) {
@@ -23,15 +23,6 @@ const upload = multer({
 });
 
 const uploadSingle = upload.single("file");
-
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🕹️ Controlador de endpoints relacionados con boletas 🕹️                                                                   ║
-╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
-║ Tipo   | Link              | Función        | Descripción                                | Params            | Return         ║
-║--------|-------------------|-----------------|--------------------------------------------|--------------------|---------------║
-║ POST   | /receipts/preview | previewReceipt  | Analiza xls/xlsx, arma docs, NO inserta     | file: multipart    | ReceiptPreview ║
-║ POST   | /receipts/confirm | confirmReceipt  | Inserta los docs devueltos por el preview   | JSON (preview)     | ReceiptImport  ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 export async function previewReceipt(req: Request, res: Response): Promise<void> {
   uploadSingle(req, res, async (err: unknown) => {
@@ -57,8 +48,8 @@ export async function previewReceipt(req: Request, res: Response): Promise<void>
 interface ConfirmReceiptBody {
   stats:         ReceiptPreviewResultType["stats"];
   pendingReview: ReceiptPreviewResultType["pendingReview"];
-  products:      ReceiptProductDocType[];
-  presentations: ReceiptPresentationDocType[];
+  products:      ReceiptProductDoc[];
+  presentations: ReceiptMatchedPresentationDocType[];
 }
 
 export async function confirmReceipt(req: Request, res: Response): Promise<void> {

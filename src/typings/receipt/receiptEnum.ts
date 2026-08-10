@@ -6,3 +6,8 @@ export enum NeedsReviewReason {
 }
 
 export const NEEDS_REVIEW_REASON_VALUES: string[] = Object.values(NeedsReviewReason);
+
+export enum ReceiptDocAction {
+  Create = "create",
+  Update = "update",
+}

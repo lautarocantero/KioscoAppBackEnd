@@ -7,24 +7,23 @@ import { clusterProducts } from "./cluster";
 import { ProductMongo } from "../../schemas/productSchema";
 import { PresentationMongo } from "../../schemas/presentationSchema";
 import { ModelType, ModelUnit } from "../../typings/presentation/presentationEnum";
-import { NeedsReviewReason } from "../../typings/receipt/receiptEnum";
+import { NeedsReviewReason, ReceiptDocAction } from "../../typings/receipt/receiptEnum";
 import type {
   receiptRawRow,
   ReceiptReportCluster,
   ReceiptReportPresentation,
   ReceiptStatsType,
   ReceiptPendingReviewType,
-  ReceiptImportResultType,
-  Clusterable,
   ReceiptPreviewResultType,
-  ReceiptProductDocType,
-  ReceiptPresentationDocType,
+  ReceiptImportResultType,
+  ReceiptBulkInsertResultType,
+  ReceiptBulkWriteResultType,
+  ReceiptMatchedPresentationDocType,
+  Clusterable,
 } from "@typings/receipt";
 import type { Product } from "@typings/product";
 import type { presentation as PresentationEntity } from "@typings/presentation";
 
-// El producto en memoria necesita "presentations" para relacionar antes de insertar;
-// el doc real de Mongo NO lo tiene (se descarta en insertDocs, ver nota ahí abajo).
 type ProductDoc = Product & { presentations: string[] };
 type PresentationDoc = PresentationEntity;
 
@@ -160,8 +159,34 @@ export function buildDocsFromReport(clusters: ReceiptReportCluster[]) {
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 insertDocs → inserta en Mongo (sin conectar/desconectar: la app     ║
-║    ya mantiene la conexión abierta a nivel global)                     ║
+║ 🎮 matchPresentations → matchea CADA presentation contra la BD SOLO   ║
+║    por sku (columna CODIGO del excel). Sin match -> "create", con     ║
+║    match -> "update" contra ese _id existente. Products no se tocan.  ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+export async function matchPresentations(
+  presentations: PresentationDoc[]
+): Promise<ReceiptMatchedPresentationDocType[]> {
+  const skus = presentations.map((p) => p.sku).filter(Boolean);
+
+  const existing = skus.length > 0
+    ? await PresentationMongo.find({ sku: { $in: skus } }, { _id: 1, sku: 1 }).lean()
+    : [];
+
+  const bySku = new Map(existing.map((e: any) => [e.sku, e._id]));
+
+  return presentations.map((p) => {
+    const existingId = p.sku ? bySku.get(p.sku) ?? null : null;
+    return {
+      ...p,
+      action: existingId ? ReceiptDocAction.Update : ReceiptDocAction.Create,
+      existingId,
+    };
+  });
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 insertProducts → sin cambios respecto al comportamiento original:  ║
+║    inserta, saltea duplicados por _id (en la práctica siempre nuevo). ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 function chunk<T>(arr: T[], size: number): T[][] {
   const out: T[][] = [];
@@ -169,24 +194,26 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
-async function bulkInsert<T extends { _id: string }>(model: any, docs: T[], label: string) {
+async function insertProducts(products: ProductDoc[]): Promise<ReceiptBulkInsertResultType> {
   const inserted: string[] = [];
   const skippedDuplicates: string[] = [];
   const failed: { _id: string; error: string }[] = [];
 
-  const ids = docs.map((d) => d._id);
-  const existing = await model.find({ _id: { $in: ids } }, { _id: 1 }).lean();
+  const ids = products.map((d) => d._id);
+  const existing = ids.length > 0 ? await ProductMongo.find({ _id: { $in: ids } }, { _id: 1 }).lean() : [];
   const existingIds = new Set(existing.map((e: any) => e._id));
 
-  const toInsert = docs.filter((d) => {
+  const toInsert = products.filter((d) => {
     if (existingIds.has(d._id)) { skippedDuplicates.push(d._id); return false; }
     return true;
   });
 
-  for (const batch of chunk(toInsert, 500)) {
+  const docsToInsert = toInsert.map(({ presentations: _presentations, ...rest }) => rest);
+
+  for (const batch of chunk(docsToInsert, 500)) {
     try {
-      await model.insertMany(batch, { ordered: false });
-      inserted.push(...batch.map((b) => b._id));
+      await ProductMongo.insertMany(batch, { ordered: false });
+      inserted.push(...batch.map((b: any) => b._id));
     } catch (err: any) {
       const writeErrors = err.writeErrors ?? [];
       for (const we of writeErrors) {
@@ -194,44 +221,105 @@ async function bulkInsert<T extends { _id: string }>(model: any, docs: T[], labe
         failed.push({ _id: failedDoc?._id ?? "desconocido", error: we.errmsg ?? String(we) });
       }
       const failedIds = new Set(failed.map((f) => f._id));
-      inserted.push(...batch.map((b) => b._id).filter((id) => !failedIds.has(id)));
+      inserted.push(...batch.map((b: any) => b._id).filter((id: string) => !failedIds.has(id)));
     }
   }
 
-  console.log(`[${label}] insertados: ${inserted.length} | duplicados: ${skippedDuplicates.length} | fallidos: ${failed.length}`);
+  console.log(`[products] insertados: ${inserted.length} | duplicados: ${skippedDuplicates.length} | fallidos: ${failed.length}`);
   return { inserted, skippedDuplicates, failed };
 }
 
-export async function insertDocs(products: ProductDoc[], presentations: PresentationDoc[]) {
-  // ProductMongoSchema no tiene "presentations" -> se descarta antes de insertar,
-  // la relación vive del lado de la presentación vía "product_id".
-  // (esto se estaba haciendo en el script 3 original y se había perdido en la unificación anterior)
-  const productsToInsert = products.map(({ presentations: _presentations, ...rest }) => rest);
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 applyPresentations → inserta las "create" y actualiza las         ║
+║    "update" (por existingId, campos vía $set). No toca product_id     ║
+║    en un update: la presentation sigue colgada del producto que ya    ║
+║    tenía en la BD.                                                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+async function applyPresentations(
+  presentations: ReceiptMatchedPresentationDocType[],
+  failedProductIds: Set<string>
+): Promise<ReceiptBulkWriteResultType> {
+  const created: string[] = [];
+  const updated: string[] = [];
+  const failed: { _id: string; error: string }[] = [];
 
-  const productResult = await bulkInsert(ProductMongo, productsToInsert, "products");
+  const toCreate = presentations
+    .filter((p) => p.action === ReceiptDocAction.Create && !failedProductIds.has(p.product_id))
+    .map(({ action, existingId, ...rest }) => rest);
+
+  for (const batch of chunk(toCreate, 500)) {
+    try {
+      await PresentationMongo.insertMany(batch, { ordered: false });
+      created.push(...batch.map((b: any) => b._id));
+    } catch (err: any) {
+      const writeErrors = err.writeErrors ?? [];
+      for (const we of writeErrors) {
+        const failedDoc = batch[we.index];
+        failed.push({ _id: failedDoc?._id ?? "desconocido", error: we.errmsg ?? String(we) });
+      }
+      const failedIds = new Set(failed.map((f) => f._id));
+      created.push(...batch.map((b: any) => b._id).filter((id: string) => !failedIds.has(id)));
+    }
+  }
+
+  const toUpdate = presentations.filter((p) => p.action === ReceiptDocAction.Update && p.existingId);
+
+  for (const batch of chunk(toUpdate, 500)) {
+    // product_id se excluye del $set: un update no debe mover la
+    // presentation a otro producto, solo refrescar sus datos.
+    const ops = batch.map((p) => {
+      const { _id, action, existingId, product_id, ...fields } = p;
+      return { updateOne: { filter: { _id: existingId }, update: { $set: fields } } };
+    });
+
+    try {
+      await PresentationMongo.bulkWrite(ops, { ordered: false });
+      updated.push(...batch.map((p) => p.existingId as string));
+    } catch (err: any) {
+      const writeErrors = err.writeErrors ?? [];
+      const failedIndexes = new Set(writeErrors.map((we: any) => we.index));
+      batch.forEach((p, i) => {
+        if (failedIndexes.has(i)) {
+          const we = writeErrors.find((w: any) => w.index === i);
+          failed.push({ _id: p.existingId as string, error: we?.errmsg ?? String(we) });
+        } else {
+          updated.push(p.existingId as string);
+        }
+      });
+    }
+  }
+
+  console.log(`[presentations] creadas: ${created.length} | actualizadas: ${updated.length} | fallidas: ${failed.length}`);
+  return { created, updated, failed };
+}
+
+export async function applyReceiptDocs(
+  products: ProductDoc[],
+  presentations: ReceiptMatchedPresentationDocType[]
+) {
+  const productResult = await insertProducts(products);
   const failedProductIds = new Set(productResult.failed.map((f) => f._id));
-  const validPresentations = presentations.filter((p) => !failedProductIds.has(p.product_id));
-  const presentationResult = await bulkInsert(PresentationMongo, validPresentations, "presentations");
+  const presentationResult = await applyPresentations(presentations, failedProductIds);
   return { products: productResult, presentations: presentationResult };
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 previewReceiptImport → analiza el archivo y arma los docs,         ║
-║    SIN insertar en Mongo. El front confirma antes de aplicar cambios. ║
+║ 🎮 previewReceiptImport → analiza + matchea presentations, SIN        ║
+║    insertar/actualizar nada.                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 export async function previewReceiptImport(buffer: Buffer): Promise<ReceiptPreviewResultType> {
   const { report, stats } = analyzeWorkbook(buffer);
   const { products, presentations, pendingReview } = buildDocsFromReport(report);
-  return { stats, pendingReview, products, presentations };
+  const matchedPresentations = await matchPresentations(presentations);
+  return { stats, pendingReview, products, presentations: matchedPresentations };
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 confirmReceiptImport → recibe los docs ya armados (del preview)    ║
-║    y los inserta en Mongo. No vuelve a analizar el archivo.           ║
+║ 🎮 confirmReceiptImport → recibe los docs del preview y los aplica.   ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 export async function confirmReceiptImport(
-  products: ReceiptProductDocType[],
-  presentations: ReceiptPresentationDocType[]
+  products: ProductDoc[],
+  presentations: ReceiptMatchedPresentationDocType[]
 ) {
-  return insertDocs(products, presentations);
+  return applyReceiptDocs(products, presentations);
 }

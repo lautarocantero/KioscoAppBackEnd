@@ -60,10 +60,16 @@ interface ReceiptPendingReview {
     reasons:      NeedsReviewReason[];
 }
 
-interface BulkInsertResult {
-    inserted:           string[];
-    skippedDuplicates:  string[];
-    failed:             { _id: string; error: string }[];
+interface ReceiptBulkInsertResult {
+    inserted:          string[];
+    skippedDuplicates: string[];
+    failed:            { _id: string; error: string }[];
+}
+
+interface ReceiptBulkWriteResult {
+    created: string[];
+    updated: string[];
+    failed:  { _id: string; error: string }[];
 }
 
 interface ReceiptImportResult {
@@ -72,6 +78,27 @@ interface ReceiptImportResult {
     insertResult: {
         products:      BulkInsertResult;
         presentations: BulkInsertResult;
+    };
+}
+
+interface MatchedPresentationDoc extends ReceiptPresentationDoc {
+    action:     ReceiptDocAction;
+    existingId: string | null;
+}
+
+interface PreviewResultV2 {
+    stats:         ReceiptStats;
+    pendingReview: ReceiptPendingReview[];
+    products:      ReceiptProductDoc[];
+    presentations: MatchedPresentationDoc[];
+}
+
+interface ReceiptImportResultV2 {
+    stats:         ReceiptStats;
+    pendingReview: ReceiptPendingReview[];
+    insertResult: {
+        products:      ReceiptBulkInsertResult;
+        presentations: ReceiptBulkWriteResult;
     };
 }
 
@@ -121,10 +148,10 @@ export type ReceiptReportPresentation = ReportPresentation;
 export type ReceiptReportCluster      = ReportCluster;
 export type ReceiptStatsType          = ReceiptStats;
 export type ReceiptPendingReviewType  = ReceiptPendingReview;
-export type ReceiptBulkInsertResult   = BulkInsertResult;
-export type ReceiptImportResultType   = ReceiptImportResult;
-export type ReceiptProductDocType      = ReceiptProductDoc;
-export type ReceiptPresentationDocType = ReceiptPresentationDoc;
-export type ReceiptPreviewResultType = ReceiptPreviewResult;
+export type ReceiptBulkInsertResultType       = ReceiptBulkInsertResult;
+export type ReceiptBulkWriteResultType        = ReceiptBulkWriteResult;
+export type ReceiptMatchedPresentationDocType = MatchedPresentationDoc;
+export type ReceiptPreviewResultType          = PreviewResultV2;
+export type ReceiptImportResultType           = ReceiptImportResultV2;
 
 }
