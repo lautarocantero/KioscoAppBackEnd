@@ -1,39 +1,11 @@
-/*──────────────────────────────
-📘 AuthTypes
-──────────────────────────────
-📜 Propósito:
-Tipado base para autenticación.  
-Define entidades, esquemas, repositorios, payloads y requests.
+import { AuthRoleEnum } from './enums';
+import { SellerPublic } from '@typings/seller';
 
-🧩 Derivaciones:
-- AuthEntity → AuthSchema → AuthRepository → AuthModelType
-- AuthEntity → AuthPublic → AuthPublicSchema
-- AuthEntity → AuthPayload → Payloads → Requests
-
-🛡️ Seguridad:
-- Usar AuthPublic/AuthPublicSchema para ocultar campos sensibles.
-- Validar siempre los payloads antes de persistir.
-- `role` NUNCA debe aceptarse desde AuthRegisterPayload ni desde el body de un request de
-  registro: se asigna un default en AuthModel.create para evitar que un usuario se auto-asigne
-  un rol privilegiado. Solo EditAuthPayload (uso administrativo) lo permite editar.
-- verificationToken/verificationTokenExpires y resetPasswordToken/resetPasswordTokenExpires
-  NUNCA deben exponerse al cliente: quedan excluidos de AuthPublic.
-──────────────────────────────*/
-
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🔒 BASE PRINCIPAL 🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒🔒                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
-
-//base
 interface AuthEntity {
-  _id: string;
-  username: string;
+  _id: string; // == Seller._id
   email: string;
   password: string;
-  repeatPassword: string;
-  authToken: string | undefined;
   refreshToken: string | undefined;
-  profilePhoto: string | null;
   role: AuthRoleEnum;
   isVerified: boolean;
   verificationToken: string | null;
@@ -42,14 +14,8 @@ interface AuthEntity {
   resetPasswordTokenExpires: Date | null;
 }
 
-// base para el schema
-type AuthSchema = Pick<AuthEntity,
-  | '_id' | 'username' | 'email' | 'password' | 'refreshToken' | 'profilePhoto' | 'role'
-  | 'isVerified' | 'verificationToken' | 'verificationTokenExpires'
-  | 'resetPasswordToken' | 'resetPasswordTokenExpires'
->;
+type AuthSchema = AuthEntity;
 
-//base con las funciones del schema
 interface AuthRepository extends AuthSchema {
   find(query: Partial<AuthSchema>): Promise<AuthSchema[]>;
   findOne(query: Partial<AuthSchema>): Promise<AuthSchema | null>;
@@ -57,44 +23,36 @@ interface AuthRepository extends AuthSchema {
   remove(query?: Partial<AuthSchema>): Promise<void>;
 }
 
-//base para payloads
-type AuthPayloadUnknown = Record<keyof AuthEntity, unknown>; 
+type AuthPayloadUnknown = Record<keyof AuthEntity, unknown>;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🧩 DERIVADOS 🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩🧩                ║
-╚══════════════════════════════════════════════════════════════════════╝*/
-
-// derivado para no utilizar directamente el AuthEntity
 export type Auth = AuthEntity;
-
-// derivado para acceder al esquema
 export type AuthSchemaType = AuthSchema;
-
-//derivado para acceder a los metodos del esquema Auth
 export type AuthModelType = AuthRepository;
 
-// derivado para los datos publicos
+// Lo mínimo indispensable, sin secretos ni tokens
 export type AuthPublic = Omit<AuthEntity,
-  | 'password' | 'repeatPassword' | 'authToken' | 'refreshToken'
+  | 'password' | 'refreshToken'
   | 'verificationToken' | 'verificationTokenExpires'
   | 'resetPasswordToken' | 'resetPasswordTokenExpires'
 >;
 
-//derivado para data de payloads y posterior validacion
+// Lo que efectivamente vuelve al cliente en login/checkAuth: identidad + perfil
+export type SessionUser = AuthPublic & SellerPublic;
+
 export type AuthPayload = AuthPayloadUnknown;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🗂️ SCHEMA 🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️🗂️                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+export type AuthPublicSchema = Pick<Auth, '_id' | 'email' | 'role' | 'isVerified'>;
 
-export type AuthPublicSchema = Pick<Auth, '_id' | 'username' | 'email' | 'profilePhoto' | 'role' | 'isVerified'>;
+/*═══ PAYLOADS ═══*/
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 📦 PAYLOAD 📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦📦                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
-
-// role NO forma parte de AuthRegisterPayload a propósito (ver nota de seguridad arriba).
-export type AuthRegisterPayload = Pick<AuthPayload, 'username' | 'email' | 'profilePhoto' | 'password' | 'repeatPassword'>;
+// register ahora crea Auth + Seller juntos: por eso incluye datos de perfil
+export type AuthRegisterPayload = {
+  email: string;
+  password: string;
+  repeatPassword: string;
+  name: string;
+  profilePhoto?: string;
+};
 
 export type AuthLoginPayload = Pick<Auth, 'email' | 'password'> & {
     rememberMe: boolean;
@@ -102,7 +60,7 @@ export type AuthLoginPayload = Pick<Auth, 'email' | 'password'> & {
 
 export interface AuthGoogleLoginPayload {
     email: string;
-    username: string;
+    name: string;
     profilePhoto?: string;
 }
 
@@ -116,62 +74,43 @@ export type AuthCheckAuthPayload = Pick<AuthPayload, '_id'>;
 
 export type DeleteAuthPayload = Pick<AuthPayload, '_id'>;
 
-// EditAuthPayload SÍ incluye 'role' (hereda de AuthPayload sin excluirlo) para permitir
-// que un flujo administrativo edite el rol de un usuario existente.
-export type EditAuthPayload = Omit<AuthPayload,
-  | 'repeatPassword' | 'authToken' | 'refreshToken'
-  | 'isVerified' | 'verificationToken' | 'verificationTokenExpires'
-  | 'resetPasswordToken' | 'resetPasswordTokenExpires'
->;
+// Editar Auth ahora es SOLO credenciales/autorización. name/foto se editan vía Seller.
+export type EditAuthPayload = {
+  _id: string;
+  email?: string;
+  password?: string;
+  role?: AuthRoleEnum; // uso administrativo
+};
 
-export interface AuthRefreshTokenPayload {
-  _id: unknown,
-  token?: unknown,
-}
-
-// email de verificación (post-registro)
 export type VerifyEmailPayload = {
   token: string;
 };
 
-// solicitud de reset de password (paso 1: pedir el link por mail)
 export type RequestPasswordResetPayload = Pick<Auth, 'email'>;
 
-// reset de password (paso 2: setear la nueva password con el token del mail)
 export type ResetPasswordPayload = {
   token: string;
   newPassword: string;
   repeatNewPassword: string;
 };
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+/*═══ REQUESTS ═══*/
 
 export type AuthRegisterRequest = Request<AuthParams, unknown, AuthRegisterPayload>;
-
 export type AuthLoginRequest = Request<AuthParams, unknown, AuthLoginPayload>;
-
-export type AuthGoogleRequest = Request<unknown,unknown,{ accessToken: string }>;
-
+export type AuthGoogleRequest = Request<unknown, unknown, { accessToken: string }>;
 export type AuthLogoutRequest = Request<AuthParams, unknown, AuthLogoutPayload>;
-
 export type AuthCheckAuthRequest = Request<AuthParams, unknown, AuthCheckAuthPayload>;
-
 export type AuthRefreshRequest = Request<AuthParams, unknown, unknown>;
-
 export type DeleteAuthRequest = Request<AuthParams, unknown, DeleteAuthPayload>;
-
 export type EditAuthRequest = Request<AuthParams, unknown, EditAuthPayload>;
-
 export type VerifyEmailRequest = Request<AuthParams, unknown, VerifyEmailPayload>;
-
 export type RequestPasswordResetRequest = Request<AuthParams, unknown, RequestPasswordResetPayload>;
-
 export type ResetPasswordRequest = Request<AuthParams, unknown, ResetPasswordPayload>;
 
-/*══════════════════════════════════════════════════════════════════════╗
-║ 🪙 TOKEN 🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙🪙                     ║
-╚══════════════════════════════════════════════════════════════════════╝*/
+export interface AuthRefreshTokenPayload {
+  _id: unknown,
+  token?: unknown,
+}
 
-export type AuthTokenPublic = Pick<Auth, 'refreshToken'>
+export type AuthTokenPublic = Pick<Auth, 'refreshToken'>;

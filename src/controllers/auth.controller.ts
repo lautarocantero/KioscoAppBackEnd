@@ -2,10 +2,18 @@ import { AuthModel } from "../models/authModel";
 import { Request, Response } from 'express';
 import { ACCESS_SECRET, REFRESH_SECRET } from "../config";
 import jwt from 'jsonwebtoken';
-// import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/authTypes";
-// import { AuthCheckAuthRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "../typings/auth/index";
 import { handleControllerError } from "../utils/handleControllerError";
-import { AuthCheckAuthRequest, AuthGoogleRequest, AuthLoginRequest, AuthLogoutRequest, AuthPublic, AuthPublicSchema, AuthRefreshRequest, AuthRegisterRequest, DeleteAuthRequest, EditAuthRequest } from "@typings/auth";
+import {
+  AuthCheckAuthRequest,
+  AuthGoogleRequest,
+  AuthLoginRequest,
+  AuthLogoutRequest,
+  AuthRefreshRequest,
+  AuthRegisterRequest,
+  DeleteAuthRequest,
+  EditAuthRequest,
+  SessionUser,
+} from "@typings/auth";
 import axios from "axios";
 // import { EmailService } from "../services/emailService";
 
@@ -15,27 +23,19 @@ import axios from "axios";
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║ 📤 Métodos soportados                                                                                                     ║
 ║                                                                                                                           ║
-║ Tipo   | Link              | Función         | Descripción                  | Params                  | Return   | Auth Req | Status ║
-║--------|-------------------|-----------------|------------------------------|-------------------------|----------|----------|--------║
-║ POST   | /register         | register         | Registro de usuarios         | body: {name,email,pwd}  | JSON {id}| No       | 201,400,500 ║
-║ POST   | /login            | login            | Inicio de sesión             | body: {email,pwd}       | JWT token| No       | 200,401,500 ║
-║ POST   | /logout           | logout           | Cierre de sesión             | headers: {Authorization}| JSON msg | Sí       | 200,401,500 ║
-║ POST   | /checkAuth        | checkAuth       | Validación de sesión activa  | headers: {Authorization}| JSON bool| Sí       | 200,401,500 ║
-║ PUT    | /edit-user        | editAuth        | Edición de usuario           | body: {id,fields...}    | JSON msg | Sí       | 200,400,404,500 ║
-║ DELETE | /delete-user      | deleteAuth      | Eliminación de usuario       | body: {id}              | JSON msg | Sí       | 200,404,500 ║
+║ Tipo   | Link              | Función      | Descripción                          | Params                    | Return    | Auth Req | Status ║
+║--------|-------------------|--------------|--------------------------------------|---------------------------|-----------|----------|--------║
+║ POST   | /register         | register     | Registro (crea Auth + Seller)        | body: {email,pwd,name..} | JSON {id} | No       | 200,400,500 ║
+║ POST   | /login            | login        | Inicio de sesión                     | body: {email,pwd}        | SessionUser| No      | 200,401,500 ║
+║ POST   | /google           | googleLogin  | Inicio de sesión / registro vía Google| body: {accessToken}     | SessionUser| No      | 200,401,500 ║
+║ POST   | /logout           | logout       | Cierre de sesión                     | cookies: refresh_token   | JSON msg  | Sí       | 200,401,500 ║
+║ POST   | /check-auth       | checkAuth    | Validación de sesión activa          | cookies: refresh_token   | SessionUser| Sí      | 200,401,500 ║
+║ POST   | /refresh          | refresh      | Renueva access_token                 | cookies: refresh_token   | JSON msg  | Sí       | 200,401,500 ║
+║ PUT    | /edit-auth        | editAuth     | Edita email/password/role            | body: {_id,...}          | JSON msg  | Sí       | 200,400,404,500 ║
+║ DELETE | /delete-auth      | deleteAuth   | Elimina identidad (cascada a Seller) | body: {_id}              | JSON msg  | Sí       | 200,404,500 ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
 //─────────────────────────────────────────────────────────── 📥 GET 📥 ────────────────────────────────────────────────────────────────//
-
-
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función home 🎮 → Devuelve listado de endpoints disponibles                                                             ║
-║ 📥 Entrada: -                                                                                                             ║
-║ ⚙️ Proceso: Renderiza texto con rutas                                                                                     ║
-║ 📤 Salida: HTML con endpoints                                                                                              ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
-
 
 export async function home(_req: Request, res: Response): Promise<void> {
     res
@@ -45,31 +45,31 @@ export async function home(_req: Request, res: Response): Promise<void> {
       Endpoints =><br>
       ----Post: /register<br>
       ----Post: /login<br>
+      ----Post: /google<br>
       ----Post: /logout<br>
-      ----Post: /checkAuth<br>
+      ----Post: /check-auth<br>
+      ----Post: /refresh<br>
       ----Delete: /delete-auth<br>
-      ----Edit: /edit-auth<br>
+      ----Put: /edit-auth<br>
   `);
 }
-//─────────────────────────────────────────────────────────── 📥 GET 📥 ────────────────────────────────────────────────────────────────//
+
 //─────────────────────────────────────────────────────────── 📤 POST 📤 ────────────────────────────────────────────────────────────────//
 
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función register 🎮 → Crea usuario nuevo                                                                               ║
-║ 📥 Entrada: { username, email, profilePhoto, password, repeatPassword }                                                   ║
-║ 📤 Salida: JSON { id, message }                                                                                           ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 register 🎮 → Crea la identidad (Auth) y el perfil (Seller) en un solo   ║
+║    paso, ligados por el mismo _id                                          ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
 
-export async function register(req: AuthRegisterRequest, res: Response): Promise<void>  {
-    const { username, email, profilePhoto, password, repeatPassword } = req.body;
+export async function register(req: AuthRegisterRequest, res: Response): Promise<void> {
+    const { email, password, repeatPassword, name, profilePhoto } = req.body;
 
-    try{
-        const { _id } = await AuthModel.create({ username, email, profilePhoto, password, repeatPassword });
+    try {
+        const { _id } = await AuthModel.create({ email, password, repeatPassword, name, profilePhoto });
 
         // TODO(email-verification): reactivar cuando se pague Resend.
         // try {
-        //     await EmailService.sendVerificationEmail({ to: email, username, token: verificationToken });
+        //     await EmailService.sendVerificationEmail({ to: email, username: name, token: verificationToken });
         // } catch (emailError) {
         //     console.error('Failed to send verification email:', emailError);
         // }
@@ -80,72 +80,71 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
             id: _id,
             message: "User Registered successfully",
           });
-    } catch(error: unknown){
-        handleControllerError(res, error);
-      }
-}
-
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función login 🎮 → Autentica usuario                                                                                   ║
-║ 📥 Entrada: { email, password }                                                                                           ║
-║ 📤 Salida: JSON { user, message }, cookies con access_token y refresh_token                                               ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
-
-export async function login ( req: AuthLoginRequest, res: Response ) : Promise <void>  {
-    const { email, password, rememberMe } = req.body;
-
-    try{
-        const user: AuthPublic = await AuthModel.login({email, password, rememberMe});
-
-        const token = jwt.sign(
-          { id: user._id, email: user.email },
-          ACCESS_SECRET,
-          { expiresIn: '5m' }
-        );
-
-        const refreshExpiresIn = rememberMe ? '30d' : '1d';
-
-        const refreshToken = jwt.sign(
-          { id: user._id, email: user.email },
-          REFRESH_SECRET,
-          { expiresIn: refreshExpiresIn }
-        );
-
-        await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
-
-        const refreshCookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as 'none' | 'lax',
-            // Si rememberMe es false, no seteamos maxAge → cookie de sesión,
-            // se borra sola al cerrar el navegador.
-            ...(rememberMe && { maxAge: 1000 * 60 * 60 * 24 * 30 }),
-        };
-
-        res
-          .cookie('access_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 1000 * 60 * 5,
-          })
-          .cookie('refresh_token', refreshToken, refreshCookieOptions)
-          .status(200)
-          .json({ 
-            user, 
-            message: "User Logged successfully",
-          });
-    } catch(error: unknown){
+    } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
 /*═══════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función googleLogin 🎮 → Autentica o registra usuario vía Google        ║
-║ 📥 Entrada: { accessToken }                                                ║
-║ 📤 Salida: JSON { user, message }, cookies con access_token y refresh_token║
-║ 🛠️ Errores: Delegados a handleControllerError                             ║
+║ 🎮 login 🎮 → Autentica y devuelve la sesión combinada (Auth + Seller)      ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
+
+function setSessionCookies(res: Response, user: SessionUser, rememberMe?: boolean): { accessToken: string; refreshToken: string } {
+    const accessToken = jwt.sign(
+      { id: user._id, email: user.email },
+      ACCESS_SECRET,
+      { expiresIn: '5m' }
+    );
+
+    const refreshExpiresIn = rememberMe ? '30d' : '1d';
+
+    const refreshToken = jwt.sign(
+      { id: user._id, email: user.email },
+      REFRESH_SECRET,
+      { expiresIn: refreshExpiresIn }
+    );
+
+    const refreshCookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: (process.env.NODE_ENV === 'production' ? 'none' : 'lax') as 'none' | 'lax',
+        ...(rememberMe && { maxAge: 1000 * 60 * 60 * 24 * 30 }),
+    };
+
+    res
+      .cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 1000 * 60 * 5,
+      })
+      .cookie('refresh_token', refreshToken, refreshCookieOptions);
+
+    return { accessToken, refreshToken };
+}
+
+export async function login(req: AuthLoginRequest, res: Response): Promise<void> {
+    const { email, password, rememberMe } = req.body;
+
+    try {
+        const user: SessionUser = await AuthModel.login({ email, password, rememberMe });
+
+        const { refreshToken } = setSessionCookies(res, user, rememberMe);
+        await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
+
+        res
+          .status(200)
+          .json({
+            user,
+            message: "User Logged successfully",
+          });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 googleLogin 🎮 → Autentica o registra (Auth + Seller) vía Google         ║
 ╚═══════════════════════════════════════════════════════════════════════════╝*/
 
 export async function googleLogin(req: AuthGoogleRequest, res: Response): Promise<void> {
@@ -157,52 +156,24 @@ export async function googleLogin(req: AuthGoogleRequest, res: Response): Promis
             { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 
-        const user: AuthPublic = await AuthModel.loginOrCreateWithGoogle({
+        const user: SessionUser = await AuthModel.loginOrCreateWithGoogle({
             email: googleUser.email,
-            username: googleUser.name,
+            name: googleUser.name,
             profilePhoto: googleUser.picture,
         });
 
-        const token = jwt.sign(
-            { id: user._id, email: user.email },
-            ACCESS_SECRET,
-            { expiresIn: '5m' }
-        );
-
-        const refreshToken = jwt.sign(
-            { id: user._id, email: user.email },
-            REFRESH_SECRET,
-            { expiresIn: '30d' }
-        );
-
+        const { refreshToken } = setSessionCookies(res, user, true);
         await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
 
-        res
-          .cookie('access_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 1000 * 60 * 5,
-          })
-          .cookie('refresh_token', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 1000 * 60 * 60 * 24 * 30,
-          })
-          .status(200)
-          .json({ user, message: "User logged in with Google successfully" });
+        res.status(200).json({ user, message: "User logged in with Google successfully" });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función logout 🎮 → Cierra sesión                                                                                      ║
-║ 📥 Entrada: refresh_token (cookies)                                                                                       ║
-║ 📤 Salida: JSON { message }, cookies limpiadas                                                                            ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 logout 🎮 → Cierra sesión                                               ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
 
 export async function logout(req: AuthLogoutRequest, res: Response): Promise<void> {
   const refreshToken = req?.cookies?.refresh_token;
@@ -215,13 +186,11 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
   try {
     const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id?: string };
     if (!payload?.id) {
-      res
-        .status(401)
-        .json({message: 'Invalid token payload'});
+      res.status(401).json({ message: 'Invalid token payload' });
       return;
     }
 
-    await AuthModel.deleteRefreshToken({_id: payload.id});
+    await AuthModel.deleteRefreshToken({ _id: payload.id });
 
     res
       .clearCookie('access_token')
@@ -230,17 +199,14 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
       .json({ message: 'Logged out successfully' });
   } catch (error: unknown) {
       handleControllerError(res, error);
-}
+  }
 }
 
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función checkAuth 🎮 → Valida sesión                                                                                   ║
-║ 📥 Entrada: refresh_token (cookies)                                                                                       ║
-║ 📤 Salida: JSON { user }                                                                                                  ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 checkAuth 🎮 → Valida sesión y devuelve Auth + Seller combinados         ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
 
-export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promise<void> {                                            
+export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promise<void> {
     const refreshToken = req.cookies?.refresh_token;
 
     if (!refreshToken) {
@@ -249,10 +215,8 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
     }
 
     try {
-      const accessPayload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string };
-      const user: AuthPublicSchema = await AuthModel.checkAuth({ _id: accessPayload.id });
-
-      if (!user) throw new Error('No se encuentra ese usuario');
+      const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string };
+      const user: SessionUser = await AuthModel.checkAuth({ _id: payload.id });
 
       res.status(200).json(user);
     } catch (error: unknown) {
@@ -260,12 +224,9 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
     }
 }
 
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función refresh 🎮 → Emite un nuevo access_token a partir del refresh_token                                            ║
-║ 📥 Entrada: refresh_token (cookies)                                                                                       ║
-║ 📤 Salida: JSON { message }, cookie access_token renovada                                                                 ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 refresh 🎮 → Emite un nuevo access_token a partir del refresh_token      ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
 
 export async function refresh(req: AuthRefreshRequest, res: Response): Promise<void> {
   const refreshToken = req.cookies?.refresh_token;
@@ -278,8 +239,8 @@ export async function refresh(req: AuthRefreshRequest, res: Response): Promise<v
   try {
     const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; email: string };
 
-    const user: AuthPublicSchema = await AuthModel.checkAuth({ _id: payload.id });
-    if (!user) throw new Error('No se encuentra ese usuario');
+    // Confirma que la identidad (y su perfil) siguen existiendo antes de renovar
+    await AuthModel.checkAuth({ _id: payload.id });
 
     const newAccessToken = jwt.sign(
       { id: payload.id, email: payload.email },
@@ -307,26 +268,23 @@ export async function requestPasswordReset(req: Request, res: Response): Promise
     try {
         const result = await AuthModel.requestPasswordReset({ email });
 
-        // 🚧 BYPASS TEMPORAL (sin Resend pago): comentamos el envío real de
-        // mail y devolvemos el token directo en la respuesta para que el
-        // frontend pueda navegar a /reset-password sin depender del email.
+        // 🚧 BYPASS TEMPORAL (sin Resend pago): devolvemos el token directo en la
+        // respuesta para que el frontend pueda navegar a /reset-password sin
+        // depender del email.
         //
-        // ⚠️ SEGURIDAD: esto rompe a propósito la protección de "no revelar
-        // si el email existe" (antes el mensaje era idéntico exista o no el
-        // email; ahora `token` viene presente solo si existe). NO DEJAR
-        // este bypass en producción.
+        // ⚠️ SEGURIDAD: esto rompe a propósito la protección de "no revelar si
+        // el email existe" (el `token` viene presente solo si existe). NO
+        // DEJAR este bypass en producción.
         //
         // Para reactivar cuando se pague Resend:
-        // 1. Descomentar el bloque de EmailService de abajo.
+        // 1. Descomentar el bloque de EmailService de abajo (resolviendo el
+        //    `name` contra Seller por _id, ya que ya no vive en Auth).
         // 2. Sacar `token` del response.status(200).json(...).
         // 3. Restaurar el mensaje genérico sin datos condicionales.
         //
         // if (result) {
-        //     try {
-        //         await EmailService.sendPasswordResetEmail({ to: email, username: result.username, token: result.resetToken });
-        //     } catch (emailError) {
-        //         console.error('Failed to send password reset email:', emailError);
-        //     }
+        //     const seller = await SellerModel.getSellerByField('_id', result._id, 'string');
+        //     await EmailService.sendPasswordResetEmail({ to: email, username: seller.name, token: result.resetToken });
         // }
 
         res.status(200).json({
@@ -350,7 +308,7 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
 }
 
 // TODO(email-verification): reactivar cuando se pague Resend.
-// export async function verifyEmail(req: Request, res: Response): Promise<void> {
+// export async function verifyEmail(req: VerifyEmailRequest, res: Response): Promise<void> {
 //     const { token } = req.body;
 //     try {
 //         await AuthModel.verifyEmail({ token });
@@ -362,17 +320,14 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
 
 //─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//
 
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función deleteAuth 🎮 → Elimina credenciales                                                                           ║
-║ 📥 Entrada: { _id }                                                                                                       ║
-║ 📤 Salida: JSON { _id, message }                                                                                          ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 deleteAuth 🎮 → Elimina la identidad; el modelo hace cascada a Seller    ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
 
-export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise <void> {
+export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise<void> {
   const { _id } = req.body;
 
-  try{
+  try {
     await AuthModel.deleteAuth({ _id });
     res
       .status(200)
@@ -380,35 +335,29 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
         _id,
         message: 'Auth deleted successfully',
       });
-  } catch(error: unknown) {
+  } catch (error: unknown) {
       handleControllerError(res, error);
   }
 }
-//─────────────────────────────────────────────────────────── 🗑️ DELETE 🗑️ ────────────────────────────────────────────────────────────────//
+
 //─────────────────────────────────────────────────────────── 🛠️ PUT 🛠️ ────────────────────────────────────────────────────────────────//
 
-/*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🎮 Función editAuth 🎮 → Edita credenciales                                                                               ║
-║ 📥 Entrada: { _id, username, email, password, profilePhoto }                                                              ║
-║ 📤 Salida: JSON { _id, message }                                                                                          ║
-║ 🛠️ Errores: Delegados a handleControllerError                                                                             ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
+/*═══════════════════════════════════════════════════════════════════════════╗
+║ 🎮 editAuth 🎮 → Edita SOLO email/password/role. name/foto van por Seller  ║
+╚═══════════════════════════════════════════════════════════════════════════╝*/
 
-export async function editAuth (req: EditAuthRequest, res: Response): Promise <void> {
-  const { _id, username, email, password, profilePhoto, role } = req.body;
-  
-  try{
-    await AuthModel.editAuth({ _id, username, email, password, profilePhoto, role });
+export async function editAuth(req: EditAuthRequest, res: Response): Promise<void> {
+  const { _id, email, password, role } = req.body;
+
+  try {
+    await AuthModel.editAuth({ _id, email, password, role });
     res
       .status(200)
       .json({
         _id,
         message: 'Auth has been edited successfully',
       });
-  } catch(error: unknown) {
+  } catch (error: unknown) {
     handleControllerError(res, error);
   }
-    
-}                     
-
-//─────────────────────────────────────────────────────────── 🛠️ PUT 🛠️ ────────────────────────────────────────────────────────────────//
+}

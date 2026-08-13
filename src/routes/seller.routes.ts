@@ -1,12 +1,9 @@
 import express from 'express';
 import { 
-  createSeller, 
-  deleteSeller, 
   editSeller, 
   getSellerByEmail, 
   getSellerById, 
   getSellerByName, 
-  getSellerByRol, 
   getSellers, 
   home 
 } from '../controllers/seller.controller';
@@ -36,10 +33,7 @@ router.get('/get-sellers', getSellers);
 router.get('/get-seller-by-id', getSellerById);
 router.get('/get-seller-by-name', getSellerByName);
 router.get('/get-seller-by-email', getSellerByEmail);
-router.get('/get-seller-by-rol', getSellerByRol);
 
-router.post('/create-seller', createSeller);
-router.delete('/delete-seller', deleteSeller);
 router.put('/edit-seller', editSeller);
 
 export default router;
