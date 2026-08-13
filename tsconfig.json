@@ -15,7 +15,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "paths": { "@typings/*": ["src/typings/*"] }
+    "paths": { "@typings/*": ["./src/typings/*"] }
   },
   "include": ["src"],
   "exclude": ["node_modules"]
