@@ -15,7 +15,6 @@ import type {
   ReceiptStatsType,
   ReceiptPendingReviewType,
   ReceiptPreviewResultType,
-  ReceiptImportResultType,
   ReceiptBulkInsertResultType,
   ReceiptBulkWriteResultType,
   ReceiptMatchedPresentationDocType,
