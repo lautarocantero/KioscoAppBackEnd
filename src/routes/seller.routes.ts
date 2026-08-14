@@ -1,5 +1,6 @@
 import express from 'express';
 import { 
+  deleteSeller,
   editSeller, 
   getSellerByEmail, 
   getSellerById, 
@@ -23,7 +24,6 @@ Define las rutas relacionadas con vendedores y las conecta con sus controladores
 - GET    /get-seller-by-name → obtener vendedores por nombre
 - GET    /get-seller-by-email→ obtener vendedor por email
 - GET    /get-seller-by-rol  → obtener vendedores por rol
-- POST   /create-seller      → crear nuevo vendedor
 - DELETE /delete-seller      → eliminar vendedor
 - PUT    /edit-seller        → editar vendedor existente
 ──────────────────────────────*/
@@ -35,5 +35,6 @@ router.get('/get-seller-by-name', getSellerByName);
 router.get('/get-seller-by-email', getSellerByEmail);
 
 router.put('/edit-seller', editSeller);
+router.delete('/delete-seller', deleteSeller);
 
 export default router;

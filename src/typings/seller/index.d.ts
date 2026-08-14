@@ -1,9 +1,10 @@
 import { SellerStatus } from "./sellerEnums";
+import { AuthRoleEnum } from "@typings/auth/enums";
 
 declare module '@typings/seller' {
 
 interface SellerEntity {
-    _id: string; // == Auth._id
+    _id: string;
     name: string;
     profilePhoto: string | null;
     created_at: string;
@@ -27,6 +28,9 @@ export type SellerPublic = SellerEntity;
 // Solo para el endpoint getSellerByEmail, que resuelve el email contra Auth
 export type SellerWithEmail = SellerEntity & { email: string };
 
+// Solo para getSellers: role resuelto por join contra Auth, no persiste en Seller
+export type SellerWithRole = SellerEntity & { role: AuthRoleEnum; email: string };
+
 export type SellerModelType = SellerRepository;
 export type SellerPayload = SellerPayloadUnknown;
 export type SellerSchemaType = Seller;
@@ -45,11 +49,15 @@ export type EditSellerPayload = {
   user_status?: unknown;
 };
 
+export type DeleteSellerPayload = {
+  _id: unknown;
+};
 /*═══ REQUESTS ═══*/
 
 export type GetSellerByIdRequest = Request<SellerParams, unknown, GetSellerByIdPayload>;
 export type GetSellerByNameRequest = Request<SellerParams, unknown, GetSellerByNamePayload>;
 export type GetSellerByEmailRequest = Request<SellerParams, unknown, GetSellerByEmailPayload>;
 export type EditSellerRequest = Request<SellerParams, unknown, EditSellerPayload>;
+export type DeleteSellerRequest = Request<SellerParams, unknown, DeleteSellerPayload>;
 
 }

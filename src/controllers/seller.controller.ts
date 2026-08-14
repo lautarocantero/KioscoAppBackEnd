@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import { handleControllerError } from "../utils/handleControllerError";
 import {
+    DeleteSellerRequest,
   EditSellerRequest,
   GetSellerByEmailRequest,
   GetSellerByIdRequest,
   GetSellerByNameRequest,
   Seller,
   SellerWithEmail,
+  SellerWithRole,
 } from "@typings/seller";
 import { SellerModel } from "../models/sellerModel";
 
@@ -59,7 +61,7 @@ export async function home(_req: Request, res: Response): Promise<void> {
 
 export async function getSellers(_req: Request, res: Response): Promise<void> {
   try {
-    const sellerObject: Seller[] = await SellerModel.getSellers();
+    const sellerObject: SellerWithRole[] = await SellerModel.getSellers();
     res.status(200).json(sellerObject);
   } catch (error: unknown) {
     handleControllerError(res, error);
@@ -73,9 +75,9 @@ export async function getSellers(_req: Request, res: Response): Promise<void> {
 ╚══════════════════════════════════════╝*/
 
 export async function getSellerById(req: GetSellerByIdRequest, res: Response): Promise<void> {
-    const { _id } = req.body;
+    const { _id } = req.query as { _id: string };
     try {
-        const sellerObject: Seller[] = await SellerModel.getSellerByField('_id', _id, 'string');
+        const sellerObject: SellerWithRole[] = await SellerModel.getSellerById(_id);
         res.status(200).json(sellerObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -133,6 +135,32 @@ export async function editSeller(req: EditSellerRequest, res: Response): Promise
             .json({
                 _id,
                 message: 'Seller has been edited successfully',
+            });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+//──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
+
+/*══════════ 🎮 deleteSeller ══════════╗
+║ 📥 Entrada: req.body._id (string)    ║
+║ ⚙️ Proceso: elimina perfil de seller ║
+║    (NO borra el Auth asociado —      ║
+║    eso lo maneja /delete-auth)       ║
+║ 📤 Salida: JSON {confirmación}       ║
+╚══════════════════════════════════════╝*/
+
+export async function deleteSeller(req: DeleteSellerRequest, res: Response): Promise<void> {
+    const { _id } = req.body;
+
+    try {
+        await SellerModel.delete(_id);
+        res
+            .status(200)
+            .json({
+                _id,
+                message: 'Seller has been deleted successfully',
             });
     } catch (error: unknown) {
         handleControllerError(res, error);

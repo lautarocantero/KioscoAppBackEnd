@@ -13,6 +13,7 @@ import {
   resetPassword,
   // verifyEmail
 } from '../controllers/auth.controller';
+import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.post('/refresh', refresh);
 // router.post('/verify-email', verifyEmail); // TODO(email-verification): reactivar cuando se pague Resend.
 router.post('/request-password-reset', requestPasswordReset);
 router.post('/reset-password', resetPassword);
-router.delete('/delete-auth', deleteAuth);
-router.put('/edit-auth', editAuth);
+router.delete('/delete-auth', authMiddleware, deleteAuth); //hacer que rol especifico pueda eliminar o editar auth
+router.put('/edit-auth', authMiddleware, editAuth);
 
 export default router;

@@ -91,7 +91,7 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
 
 function setSessionCookies(res: Response, user: SessionUser, rememberMe?: boolean): { accessToken: string; refreshToken: string } {
     const accessToken = jwt.sign(
-      { id: user._id, email: user.email },
+      { id: user._id, email: user.email, role: user.role },
       ACCESS_SECRET,
       { expiresIn: '5m' }
     );
@@ -239,11 +239,11 @@ export async function refresh(req: AuthRefreshRequest, res: Response): Promise<v
   try {
     const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; email: string };
 
-    // Confirma que la identidad (y su perfil) siguen existiendo antes de renovar
-    await AuthModel.checkAuth({ _id: payload.id });
+    // Ya no solo confirma que existe: usamos el resultado para traer el role vigente
+    const user: SessionUser = await AuthModel.checkAuth({ _id: payload.id });
 
     const newAccessToken = jwt.sign(
-      { id: payload.id, email: payload.email },
+      { id: payload.id, email: payload.email, role: user.role },
       ACCESS_SECRET,
       { expiresIn: '5m' }
     );
