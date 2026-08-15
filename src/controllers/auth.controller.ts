@@ -15,6 +15,9 @@ import {
   SessionUser,
 } from "@typings/auth";
 import axios from "axios";
+// Import relativo (no @typings): acá se usa como VALOR, y el alias solo
+// resuelve en tiempo de compilación (ver el mismo patrón en authModel.ts).
+import { AuthRoleEnum } from "../typings/auth/enums";
 // import { EmailService } from "../services/emailService";
 
 
@@ -348,6 +351,13 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
 
 export async function editAuth(req: EditAuthRequest, res: Response): Promise<void> {
   const { _id, email, password, role } = req.body;
+
+  // Cambiar el role es una acción administrativa: solo un admin puede
+  // tocarlo. email/password sigue editable por el propio usuario.
+  if (role !== undefined && req.user?.role !== AuthRoleEnum.Admin) {
+    res.status(403).json({ message: 'Solo un administrador puede editar el rol de un usuario' });
+    return;
+  }
 
   try {
     await AuthModel.editAuth({ _id, email, password, role });

@@ -68,7 +68,7 @@ export class AuthModel {
                     email: emailResult,
                     password: hashedPassword,
                     refreshToken: '',
-                    role: AuthRoleEnum.Usuario,
+                    role: AuthRoleEnum.Seller,
                     isVerified: true, // TODO(email-verification): volver a `false` cuando se reactive el flujo
                 }], { session });
 
@@ -134,7 +134,7 @@ export class AuthModel {
                     email: emailResult,
                     password: hashedPassword,
                     refreshToken: '',
-                    role: AuthRoleEnum.Usuario,
+                    role: AuthRoleEnum.Seller,
                     isVerified: true,
                 }], { session });
 

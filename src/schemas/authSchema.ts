@@ -11,7 +11,7 @@ const AuthMongoSchema = new Schema<AuthSchemaType>({
     type: String,
     enum: Object.values(AuthRoleEnum),
     required: true,
-    default: AuthRoleEnum.Usuario,
+    default: AuthRoleEnum.Seller,
   },
   isVerified:                { type: Boolean, required: true, default: false },
   verificationToken:         { type: String, required: false, default: null },
