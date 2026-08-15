@@ -162,6 +162,21 @@ export class Validation {
     return digit as number;
   }
 
+  /*══════════ 🎮 range ══════════╗
+  ║ 📥 Entrada: digit (unknown), title, min, max ║
+  ║ ⚙️ Proceso: valida número entero dentro de [min, max] ║
+  ║ 📤 Salida: number validado          ║
+  ║ 🛠️ Errores: no provisto, no número, fuera de rango ║
+  ╚════════════════════════════════════╝*/
+  static range(digit: unknown, title: string, min: number, max: number): number {
+    if (digit === undefined || digit === null) throw new Error(`No number provided for ${title}`);
+    if (!isNumber(digit)) throw new Error(`${title} is not a number`);
+    if ((digit as number) < min || (digit as number) > max) {
+      throw new Error(`${title} must be between ${min} and ${max}`);
+    }
+    return digit as number;
+  }
+
   /*══════════ 🎮 date ══════════╗
   ║ 📥 Entrada: date (unknown), title ║
   ║ ⚙️ Proceso: valida que sea fecha válida ║

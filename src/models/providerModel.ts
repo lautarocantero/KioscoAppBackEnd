@@ -1,9 +1,9 @@
 import { ProviderSchema } from '../schemas/providerSchema';
-import { 
-    CreateProviderPayload, 
-    DeleteProviderPayload, 
-    EditProviderPayload, 
-    Provider, 
+import {
+    CreateProviderPayload,
+    DeleteProviderPayload,
+    EditProviderPayload,
+    Provider,
 } from '@typings/provider';
 import { Validation } from './validation';
 
@@ -11,7 +11,6 @@ import { Validation } from './validation';
 🏢 ProviderModel — Mongoose
 ──────────────────────────────
 📜 Propósito: Gestión completa de proveedores contra MongoDB
-🧩 Dependencias: ProviderSchema, Validation, providerTypes
 ──────────────────────────────*/
 
 export class ProviderModel {
@@ -23,9 +22,9 @@ export class ProviderModel {
         return results as unknown as Provider[];
     }
 
-    static async getProductByField<T extends keyof Provider>(
+    static async getProviderByField<T extends keyof Provider>(
         field: T,
-        value: Provider[T],
+        value: unknown,
         type: 'string' | 'number',
     ): Promise<Provider[]> {
         if (type !== 'string' && type !== 'number') throw new Error(`Unsupported field type for ${String(field)}`);
@@ -36,13 +35,18 @@ export class ProviderModel {
         return results as unknown as Provider[];
     }
 
-    //──────────────────────────────────────────── 📊 STATS 📊 ───────────────────────────────────────────//
+    // Busca por teléfono O email de contacto (un solo término de búsqueda).
+    static async getProvidersByContact(contact: unknown): Promise<Provider[]> {
+        const contactResult = Validation.stringValidation(contact, 'contact');
 
-    /*══════════ 🎮 getProvidersCount ══════════╗
-    ║ 📥 Entrada: ninguna                        ║
-    ║ ⚙️ Proceso: cuenta el total de proveedores  ║
-    ║ 📤 Salida: number                           ║
-    ╚═════════════════════════════════════════════╝*/
+        const results = await ProviderSchema.find({
+            $or: [{ contact_phone: contactResult }, { contact_email: contactResult }],
+        }).lean();
+
+        return results as unknown as Provider[];
+    }
+
+    //──────────────────────────────────────────── 📊 STATS 📊 ───────────────────────────────────────────//
 
     static async getProvidersCount(): Promise<number> {
         return await ProviderSchema.countDocuments();
@@ -51,12 +55,12 @@ export class ProviderModel {
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
     static async create(data: CreateProviderPayload): Promise<string> {
-        const { name, valoration, contact_phone, contact_auxiliar } = data;
+        const { name, valoration, contact_phone, contact_email } = data;
 
-        const nameResult: string             = Validation.stringValidation(name, 'name');
-        const valorationResult: number       = Validation.number(valoration, 'valoration');
-        const contactPhoneResult: string     = Validation.stringValidation(contact_phone, 'contact phone');
-        const contactAuxiliarResult: string  = Validation.stringValidation(contact_auxiliar, 'contact auxiliar');
+        const nameResult         = Validation.stringValidation(name, 'name');
+        const valorationResult   = Validation.range(valoration, 'valoration', 1, 5);
+        const contactPhoneResult = Validation.stringValidation(contact_phone, 'contact phone');
+        const contactEmailResult = Validation.email(contact_email);
 
         const existing = await ProviderSchema.findOne({ name: nameResult }).lean();
         if (existing) throw new Error('provider already exists');
@@ -65,10 +69,10 @@ export class ProviderModel {
 
         await ProviderSchema.create({
             _id,
-            name:             nameResult,
-            valoration:       valorationResult,
-            contact_phone:    contactPhoneResult,
-            contact_auxiliar: contactAuxiliarResult,
+            name:            nameResult,
+            valoration:      valorationResult,
+            contact_phone:   contactPhoneResult,
+            contact_email:   contactEmailResult,
         });
 
         return _id;
@@ -79,7 +83,7 @@ export class ProviderModel {
     static async delete(data: DeleteProviderPayload): Promise<void> {
         const { _id } = data;
 
-        const _idResult: string = Validation.stringValidation(_id, '_id');
+        const _idResult = Validation.stringValidation(_id, '_id');
 
         const deleted = await ProviderSchema.findOneAndDelete({ _id: _idResult });
         if (!deleted) throw new Error('There is not any provider with that id');
@@ -87,25 +91,19 @@ export class ProviderModel {
 
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
+    // Solo pisa los campos que vengan definidos (igual que SellerModel.edit).
     static async edit(data: EditProviderPayload): Promise<void> {
-        const { _id, name, valoration, contact_phone, contact_auxiliar } = data;
+        const { _id, name, valoration, contact_phone, contact_email } = data;
 
-        const _idResult: string            = Validation.stringValidation(_id, '_id');
-        const nameResult: string           = Validation.stringValidation(name, 'name');
-        const valorationResult: number     = Validation.number(valoration, 'valoration');
-        const contactPhoneResult: string   = Validation.stringValidation(contact_phone, 'contact phone');
-        const contactAuxiliarResult: string = Validation.stringValidation(contact_auxiliar, 'contact auxiliar');
+        const _idResult = Validation.stringValidation(_id, '_id');
 
-        const updated = await ProviderSchema.findOneAndUpdate(
-            { _id: _idResult },
-            { $set: {
-                name:             nameResult,
-                valoration:       valorationResult,
-                contact_phone:    contactPhoneResult,
-                contact_auxiliar: contactAuxiliarResult,
-            }},
-        );
+        const setFields: Partial<Provider> = {};
+        if (name !== undefined) setFields.name = Validation.stringValidation(name, 'name');
+        if (valoration !== undefined) setFields.valoration = Validation.range(valoration, 'valoration', 1, 5);
+        if (contact_phone !== undefined) setFields.contact_phone = Validation.stringValidation(contact_phone, 'contact phone');
+        if (contact_email !== undefined) setFields.contact_email = Validation.email(contact_email);
 
+        const updated = await ProviderSchema.findOneAndUpdate({ _id: _idResult }, { $set: setFields });
         if (!updated) throw new Error('There is not any provider with that id');
     }
 }
