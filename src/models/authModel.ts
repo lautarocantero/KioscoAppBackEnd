@@ -26,7 +26,9 @@ export class AuthModel {
         return { refreshToken } as AuthTokenPublic;
     }
 
-    // Combina Auth (credenciales/autorización) + Seller (perfil) para la sesión
+    // Combina Auth (credenciales/autorización) + Seller (perfil) para la sesión.
+    // También la llama /refresh (cada renovación de access_token), así que de
+    // acá pasa cualquiera con una sesión activa, no solo el login inicial.
     static async checkAuth(data: AuthCheckAuthPayload): Promise<SessionUser> {
         const { _id } = data;
         const idResult = Validation.stringValidation(_id, '_id');
@@ -34,7 +36,14 @@ export class AuthModel {
         const authObject = await AuthSchema.findOne({ _id: idResult }).lean();
         if (!authObject) throw new Error('User not found');
 
-        const sellerObject = await SellerSchema.findOne({ _id: idResult }).lean();
+        // Sesión válida = usuario activo: lo marca online acá también, no
+        // solo en login. Cubre el caso de volver a abrir la app con un
+        // refresh_token todavía vigente (sin pasar de nuevo por /login).
+        const sellerObject = await SellerSchema.findOneAndUpdate(
+            { _id: idResult },
+            { $set: { user_status: SellerStatus.online } },
+            { returnDocument: 'after' },
+        ).lean();
         if (!sellerObject) throw new Error('Seller profile not found');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -97,7 +106,12 @@ export class AuthModel {
         const isValid = await bcrypt.compare(password as string, authObject.password as string);
         if (!isValid) throw new Error('Password is incorrect. Make sure caps lock is off and try again.');
 
-        const sellerObject = await SellerSchema.findOne({ _id: authObject._id }).lean();
+        // Login exitoso: marca al vendedor online (logout lo vuelve a poner offline).
+        const sellerObject = await SellerSchema.findOneAndUpdate(
+            { _id: authObject._id },
+            { $set: { user_status: SellerStatus.online } },
+            { returnDocument: 'after' },
+        ).lean();
         if (!sellerObject) throw new Error('Seller profile not found');
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -114,7 +128,12 @@ export class AuthModel {
         const existingAuth = await AuthSchema.findOne({ email: emailResult }).lean();
 
         if (existingAuth) {
-            const sellerObject = await SellerSchema.findOne({ _id: existingAuth._id }).lean();
+            // Login exitoso: marca al vendedor online (logout lo vuelve a poner offline).
+            const sellerObject = await SellerSchema.findOneAndUpdate(
+                { _id: existingAuth._id },
+                { $set: { user_status: SellerStatus.online } },
+                { returnDocument: 'after' },
+            ).lean();
             if (!sellerObject) throw new Error('Seller profile not found');
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password: _p, refreshToken: _rt, verificationToken: _vt, verificationTokenExpires: _vte,
@@ -143,7 +162,9 @@ export class AuthModel {
                     name,
                     profilePhoto: profilePhoto ?? '',
                     created_at: new Date().toISOString(),
-                    user_status: SellerStatus.offline,
+                    // A diferencia de /register (crea la cuenta pero no loguea),
+                    // login-con-Google deja a la persona autenticada al instante.
+                    user_status: SellerStatus.online,
                 }], { session });
             });
         } finally {

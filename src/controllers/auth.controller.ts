@@ -18,6 +18,8 @@ import axios from "axios";
 // Import relativo (no @typings): acá se usa como VALOR, y el alias solo
 // resuelve en tiempo de compilación (ver el mismo patrón en authModel.ts).
 import { AuthRoleEnum } from "../typings/auth/enums";
+import { SellerStatus } from "../typings/seller/sellerEnums";
+import { SellerModel } from "../models/sellerModel";
 // import { EmailService } from "../services/emailService";
 
 
@@ -194,6 +196,10 @@ export async function logout(req: AuthLogoutRequest, res: Response): Promise<voi
     }
 
     await AuthModel.deleteRefreshToken({ _id: payload.id });
+
+    // Best-effort: si el Seller ya no existe o falla, el logout igual debe
+    // completarse (limpiar cookies es lo importante acá).
+    await SellerModel.edit({ _id: payload.id, user_status: SellerStatus.offline }).catch(() => {});
 
     res
       .clearCookie('access_token')
