@@ -11,6 +11,7 @@ import providerRoutes from './routes/provider.routes';
 import sellRoutes from './routes/sell.routes';
 import sellerRoutes from './routes/seller.routes';
 import receiptsRoutes from './routes/receipts.routes';
+import notificationRoutes from './routes/notification.routes';
 import { connectDB } from './config/db';
 
 const app = express();
@@ -24,7 +25,7 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: allowedOrigins,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true
 }));
 
@@ -39,6 +40,7 @@ app.use('/provider', providerRoutes);
 app.use('/product', productRoutes);
 app.use('/presentation', productVariantRoutes);
 app.use('/receipts', receiptsRoutes);
+app.use('/notification', notificationRoutes);
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

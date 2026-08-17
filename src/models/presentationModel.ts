@@ -137,7 +137,12 @@ export class PresentationModel {
 
   //──────────────────────────────────────────── 📦 STOCK 📦 ───────────────────────────────────────────//
 
-  static async decreaseStock(items: { _id: string; stock_required: number }[]): Promise<void> {
+  // Devuelve las presentaciones ya actualizadas (post-descuento) — lo usa
+  // createSell para saber cuáles quedaron por debajo de su min_stock y
+  // así disparar la notificación de reposición correspondiente.
+  static async decreaseStock(items: { _id: string; stock_required: number }[]): Promise<{ _id: string; name: string; stock: number; min_stock: number }[]> {
+    const updated: { _id: string; name: string; stock: number; min_stock: number }[] = [];
+
     for (const { _id, stock_required } of items) {
       const idResult = Validation.stringValidation(_id, '_id');
       const qtyResult = Validation.number(stock_required, 'stock_required');
@@ -152,7 +157,7 @@ export class PresentationModel {
       const newStock = presentation.stock - qtyResult;
       if (newStock < 0) throw new Error(`Stock insuficiente para la presentación ${idResult}`);
 
-      await PresentationMongo.findOneAndUpdate(
+      const updatedPresentation = await PresentationMongo.findOneAndUpdate(
         { _id: idResult },
         {
           $set: {
@@ -164,9 +169,20 @@ export class PresentationModel {
         },
         // runValidators acá es seguro: ninguno de los paths tocados (stock, model_size,
         // status, updated_at) depende de sibling fields no incluidos en el $set.
-        { runValidators: true },
-      );
+        { new: true, runValidators: true },
+      ).lean();
+
+      if (updatedPresentation) {
+        updated.push({
+          _id: idResult,
+          name: updatedPresentation.name,
+          stock: updatedPresentation.stock,
+          min_stock: updatedPresentation.min_stock,
+        });
+      }
     }
+
+    return updated;
   }
 
   //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//

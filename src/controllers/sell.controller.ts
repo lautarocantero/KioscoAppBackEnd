@@ -3,6 +3,7 @@ import { SellModel } from "../models/sellModel";
 import { handleControllerError } from "../utils/handleControllerError";
 import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, SellType } from "@typings/sell";
 import { PresentationModel } from "../models/presentationModel";
+import { NotificationModel } from "../models/notificationModel";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con ventas 🕹️                                                                    ║
@@ -232,7 +233,31 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
             throw new Error('Se encontraron productos sin _id válido al descontar stock');
         }
 
-        await PresentationModel.decreaseStock(productsForStockUpdate);
+        const updatedPresentations = await PresentationModel.decreaseStock(productsForStockUpdate);
+
+        // La venta ya está guardada y el stock ya se descontó — un error acá
+        // no debe tirar abajo la respuesta de una venta que ya se concretó.
+        try {
+            await NotificationModel.createSaleNotification({
+                sellerId: seller_id as string,
+                sellerName: seller_name as string,
+                amount: total_amount as number,
+                currency: currency as string,
+            });
+
+            const lowStockPresentations = updatedPresentations.filter((p) => p.stock < p.min_stock);
+
+            for (const presentation of lowStockPresentations) {
+                await NotificationModel.createLowStockNotification({
+                    presentationId: presentation._id,
+                    productName: presentation.name,
+                    units: presentation.stock,
+                    minStock: presentation.min_stock,
+                });
+            }
+        } catch (notificationError: unknown) {
+            console.error('Error creando notificaciones para la venta', notificationError);
+        }
 
         res
             .status(200)
