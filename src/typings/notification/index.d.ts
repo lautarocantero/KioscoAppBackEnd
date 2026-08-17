@@ -6,12 +6,14 @@ type NotificationType = 'low_stock' | 'sale';
 
 interface LowStockNotificationPayload {
     presentationId: string;
+    productId:      string;
     productName:    string;
     units:          number;
     minStock:       number;
 }
 
 interface SaleNotificationPayload {
+    sellId:     string;
     sellerId:   string;
     sellerName: string;
     amount:     number;
@@ -59,6 +61,8 @@ declare module '@typings/notification' {
     export type DeleteNotificationPayloadType = { _id: string };
 
     export type MarkAsReadRequestType = Request<Record<string, never>, unknown, MarkAsReadPayloadType>;
+
+    export type MarkAsUnreadRequestType = Request<Record<string, never>, unknown, MarkAsReadPayloadType>;
 
     export type DeleteNotificationRequestType = Request<Record<string, never>, unknown, DeleteNotificationPayloadType>;
 

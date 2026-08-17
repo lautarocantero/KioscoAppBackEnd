@@ -140,8 +140,8 @@ export class PresentationModel {
   // Devuelve las presentaciones ya actualizadas (post-descuento) — lo usa
   // createSell para saber cuáles quedaron por debajo de su min_stock y
   // así disparar la notificación de reposición correspondiente.
-  static async decreaseStock(items: { _id: string; stock_required: number }[]): Promise<{ _id: string; name: string; stock: number; min_stock: number }[]> {
-    const updated: { _id: string; name: string; stock: number; min_stock: number }[] = [];
+  static async decreaseStock(items: { _id: string; stock_required: number }[]): Promise<{ _id: string; product_id: string; name: string; stock: number; min_stock: number }[]> {
+    const updated: { _id: string; product_id: string; name: string; stock: number; min_stock: number }[] = [];
 
     for (const { _id, stock_required } of items) {
       const idResult = Validation.stringValidation(_id, '_id');
@@ -175,6 +175,7 @@ export class PresentationModel {
       if (updatedPresentation) {
         updated.push({
           _id: idResult,
+          product_id: updatedPresentation.product_id,
           name: updatedPresentation.name,
           stock: updatedPresentation.stock,
           min_stock: updatedPresentation.min_stock,

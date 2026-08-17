@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { NotificationModel } from "../models/notificationModel";
 import { handleControllerError } from "../utils/handleControllerError";
-import { DeleteNotificationRequestType, MarkAsReadRequestType, NotificationDTO } from "@typings/notification";
+import { DeleteNotificationRequestType, MarkAsReadRequestType, MarkAsUnreadRequestType, NotificationDTO } from "@typings/notification";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con notificaciones 🕹️                                                            ║
@@ -44,6 +44,22 @@ export async function markAsRead(req: MarkAsReadRequestType, res: Response): Pro
     try {
         await NotificationModel.markAsRead(_id, req.user.id);
         res.status(200).json({ message: 'Notification marked as read' });
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+export async function markAsUnread(req: MarkAsUnreadRequestType, res: Response): Promise<void> {
+    if (!req.user) {
+        res.status(401).json({ message: 'Not authenticated' });
+        return;
+    }
+
+    const { _id } = req.body;
+
+    try {
+        await NotificationModel.markAsUnread(_id, req.user.id);
+        res.status(200).json({ message: 'Notification marked as unread' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

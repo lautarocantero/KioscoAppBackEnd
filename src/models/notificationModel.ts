@@ -34,8 +34,9 @@ export class NotificationModel {
   //──────────────────────────────────────────── 📤 CREATE 📤 ───────────────────────────────────────────//
 
   static async createSaleNotification(data: SaleNotificationPayload): Promise<void> {
-    const { sellerId, sellerName, amount, currency } = data;
+    const { sellId, sellerId, sellerName, amount, currency } = data;
 
+    const sellIdResult     = Validation.stringValidation(sellId, 'sell_id');
     const sellerIdResult   = Validation.stringValidation(sellerId, 'seller_id');
     const sellerNameResult = Validation.stringValidation(sellerName, 'seller_name');
     const amountResult     = Validation.number(amount, 'amount');
@@ -45,6 +46,7 @@ export class NotificationModel {
       _id: crypto.randomUUID(),
       type: 'sale',
       payload: {
+        sellId: sellIdResult,
         sellerId: sellerIdResult,
         sellerName: sellerNameResult,
         amount: amountResult,
@@ -55,10 +57,13 @@ export class NotificationModel {
   }
 
   static async createLowStockNotification(data: LowStockNotificationPayload): Promise<void> {
-    const { presentationId, productName, units, minStock } = data;
+    const { presentationId, productId, productName, units, minStock } = data;
 
     const presentationIdResult = Validation.stringValidation(presentationId, 'presentation_id');
-    const productNameResult    = Validation.stringValidation(productName, 'product_name');
+    const productIdResult      = Validation.stringValidation(productId, 'product_id');
+    // length 1 (no el default de 3): a diferencia de un nombre de usuario o
+    // sku, un nombre de producto real puede ser legítimamente corto ("Pan").
+    const productNameResult    = Validation.stringValidation(productName, 'product_name', 1);
     const unitsResult          = Validation.number(units, 'units', true);
     const minStockResult       = Validation.number(minStock, 'min_stock', true);
 
@@ -67,6 +72,7 @@ export class NotificationModel {
       type: 'low_stock',
       payload: {
         presentationId: presentationIdResult,
+        productId: productIdResult,
         productName: productNameResult,
         units: unitsResult,
         minStock: minStockResult,
@@ -83,6 +89,17 @@ export class NotificationModel {
     const updated = await NotificationSchema.findOneAndUpdate(
       { _id: idResult },
       { $addToSet: { readBy: userId } },
+    );
+
+    if (!updated) throw new Error(`There is not any notification with that id ${_id}`);
+  }
+
+  static async markAsUnread(_id: string, userId: string): Promise<void> {
+    const idResult = Validation.stringValidation(_id, '_id');
+
+    const updated = await NotificationSchema.findOneAndUpdate(
+      { _id: idResult },
+      { $pull: { readBy: userId } },
     );
 
     if (!updated) throw new Error(`There is not any notification with that id ${_id}`);

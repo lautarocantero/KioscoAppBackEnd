@@ -235,28 +235,36 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
 
         const updatedPresentations = await PresentationModel.decreaseStock(productsForStockUpdate);
 
-        // La venta ya está guardada y el stock ya se descontó — un error acá
-        // no debe tirar abajo la respuesta de una venta que ya se concretó.
+        // La venta ya está guardada y el stock ya se descontó — cada notificación
+        // se crea en su propio try/catch: si una falla (ej. un dato legado que no
+        // pasa una validación puntual) no debe tumbar a las demás ni, mucho menos,
+        // la respuesta de una venta que ya se concretó.
         try {
             await NotificationModel.createSaleNotification({
+                sellId: _id,
                 sellerId: seller_id as string,
                 sellerName: seller_name as string,
                 amount: total_amount as number,
                 currency: currency as string,
             });
+        } catch (notificationError: unknown) {
+            console.error(`Error creando la notificación de venta para sell ${_id}:`, notificationError);
+        }
 
-            const lowStockPresentations = updatedPresentations.filter((p) => p.stock < p.min_stock);
+        const lowStockPresentations = updatedPresentations.filter((p) => p.stock < p.min_stock);
 
-            for (const presentation of lowStockPresentations) {
+        for (const presentation of lowStockPresentations) {
+            try {
                 await NotificationModel.createLowStockNotification({
                     presentationId: presentation._id,
+                    productId: presentation.product_id,
                     productName: presentation.name,
                     units: presentation.stock,
                     minStock: presentation.min_stock,
                 });
+            } catch (notificationError: unknown) {
+                console.error(`Error creando la notificación de stock bajo para presentación ${presentation._id}:`, notificationError);
             }
-        } catch (notificationError: unknown) {
-            console.error('Error creando notificaciones para la venta', notificationError);
         }
 
         res
