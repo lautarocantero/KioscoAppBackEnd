@@ -18,6 +18,9 @@ const SellMongoSchema = new Schema<SellSchemaType>({
   status:               { type: String, required: true, default: 'completada' },
   amount_paid:          { type: Number, required: false, default: null },
   debtor_name:          { type: String, required: false, default: null },
+  // Vínculo entre una venta parcial y la venta de saldo que la saldó (ver "saldar deuda").
+  settles_sell_id:      { type: String, required: false, default: null },
+  settled_by_sell_id:   { type: String, required: false, default: null },
 }, { timestamps: true });
 
 

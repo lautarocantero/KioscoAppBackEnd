@@ -56,6 +56,9 @@ declare module '@typings/sell' {
     status: SellStatusEnum;
     amount_paid: number | null;
     debtor_name: string | null;
+    // Vínculo entre una venta parcial y la venta de saldo que la saldó.
+    settles_sell_id: string | null;
+    settled_by_sell_id: string | null;
   };
 
   //──────────────────────────────────────────── 📦 PAYLOAD 📦 ───────────────────────────────────────────//
@@ -74,11 +77,27 @@ declare module '@typings/sell' {
     status: SellStatusEnum;
     amount_paid: number | null;
     debtor_name: string | null;
+    // Cuando es true, no se descuenta ni valida stock para esta venta —
+    // usado por la venta de saldo que genera "saldar deuda" en el frontend.
+    skip_stock?: boolean;
+    // _id de la venta parcial que esta venta salda, cuando esta venta ES una
+    // venta de saldo generada por "saldar deuda".
+    settles_sell_id?: string | null;
   };
 
   export type DeleteSellPayloadType = Pick<SellPayloadType, '_id'>;
 
-  export type EditSellPayloadType = SellPayloadType;
+  // status/amount_paid/debtor_name/settled_by_sell_id son opcionales: solo se
+  // envían al saldar una deuda (parcial → completada). El resto de las
+  // ediciones de venta (formulario completo) no los manda y edit() no los toca.
+  export type EditSellPayloadType = SellPayloadType & {
+    status?: SellStatusEnum;
+    amount_paid?: number | null;
+    debtor_name?: string | null;
+    // _id de la venta de saldo que saldó esta venta, cuando esta venta ES la
+    // venta original que pasó de parcial a completada.
+    settled_by_sell_id?: string | null;
+  };
 
   //──────────────────────────────────────────── 🔗 REQUEST 🔗 ───────────────────────────────────────────//
   

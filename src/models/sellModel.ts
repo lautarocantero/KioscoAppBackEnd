@@ -147,6 +147,7 @@ export class SellModel {
             purchase_date, seller_id, seller_name,
             sub_total, total_amount,
             status, amount_paid, debtor_name,
+            settles_sell_id,
         } = data;
 
         function parseDate(input: string): Date {
@@ -185,6 +186,12 @@ export class SellModel {
             ? Validation.stringValidation(debtor_name, 'debtor name')
             : null;
 
+        // Presente solo en la venta de saldo generada por "saldar deuda" —
+        // apunta a la venta parcial original que esta venta está saldando.
+        const settlesSellIdResult: string | null = settles_sell_id
+            ? Validation.stringValidation(settles_sell_id, 'settles sell id')
+            : null;
+
         const _id: string = crypto.randomUUID();
 
         await SellSchema.create({
@@ -202,6 +209,7 @@ export class SellModel {
             status:            statusResult,
             amount_paid:       amountPaidResult,
             debtor_name:       debtorNameResult,
+            settles_sell_id:   settlesSellIdResult,
         });
 
         return _id;
@@ -221,7 +229,7 @@ export class SellModel {
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
     static async edit(data: EditSellPayloadType): Promise<void> {
-        const { _id, products, purchase_date, seller_name, total_amount } = data;
+        const { _id, products, purchase_date, seller_name, total_amount, status, amount_paid, debtor_name, settled_by_sell_id } = data;
 
         const _idResult: string                = Validation.stringValidation(_id, '_id');
         const productsResult: presentation[] = Validation.isVariantArray(products);
@@ -229,15 +237,38 @@ export class SellModel {
         const sellerNameResult: string         = Validation.stringValidation(seller_name, 'seller_name');
         const totalAmountResult: number        = Validation.number(total_amount, 'total_amount');
 
+        const setFields: Record<string, unknown> = {
+            products:          productsResult,
+            purchase_date:     purchaseDateResult,
+            modification_date: new Date().toISOString(),
+            seller_name:       sellerNameResult,
+            total_amount:      totalAmountResult,
+        };
+
+        // `status` es opcional — solo llega al saldar una deuda (parcial → completada).
+        // El resto de las ediciones de venta (formulario completo) no lo manda, así
+        // que no se toca acá. Mismo criterio que SellModel.create() para forzar
+        // amount_paid/debtor_name según el status resultante.
+        if (status !== undefined) {
+            const statusResult: string = Validation.stringValidation(status, 'status');
+            const isPartial: boolean = statusResult === 'parcial';
+
+            setFields.status       = statusResult;
+            setFields.amount_paid  = isPartial ? Validation.number(amount_paid, 'amount paid') : null;
+            setFields.debtor_name  = isPartial ? Validation.stringValidation(debtor_name, 'debtor name') : null;
+        }
+
+        // `settled_by_sell_id` es opcional — solo llega al saldar una deuda,
+        // apunta a la venta de saldo que se creó para esta venta original.
+        if (settled_by_sell_id !== undefined) {
+            setFields.settled_by_sell_id = settled_by_sell_id
+                ? Validation.stringValidation(settled_by_sell_id, 'settled by sell id')
+                : null;
+        }
+
         const updated = await SellSchema.findOneAndUpdate(
             { _id: _idResult },
-            { $set: {
-                products:          productsResult,
-                purchase_date:     purchaseDateResult,
-                modification_date: new Date().toISOString(),
-                seller_name:       sellerNameResult,
-                total_amount:      totalAmountResult,
-            }},
+            { $set: setFields },
         );
 
         if (!updated) throw new Error(`There is not any sell with that id ${_id}`);

@@ -211,34 +211,56 @@ export async function searchSells(req: Request, res: Response): Promise<void> {
 ╚══════════════════════════════════════════╝*/
 
 export async function createSell (req: CreateSellRequestType, res: Response): Promise<void> {
-    const { 
+    const {
         currency, iva, payment_method, products,
         purchase_date, seller_id, seller_name,
         sub_total, total_amount,
         status, amount_paid, debtor_name,
+        skip_stock, settles_sell_id,
     } = req.body;
 
     try{
         const _id: string = await SellModel.create({
             purchase_date, seller_id, seller_name, payment_method,
             products, sub_total, iva, total_amount, currency,
-            status, amount_paid, debtor_name,
+            status, amount_paid, debtor_name, settles_sell_id,
         });
 
-        const productsForStockUpdate = products
-            .filter((p): p is typeof p & { _id: string } => p._id !== null)
-            .map(p => ({ _id: p._id, stock_required: p.stock_required }));
+        // skip_stock: true → venta de saldo generada por "saldar deuda" en el
+        // frontend. Repite los mismos productos de una venta ya despachada,
+        // así que no debe volver a descontar (ni depender de) stock existente.
+        if (!skip_stock) {
+            const productsForStockUpdate = products
+                .filter((p): p is typeof p & { _id: string } => p._id !== null)
+                .map(p => ({ _id: p._id, stock_required: p.stock_required }));
 
-        if (productsForStockUpdate.length !== products.length) {
-            throw new Error('Se encontraron productos sin _id válido al descontar stock');
+            if (productsForStockUpdate.length !== products.length) {
+                throw new Error('Se encontraron productos sin _id válido al descontar stock');
+            }
+
+            const updatedPresentations = await PresentationModel.decreaseStock(productsForStockUpdate);
+
+            const lowStockPresentations = updatedPresentations.filter((p) => p.stock < p.min_stock);
+
+            for (const presentation of lowStockPresentations) {
+                try {
+                    await NotificationModel.createLowStockNotification({
+                        presentationId: presentation._id,
+                        productId: presentation.product_id,
+                        productName: presentation.name,
+                        units: presentation.stock,
+                        minStock: presentation.min_stock,
+                    });
+                } catch (notificationError: unknown) {
+                    console.error(`Error creando la notificación de stock bajo para presentación ${presentation._id}:`, notificationError);
+                }
+            }
         }
 
-        const updatedPresentations = await PresentationModel.decreaseStock(productsForStockUpdate);
-
-        // La venta ya está guardada y el stock ya se descontó — cada notificación
-        // se crea en su propio try/catch: si una falla (ej. un dato legado que no
-        // pasa una validación puntual) no debe tumbar a las demás ni, mucho menos,
-        // la respuesta de una venta que ya se concretó.
+        // La venta ya está guardada (y el stock ya se descontó, salvo skip_stock)
+        // — cada notificación se crea en su propio try/catch: si una falla (ej.
+        // un dato legado que no pasa una validación puntual) no debe tumbar a
+        // las demás ni, mucho menos, la respuesta de una venta que ya se concretó.
         try {
             await NotificationModel.createSaleNotification({
                 sellId: _id,
@@ -249,22 +271,6 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
             });
         } catch (notificationError: unknown) {
             console.error(`Error creando la notificación de venta para sell ${_id}:`, notificationError);
-        }
-
-        const lowStockPresentations = updatedPresentations.filter((p) => p.stock < p.min_stock);
-
-        for (const presentation of lowStockPresentations) {
-            try {
-                await NotificationModel.createLowStockNotification({
-                    presentationId: presentation._id,
-                    productId: presentation.product_id,
-                    productName: presentation.name,
-                    units: presentation.stock,
-                    minStock: presentation.min_stock,
-                });
-            } catch (notificationError: unknown) {
-                console.error(`Error creando la notificación de stock bajo para presentación ${presentation._id}:`, notificationError);
-            }
         }
 
         res
@@ -313,14 +319,15 @@ export async function deleteSell (req: DeleteSellRequestType, res: Response): Pr
 ╚═══════════════════════════════════════════════╝*/
 
 export async function editSell (req: EditSellRequestType, res: Response) : Promise <void> {
-    const { 
+    const {
         _id,purchase_date,modification_date,
-        seller_id,seller_name,payment_method, 
-        products,sub_total, iva, total_amount, 
-        currency } = req.body;
+        seller_id,seller_name,payment_method,
+        products,sub_total, iva, total_amount,
+        currency, status, amount_paid, debtor_name,
+        settled_by_sell_id } = req.body;
 
     try{
-        await SellModel.edit({_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency});
+        await SellModel.edit({_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency, status, amount_paid, debtor_name, settled_by_sell_id});
         res
             .status(200)
             .json({
