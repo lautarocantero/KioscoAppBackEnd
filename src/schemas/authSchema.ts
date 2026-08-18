@@ -1,5 +1,4 @@
 import { AuthSchemaType } from '../typings/auth';
-import { AuthRoleEnum } from '../typings/auth/enums';
 import mongoose, { Schema } from 'mongoose';
 
 const AuthMongoSchema = new Schema<AuthSchemaType>({
@@ -7,12 +6,6 @@ const AuthMongoSchema = new Schema<AuthSchemaType>({
   email:        { type: String, required: true, unique: true },
   password:     { type: String, required: true },
   refreshToken: { type: String, required: false },
-  role: {
-    type: String,
-    enum: Object.values(AuthRoleEnum),
-    required: true,
-    default: AuthRoleEnum.Seller,
-  },
   isVerified:                { type: Boolean, required: true, default: false },
   verificationToken:         { type: String, required: false, default: null },
   verificationTokenExpires:  { type: Date,   required: false, default: null },

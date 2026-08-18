@@ -15,6 +15,7 @@ Define las rutas relacionadas con notificaciones y las conecta con sus controlad
 
 import express from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware';
+import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
 import {
   deleteAllNotifications,
   deleteNotification,
@@ -26,16 +27,18 @@ import {
 
 const router = express.Router();
 
+router.use(authMiddleware, requireKioscoContext);
+
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
-router.get('/get-notifications', authMiddleware, getNotifications);
+router.get('/get-notifications', getNotifications);
 
 //──────────────────────────────────────────── 🛠️ PATCH 🛠️ ───────────────────────────────────────────//
-router.patch('/mark-as-read', authMiddleware, markAsRead);
-router.patch('/mark-as-unread', authMiddleware, markAsUnread);
-router.patch('/mark-all-as-read', authMiddleware, markAllAsRead);
+router.patch('/mark-as-read', markAsRead);
+router.patch('/mark-as-unread', markAsUnread);
+router.patch('/mark-all-as-read', markAllAsRead);
 
 //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
-router.delete('/delete-notification', authMiddleware, deleteNotification);
-router.delete('/delete-all-notifications', authMiddleware, deleteAllNotifications);
+router.delete('/delete-notification', deleteNotification);
+router.delete('/delete-all-notifications', deleteAllNotifications);
 
 export default router;

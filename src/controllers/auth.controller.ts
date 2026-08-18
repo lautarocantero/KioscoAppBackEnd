@@ -15,11 +15,10 @@ import {
   SessionUser,
 } from "@typings/auth";
 import axios from "axios";
-// Import relativo (no @typings): acá se usa como VALOR, y el alias solo
-// resuelve en tiempo de compilación (ver el mismo patrón en authModel.ts).
-import { AuthRoleEnum } from "../typings/auth/enums";
 import { SellerStatus } from "../typings/seller/sellerEnums";
 import { SellerModel } from "../models/sellerModel";
+import { KioscoModel } from "../models/kioscoModel";
+import { KioscoWithStats } from "@typings/kiosco";
 // import { EmailService } from "../services/emailService";
 
 
@@ -96,7 +95,7 @@ export async function register(req: AuthRegisterRequest, res: Response): Promise
 
 function setSessionCookies(res: Response, user: SessionUser, rememberMe?: boolean): { accessToken: string; refreshToken: string } {
     const accessToken = jwt.sign(
-      { id: user._id, email: user.email, role: user.role },
+      { id: user._id, email: user.email },
       ACCESS_SECRET,
       { expiresIn: '5m' }
     );
@@ -137,10 +136,13 @@ export async function login(req: AuthLoginRequest, res: Response): Promise<void>
         const { refreshToken } = setSessionCookies(res, user, rememberMe);
         await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
 
+        const myKioscos: KioscoWithStats[] = await KioscoModel.getMyKioscos({ user_id: user._id });
+
         res
           .status(200)
           .json({
             user,
+            myKioscos,
             message: "User Logged successfully",
           });
     } catch (error: unknown) {
@@ -170,7 +172,9 @@ export async function googleLogin(req: AuthGoogleRequest, res: Response): Promis
         const { refreshToken } = setSessionCookies(res, user, true);
         await AuthModel.saveRefreshToken({ _id: user._id, token: refreshToken });
 
-        res.status(200).json({ user, message: "User logged in with Google successfully" });
+        const myKioscos: KioscoWithStats[] = await KioscoModel.getMyKioscos({ user_id: user._id });
+
+        res.status(200).json({ user, myKioscos, message: "User logged in with Google successfully" });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -226,8 +230,9 @@ export async function checkAuth(req: AuthCheckAuthRequest, res: Response): Promi
     try {
       const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string };
       const user: SessionUser = await AuthModel.checkAuth({ _id: payload.id });
+      const myKioscos: KioscoWithStats[] = await KioscoModel.getMyKioscos({ user_id: user._id });
 
-      res.status(200).json(user);
+      res.status(200).json({ ...user, myKioscos });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -248,11 +253,11 @@ export async function refresh(req: AuthRefreshRequest, res: Response): Promise<v
   try {
     const payload = jwt.verify(refreshToken, REFRESH_SECRET) as { id: string; email: string };
 
-    // Ya no solo confirma que existe: usamos el resultado para traer el role vigente
-    const user: SessionUser = await AuthModel.checkAuth({ _id: payload.id });
+    // Confirma que el usuario sigue existiendo (y lo marca online) antes de reemitir el token.
+    await AuthModel.checkAuth({ _id: payload.id });
 
     const newAccessToken = jwt.sign(
-      { id: payload.id, email: payload.email, role: user.role },
+      { id: payload.id, email: payload.email },
       ACCESS_SECRET,
       { expiresIn: '5m' }
     );
@@ -333,8 +338,10 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
 ║ 🎮 deleteAuth 🎮 → Elimina la identidad; el modelo hace cascada a Seller    ║
 ╚═══════════════════════════════════════════════════════════════════════════╝*/
 
+// Self-service: cada usuario solo puede borrar SU PROPIA cuenta (auth.routes.ts ya no
+// gatea esto por rol global — el rol es por-kiosco, no tiene sentido acá).
 export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise<void> {
-  const { _id } = req.body;
+  const _id = req.user!.id;
 
   try {
     await AuthModel.deleteAuth({ _id });
@@ -352,21 +359,15 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
 //─────────────────────────────────────────────────────────── 🛠️ PUT 🛠️ ────────────────────────────────────────────────────────────────//
 
 /*═══════════════════════════════════════════════════════════════════════════╗
-║ 🎮 editAuth 🎮 → Edita SOLO email/password/role. name/foto van por Seller  ║
+║ 🎮 editAuth 🎮 → Edita SOLO email/password. name/foto van por Seller,      ║
+║    role va por PUT /kiosco/:kiosco_id/member/:user_id/role                 ║
 ╚═══════════════════════════════════════════════════════════════════════════╝*/
 
 export async function editAuth(req: EditAuthRequest, res: Response): Promise<void> {
-  const { _id, email, password, role } = req.body;
-
-  // Cambiar el role es una acción administrativa: solo un admin puede
-  // tocarlo. email/password sigue editable por el propio usuario.
-  if (role !== undefined && req.user?.role !== AuthRoleEnum.Admin) {
-    res.status(403).json({ message: 'Solo un administrador puede editar el rol de un usuario' });
-    return;
-  }
+  const { _id, email, password } = req.body;
 
   try {
-    await AuthModel.editAuth({ _id, email, password, role });
+    await AuthModel.editAuth({ _id, email, password });
     res
       .status(200)
       .json({

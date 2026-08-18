@@ -58,9 +58,9 @@ export async function home(_req: Request, res: Response): Promise<void> {
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
-export async function getProducts(_req: Request, res: Response): Promise<void> {
+export async function getProducts(req: Request, res: Response): Promise<void> {
   try {
-    const productsObject: Product[] = await ProductModel.getProducts();
+    const productsObject: Product[] = await ProductModel.getProducts(req.kioscoId!);
     res.status(200).json(productsObject);
   } catch (error: unknown) {
     handleControllerError(res, error);
@@ -83,7 +83,7 @@ export async function getProductById(req: GetProductByIdRequest, res: Response):
     }
 
     try {
-        const [product] = await ProductModel.getProductByField('_id', _id, 'string');
+        const [product] = await ProductModel.getProductByField(req.kioscoId!, '_id', _id, 'string');
 
         if (!product) {
             res.status(404).json({ message: 'Producto no encontrado' });
@@ -107,7 +107,7 @@ export async function getProductByName(req: GetProductByNameRequest, res: Respon
     const name = req.query.name as string;
 
     try {
-        const productsObject: Product[] = await ProductModel.searchByField('name', name);
+        const productsObject: Product[] = await ProductModel.searchByField(req.kioscoId!, 'name', name);
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -125,7 +125,7 @@ export async function getProductByBrand(req: GetProductByBrandRequest, res: Resp
     const brand = req.query.brand as string;
 
     try {
-        const productsObject: Product[] = await ProductModel.getProductByField('brand', brand, 'string');
+        const productsObject: Product[] = await ProductModel.getProductByField(req.kioscoId!, 'brand', brand, 'string');
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -143,9 +143,9 @@ export async function getProductByBrand(req: GetProductByBrandRequest, res: Resp
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
-export async function getProductsWithStock(_req: Request, res: Response): Promise<void> {
+export async function getProductsWithStock(req: Request, res: Response): Promise<void> {
     try {
-        const productsObject: Product[] = await CatalogService.getProductsWithStock();
+        const productsObject: Product[] = await CatalogService.getProductsWithStock(req.kioscoId!);
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -159,9 +159,9 @@ export async function getProductsWithStock(_req: Request, res: Response): Promis
 ║ 🛠️ Errores: handleControllerError                                                                                          ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
-export async function getProductsWithPresentations(_req: Request, res: Response): Promise<void> {
+export async function getProductsWithPresentations(req: Request, res: Response): Promise<void> {
     try {
-        const productsObject: Product[] = await CatalogService.getProductsWithPresentations();
+        const productsObject: Product[] = await CatalogService.getProductsWithPresentations(req.kioscoId!);
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -181,7 +181,7 @@ export async function searchProductsWithPresentations(req: Request, res: Respons
     const exact = req.query.exact === 'true';
 
     try {
-        const productsObject: Product[] = await CatalogService.searchProductsWithPresentations(term, category, exact);
+        const productsObject: Product[] = await CatalogService.searchProductsWithPresentations(req.kioscoId!, term, category, exact);
         res.status(200).json(productsObject);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -195,9 +195,9 @@ export async function searchProductsWithPresentations(req: Request, res: Respons
 ║ 🛠️ Errores: handleControllerError                                                                  ║
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
-export async function getProductStats(_req: Request, res: Response): Promise<void> {
+export async function getProductStats(req: Request, res: Response): Promise<void> {
     try {
-        const stats = await CatalogService.getStats();
+        const stats = await CatalogService.getStats(req.kioscoId!);
         res.status(200).json(stats);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -220,7 +220,7 @@ export async function createProduct(req: CreateProductRequest, res: Response): P
     } = req.body;
 
     try {
-        const _id: string = await ProductModel.create({
+        const _id: string = await ProductModel.create(req.kioscoId!, {
             name, description, created_at, updated_at, image_url,
             brand
         });
@@ -246,7 +246,7 @@ export async function deleteProduct(req: DeleteProductRequest, res: Response): P
     const { _id } = req.body;
 
     try {
-        await ProductModel.delete({ _id });
+        await ProductModel.delete(req.kioscoId!, { _id });
         res.status(200).json({
             _id,
             message: 'Product has been deleted successfully',
@@ -273,7 +273,7 @@ export async function editProduct(req: EditProductRequest, res: Response): Promi
     } = req.body;
 
     try {
-        await ProductModel.edit({
+        await ProductModel.edit(req.kioscoId!, {
             _id, name, description, created_at,
             updated_at, image_url, brand
         });

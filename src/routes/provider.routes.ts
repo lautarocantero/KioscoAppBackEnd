@@ -9,10 +9,14 @@ import {
   getProvidersByName, 
   getProvidersByValoration, 
   getProvidersStats, 
-  home 
+  home
 } from '../controllers/provider.controller';
+import { authMiddleware } from '../middlewares/authMiddleware';
+import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
 
 const router = express.Router();
+
+router.use(authMiddleware, requireKioscoContext);
 
 /*──────────────────────────────
 🚐 ProviderRouter

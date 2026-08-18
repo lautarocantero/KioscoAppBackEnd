@@ -31,13 +31,13 @@ export class CatalogService {
   ║ 📤 Salida: objeto stage $lookup para usar en aggregate  ║
   ╚═══════════════════════════════════════════════════════╝*/
 
-  private static buildPresentationsLookupStage(): PipelineStage.Lookup {
+  private static buildPresentationsLookupStage(kioscoId: string): PipelineStage.Lookup {
     return {
       $lookup: {
         from: 'presentations',
         let: { productId: '$_id' },
         pipeline: [
-          { $match: { $expr: { $eq: ['$product_id', '$$productId'] } } },
+          { $match: { $expr: { $eq: ['$product_id', '$$productId'] }, kiosco_id: kioscoId } },
           {
             $project: {
               _id: 0,
@@ -95,9 +95,10 @@ export class CatalogService {
   ║ 📤 Salida: Product[] (presentations resumidas)         ║
   ╚════════════════════════════════════════════════════════╝*/
 
-  static async getProductsWithPresentations(): Promise<Product[]> {
+  static async getProductsWithPresentations(kioscoId: string): Promise<Product[]> {
     const results = await ProductMongo.aggregate([
-      this.buildPresentationsLookupStage(),
+      { $match: { kiosco_id: kioscoId } },
+      this.buildPresentationsLookupStage(kioscoId),
       { $limit: 100 },
     ]);
 
@@ -113,9 +114,10 @@ export class CatalogService {
   ║ 📤 Salida: Product[] (presentations resumidas)         ║
   ╚════════════════════════════════════════════════════════╝*/
 
-  static async getProductsWithStock(): Promise<Product[]> {
+  static async getProductsWithStock(kioscoId: string): Promise<Product[]> {
     const results = await ProductMongo.aggregate([
-      this.buildPresentationsLookupStage(),
+      { $match: { kiosco_id: kioscoId } },
+      this.buildPresentationsLookupStage(kioscoId),
       { $match: { 'presentations.stock': { $gt: 0 } } },
       { $limit: 100 },
     ]);
@@ -137,7 +139,7 @@ export class CatalogService {
   ║ 📤 Salida: Product[] (presentations resumidas)             ║
   ╚════════════════════════════════════════════════════════════╝*/
 
-    static async searchProductsWithPresentations(term: string, category?: string, exact = false): Promise<Product[]> {
+    static async searchProductsWithPresentations(kioscoId: string, term: string, category?: string, exact = false): Promise<Product[]> {
     const hasTerm = term !== undefined && term.trim() !== "";
     const hasCategory = category !== undefined;
 
@@ -151,7 +153,8 @@ export class CatalogService {
     }
 
     const pipeline: PipelineStage[] = [
-      this.buildPresentationsLookupStage(),
+      { $match: { kiosco_id: kioscoId } },
+      this.buildPresentationsLookupStage(kioscoId),
     ];
 
     if (hasTerm) {
@@ -193,10 +196,11 @@ export class CatalogService {
   ║ 📤 Salida: { totalProducts, lowStockPresentations }         ║
   ╚═══════════════════════════════════════════════════════════╝*/
 
-  static async getStats(): Promise<{ totalProducts: number; lowStockPresentations: number }> {
-    const totalProducts = await ProductMongo.countDocuments();
+  static async getStats(kioscoId: string): Promise<{ totalProducts: number; lowStockPresentations: number }> {
+    const totalProducts = await ProductMongo.countDocuments({ kiosco_id: kioscoId });
 
     const lowStockPresentations = await PresentationMongo.countDocuments({
+      kiosco_id: kioscoId,
       $expr: { $lt: ['$stock', '$min_stock'] },
     });
 

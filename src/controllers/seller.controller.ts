@@ -1,16 +1,14 @@
 import { Request, Response } from "express";
 import { handleControllerError } from "../utils/handleControllerError";
 import {
-    DeleteSellerRequest,
   EditSellerRequest,
   GetSellerByEmailRequest,
   GetSellerByIdRequest,
   GetSellerByNameRequest,
-  Seller,
-  SellerWithEmail,
-  SellerWithRole,
 } from "@typings/seller";
 import { SellerModel } from "../models/sellerModel";
+import { KioscoModel } from "../models/kioscoModel";
+import { KioscoSellerMember } from "@typings/kioscoMembership";
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con vendedores (seller) 🕹️                                                       ║
@@ -19,23 +17,19 @@ import { SellerModel } from "../models/sellerModel";
 ║                                                                                                                           ║
 ║ Tipo | Link                 | Función          | Descripción                    | Params           | Return        | Auth Req | Status      ║
 ║------|----------------------|------------------|--------------------------------|------------------|---------------|----------|-------------║
-║ GET  | /get-sellers         | getSellers       | Obtener todos los vendedores   | -                | JSON [Seller] | Sí       | 200,500     ║
-║ GET  | /get-seller-by-id    | getSellerById    | Obtener vendedor por ID        | body: { _id }    | JSON [Seller] | Sí       | 200,404,500 ║
-║ GET  | /get-seller-by-name  | getSellerByName  | Obtener vendedor por nombre    | body: { name }   | JSON [Seller] | Sí       | 200,404,500 ║
-║ GET  | /get-seller-by-email | getSellerByEmail | Obtener vendedor por email     | body: { email }  | JSON Seller   | Sí       | 200,404,500 ║
+║ GET  | /get-sellers         | getSellers       | Vendedores del kiosco activo   | -                | JSON [Seller] | Sí       | 200,500     ║
+║ GET  | /get-seller-by-id    | getSellerById    | Obtener vendedor por ID        | query: { _id }   | JSON [Seller] | Sí       | 200,404,500 ║
+║ GET  | /get-seller-by-name  | getSellerByName  | Obtener vendedor por nombre    | query: { name }  | JSON [Seller] | Sí       | 200,404,500 ║
+║ GET  | /get-seller-by-email | getSellerByEmail | Obtener vendedor por email     | query: { email } | JSON Seller   | Sí       | 200,404,500 ║
 ║ PUT  | /edit-seller         | editSeller       | Editar perfil (name/foto/status)| body: {id,...}  | JSON {id,msg} | Sí       | 200,400,404,500 ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
-Nota: crear/eliminar vendedores ya no vive acá — ver /register y /delete-auth en auth.controller.
-Nota: getSellerByRol se eliminó — 'rol' ya no es un campo de Seller, vive como Auth.role.
+Nota: "los vendedores del kiosco" (email + rol incluidos) se resuelven vía
+KioscoModel.getSellersOfKiosco — el rol vive en KioscoMembership, no en Seller/Auth.
+Nota: crear/eliminar vendedores del kiosco va por /kiosco/join y
+DELETE /kiosco/:kiosco_id/member/:user_id — ya no por acá.
 */
 
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
-
-/*══════════ 🎮 home ══════════╗
-║ 📥 Entrada: -                ║
-║ ⚙️ Proceso: lista endpoints  ║
-║ 📤 Salida: HTML              ║
-╚═════════════════════════════╝*/
 
 export async function home(_req: Request, res: Response): Promise<void> {
     res
@@ -49,69 +43,49 @@ export async function home(_req: Request, res: Response): Promise<void> {
           ----Get:  /get-seller-by-email<br>
           ----Put:  /edit-seller<br>
           <br>
-          Crear/eliminar vendedores: ver /register y /delete-auth en Auth<br>
+          Agregar/quitar vendedores del kiosco: ver /kiosco/join y /kiosco/:kiosco_id/member/:user_id<br>
         `);
 }
 
-/*══════════ 🎮 getSellers ══════════╗
-║ 📥 Entrada: -                      ║
-║ ⚙️ Proceso: obtiene vendedores     ║
-║ 📤 Salida: JSON [Seller[]]         ║
-╚═══════════════════════════════════╝*/
-
-export async function getSellers(_req: Request, res: Response): Promise<void> {
+export async function getSellers(req: Request, res: Response): Promise<void> {
   try {
-    const sellerObject: SellerWithRole[] = await SellerModel.getSellers();
-    res.status(200).json(sellerObject);
+    const sellers: KioscoSellerMember[] = await KioscoModel.getSellersOfKiosco(req.kioscoId!);
+    res.status(200).json(sellers);
   } catch (error: unknown) {
     handleControllerError(res, error);
   }
 }
 
-/*══════════ 🎮 getSellerById ══════════╗
-║ 📥 Entrada: req.body._id (string)     ║
-║ ⚙️ Proceso: busca vendedor por _id    ║
-║ 📤 Salida: JSON [Seller[]]            ║
-╚══════════════════════════════════════╝*/
-
 export async function getSellerById(req: GetSellerByIdRequest, res: Response): Promise<void> {
     const { _id } = req.query as { _id: string };
     try {
-        const sellerObject: SellerWithRole[] = await SellerModel.getSellerById(_id);
-        res.status(200).json(sellerObject);
+        const sellers = await KioscoModel.getSellersOfKiosco(req.kioscoId!);
+        const seller = sellers.filter((s) => s._id === _id);
+        res.status(200).json(seller);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
-
-/*══════════ 🎮 getSellerByName ══════════╗
-║ 📥 Entrada: req.body.name (string)      ║
-║ ⚙️ Proceso: filtra vendedores por nombre║
-║ 📤 Salida: JSON [Seller[]]              ║
-╚════════════════════════════════════════╝*/
 
 export async function getSellerByName(req: GetSellerByNameRequest, res: Response): Promise<void> {
     const { name } = req.body;
     try {
-        const sellerObject: Seller[] = await SellerModel.getSellerByField('name', name, 'string');
-        res.status(200).json(sellerObject);
+        const sellers = await KioscoModel.getSellersOfKiosco(req.kioscoId!);
+        const nameTerm = String(name ?? '').toLowerCase();
+        const matches = sellers.filter((s) => s.name.toLowerCase().includes(nameTerm));
+        res.status(200).json(matches);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-/*══════════ 🎮 getSellerByEmail ══════════╗
-║ 📥 Entrada: req.body.email (string)      ║
-║ ⚙️ Proceso: resuelve el email contra Auth║
-║    y trae el Seller asociado por _id     ║
-║ 📤 Salida: JSON SellerWithEmail          ║
-╚═════════════════════════════════════════╝*/
-
 export async function getSellerByEmail(req: GetSellerByEmailRequest, res: Response): Promise<void> {
     const { email } = req.body;
     try {
-        const sellerObject: SellerWithEmail = await SellerModel.getSellerByEmail(email);
-        res.status(200).json(sellerObject);
+        const sellers = await KioscoModel.getSellersOfKiosco(req.kioscoId!);
+        const seller = sellers.find((s) => s.email === email);
+        if (!seller) throw new Error('There is not any seller with that email');
+        res.status(200).json(seller);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
@@ -119,48 +93,20 @@ export async function getSellerByEmail(req: GetSellerByEmailRequest, res: Respon
 
 //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
-/*══════════ 🎮 editSeller ══════════╗
-║ 📥 Entrada: _id, name, profilePhoto, user_status ║
-║ ⚙️ Proceso: edita perfil existente                ║
-║ 📤 Salida: JSON {confirmación}                    ║
-╚══════════════════════════════════════════════════╝*/
-
 export async function editSeller(req: EditSellerRequest, res: Response): Promise<void> {
     const { _id, name, profilePhoto, user_status } = req.body;
 
     try {
+        // Solo se puede editar el perfil de un vendedor que pertenece al kiosco activo.
+        const membership = await KioscoModel.getMembership(req.kioscoId!, String(_id));
+        if (!membership) throw new Error('This user is not a member of the kiosco');
+
         await SellerModel.edit({ _id, name, profilePhoto, user_status });
         res
             .status(200)
             .json({
                 _id,
                 message: 'Seller has been edited successfully',
-            });
-    } catch (error: unknown) {
-        handleControllerError(res, error);
-    }
-}
-
-//──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
-
-/*══════════ 🎮 deleteSeller ══════════╗
-║ 📥 Entrada: req.body._id (string)    ║
-║ ⚙️ Proceso: elimina perfil de seller ║
-║    (NO borra el Auth asociado —      ║
-║    eso lo maneja /delete-auth)       ║
-║ 📤 Salida: JSON {confirmación}       ║
-╚══════════════════════════════════════╝*/
-
-export async function deleteSeller(req: DeleteSellerRequest, res: Response): Promise<void> {
-    const { _id } = req.body;
-
-    try {
-        await SellerModel.delete(_id);
-        res
-            .status(200)
-            .json({
-                _id,
-                message: 'Seller has been deleted successfully',
             });
     } catch (error: unknown) {
         handleControllerError(res, error);

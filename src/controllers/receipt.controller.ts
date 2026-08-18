@@ -37,7 +37,7 @@ export async function previewReceipt(req: Request, res: Response): Promise<void>
     }
 
     try {
-      const preview: ReceiptPreviewResultType = await previewReceiptImport(req.file.buffer);
+      const preview: ReceiptPreviewResultType = await previewReceiptImport(req.file.buffer, req.kioscoId!);
       res.status(200).json(preview);
     } catch (error: unknown) {
       handleControllerError(res, error);
@@ -65,7 +65,12 @@ export async function confirmReceipt(req: Request, res: Response): Promise<void>
   }
 
   try {
-    const insertResult = await confirmReceiptImport(body.products, body.presentations);
+    // El front reenvía tal cual lo que recibió en el preview — nunca se confía en el
+    // kiosco_id que viene en ese payload: se pisa acá con el del header validado.
+    const products = body.products.map((p) => ({ ...p, kiosco_id: req.kioscoId! }));
+    const presentations = body.presentations.map((p) => ({ ...p, kiosco_id: req.kioscoId! }));
+
+    const insertResult = await confirmReceiptImport(products, presentations);
     const result: ReceiptImportResultType = {
       stats: body.stats ?? {
         totalRows: 0, totalProducts: 0, multiPresentation: 0,

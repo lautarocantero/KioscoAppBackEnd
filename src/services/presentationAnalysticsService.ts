@@ -11,6 +11,7 @@ const GRAMS_PER_WEIGHT_UNIT = 100; // el precio de las presentaciones "weight" e
 export class PresentationAnalyticsService {
 
   static async getAnalytics(
+    kiosco_id: string,
     presentation_id: string,
     start_date?: string,
     end_date?: string,
@@ -32,6 +33,7 @@ export class PresentationAnalyticsService {
     prevEnd.setHours(23, 59, 59, 999);
 
     const sells = await SellSchema.find({
+      kiosco_id,
       'products._id': presentation_id,
       ...(seller_id ? { seller_id } : {}),
     }).lean();

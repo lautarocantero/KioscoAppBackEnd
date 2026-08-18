@@ -26,6 +26,7 @@ declare module '@typings/provider' {
 
 interface ProviderEntity {
     _id:            string;
+    kiosco_id:      string;
     name:           string;
     valoration:     number; // 1 a 5
     contact_phone:  string;
@@ -69,13 +70,14 @@ export type GetProviderByValorationQuery = { valoration?: string };
 
 export type GetProviderByContactQuery = { contact?: string };
 
-export type CreateProviderPayload = Omit<ProviderPayload, '_id'>;
+// kiosco_id nunca viene del cliente: se resuelve del header x-kiosco-id (ver requireKioscoContext)
+export type CreateProviderPayload = Omit<ProviderPayload, '_id' | 'kiosco_id'>;
 
 export type DeleteProviderPayload = Pick<ProviderPayload, '_id'>;
 
 // edit-provider: el modelo solo pisa los campos que vengan definidos.
 export type EditProviderPayload =
-    Pick<ProviderPayload, '_id'> & Partial<Omit<ProviderPayload, '_id'>>;
+    Pick<ProviderPayload, '_id'> & Partial<Omit<ProviderPayload, '_id' | 'kiosco_id'>>;
 
 export type ProviderStats = {
   totalProviders: number;

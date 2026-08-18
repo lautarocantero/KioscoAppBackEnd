@@ -24,7 +24,7 @@ export async function getNotifications(req: Request, res: Response): Promise<voi
     }
 
     try {
-        const notifications: NotificationDTO[] = await NotificationModel.getAll(req.user.id);
+        const notifications: NotificationDTO[] = await NotificationModel.getAll(req.kioscoId!, req.user.id);
         res.status(200).json(notifications);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -42,7 +42,7 @@ export async function markAsRead(req: MarkAsReadRequestType, res: Response): Pro
     const { _id } = req.body;
 
     try {
-        await NotificationModel.markAsRead(_id, req.user.id);
+        await NotificationModel.markAsRead(req.kioscoId!, _id, req.user.id);
         res.status(200).json({ message: 'Notification marked as read' });
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -58,7 +58,7 @@ export async function markAsUnread(req: MarkAsUnreadRequestType, res: Response):
     const { _id } = req.body;
 
     try {
-        await NotificationModel.markAsUnread(_id, req.user.id);
+        await NotificationModel.markAsUnread(req.kioscoId!, _id, req.user.id);
         res.status(200).json({ message: 'Notification marked as unread' });
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -72,7 +72,7 @@ export async function markAllAsRead(req: Request, res: Response): Promise<void> 
     }
 
     try {
-        await NotificationModel.markAllAsRead(req.user.id);
+        await NotificationModel.markAllAsRead(req.kioscoId!, req.user.id);
         res.status(200).json({ message: 'All notifications marked as read' });
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -85,16 +85,16 @@ export async function deleteNotification(req: DeleteNotificationRequestType, res
     const { _id } = req.body;
 
     try {
-        await NotificationModel.deleteOne(_id);
+        await NotificationModel.deleteOne(req.kioscoId!, _id);
         res.status(200).json({ message: 'Notification has been deleted successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function deleteAllNotifications(_req: Request, res: Response): Promise<void> {
+export async function deleteAllNotifications(req: Request, res: Response): Promise<void> {
     try {
-        await NotificationModel.deleteAll();
+        await NotificationModel.deleteAll(req.kioscoId!);
         res.status(200).json({ message: 'All notifications have been deleted successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);

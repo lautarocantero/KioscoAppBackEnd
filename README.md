@@ -8,7 +8,8 @@ API RESTful para la gestión de Stocko construida con **Node.js**, **Express** y
 
 Este backend administra:
 - 🔐 autenticación y gestión de usuarios
-- 🧑‍💼 vendedores
+- 🏪 kioscos multi-tenant: cada usuario puede crear su propio kiosco o unirse a uno existente vía código de invitación, y pertenecer a varios a la vez — el resto de los recursos quedan aislados por kiosco (header `x-kiosco-id`)
+- 🧑‍💼 vendedores (rol admin/seller por-kiosco, ya no global)
 - 📦 productos
 - 🏷️ presentaciones de productos
 - 🚚 proveedores
@@ -83,8 +84,20 @@ npm start
 - `POST /auth/refresh`
 - `POST /auth/request-password-reset`
 - `POST /auth/reset-password`
-- `DELETE /auth/delete-auth`
-- `PUT /auth/edit-auth`
+- `DELETE /auth/delete-auth` — borra la PROPIA cuenta (self-service, sin `_id` en el body)
+- `PUT /auth/edit-auth` — email/password (`role` ya no vive acá, ver `/kiosco`)
+
+`login`/`check-auth`/`refresh` devuelven además `myKioscos` (lista liviana de los kioscos del usuario, con su rol en cada uno).
+
+### 🏪 Kioscos (`/kiosco`)
+- `POST /kiosco/create` — crear un kiosco (el creador queda como admin)
+- `GET /kiosco/my-kioscos` — kioscos del usuario logueado, con stats
+- `POST /kiosco/join` — unirse a un kiosco vía `invite_code`
+- `GET /kiosco/:kiosco_id/invite-info` — código/link de invitación (solo admin)
+- `PUT /kiosco/:kiosco_id` — editar nombre/dirección/moneda (solo admin)
+- `POST /kiosco/:kiosco_id/select` — marcar "último acceso" a ese kiosco
+- `DELETE /kiosco/:kiosco_id/member/:user_id` — sacar a un vendedor del kiosco (solo admin, no borra su cuenta)
+- `PUT /kiosco/:kiosco_id/member/:user_id/role` — cambiar el rol de un vendedor en ese kiosco (solo admin)
 
 ### 📦 Productos (`/product`)
 - `GET /product/`
@@ -144,14 +157,15 @@ npm start
 
 ### 🧑‍💼 Vendedores (`/seller`)
 - `GET /seller/`
-- `GET /seller/get-sellers`
+- `GET /seller/get-sellers` — vendedores del kiosco activo (join con la membership, incluye rol)
 - `GET /seller/get-seller-by-id`
 - `GET /seller/get-seller-by-name`
 - `GET /seller/get-seller-by-email`
-- `GET /seller/get-seller-by-rol`
-- `POST /seller/create-seller`
 - `PUT /seller/edit-seller`
-- `DELETE /seller/delete-seller`
+
+Sumar/sacar vendedores de un kiosco se hace vía `/kiosco/join` y `/kiosco/:kiosco_id/member/:user_id` — no hay `/seller/create-seller` ni `/seller/delete-seller`.
+
+Todas las rutas de `/product`, `/presentation`, `/provider`, `/sell` y `/seller` requieren sesión (`authMiddleware`) **y** pertenecer al kiosco enviado en el header `x-kiosco-id` (`requireKioscoContext`). El detalle completo del feature multi-kiosco (frontend + backend) está documentado en `docs/features/multiKiosco.md` del repo `KioscoApp` (frontend).
 
 ## 📚 Documentación adicional
 

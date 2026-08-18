@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { SALT_ROUNDS } from '../config';
 import { AuthSchema } from '../schemas/authSchema';
 import { SellerSchema } from '../schemas/sellerSchema';
+import { KioscoMembershipSchema } from '../schemas/kioscoMembershipSchema';
 import { Validation } from './validation';
 import {
     AuthRegisterPayload, AuthLoginPayload, AuthTokenPublic, AuthSchemaType,
@@ -11,7 +12,6 @@ import {
     AuthGoogleLoginPayload, RequestPasswordResetPayload, ResetPasswordPayload,
     VerifyEmailPayload, SessionUser,
 } from '../typings/auth';
-import { AuthRoleEnum } from '../typings/auth/enums';
 import { SellerStatus } from '../typings/seller/sellerEnums';
 
 export class AuthModel {
@@ -77,7 +77,6 @@ export class AuthModel {
                     email: emailResult,
                     password: hashedPassword,
                     refreshToken: '',
-                    role: AuthRoleEnum.Seller,
                     isVerified: true, // TODO(email-verification): volver a `false` cuando se reactive el flujo
                 }], { session });
 
@@ -153,7 +152,6 @@ export class AuthModel {
                     email: emailResult,
                     password: hashedPassword,
                     refreshToken: '',
-                    role: AuthRoleEnum.Seller,
                     isVerified: true,
                 }], { session });
 
@@ -236,7 +234,8 @@ export class AuthModel {
         );
     }
 
-    // Cascada: borrar la identidad borra también el perfil, porque es 1:1
+    // Cascada: borrar la identidad borra también el perfil y todas sus membresías
+    // de kiosco (no borra los kioscos que posea como owner_id).
     static async deleteAuth(data: DeleteAuthPayload): Promise<void> {
         const { _id } = data;
         const _idResult = Validation.stringValidation(_id, '_id');
@@ -247,6 +246,7 @@ export class AuthModel {
                 const deletedAuth = await AuthSchema.findOneAndDelete({ _id: _idResult }).session(session);
                 if (!deletedAuth) throw new Error('User not found');
                 await SellerSchema.findOneAndDelete({ _id: _idResult }).session(session);
+                await KioscoMembershipSchema.deleteMany({ user_id: _idResult }).session(session);
             });
         } finally {
             session.endSession();
@@ -276,9 +276,10 @@ export class AuthModel {
         await AuthSchema.findOneAndUpdate({ _id: _idResult }, { $unset: { refreshToken: '' } });
     }
 
-    // Solo credenciales/autorización. name/foto se editan por SellerModel.edit
+    // Solo email/password (self-service). name/foto se editan por SellerModel.edit,
+    // role vive en KioscoMembership (ver KioscoModel.updateMemberRole).
     static async editAuth(data: EditAuthPayload): Promise<void> {
-        const { _id, email, password, role } = data;
+        const { _id, email, password } = data;
         const _idResult = Validation.stringValidation(_id, '_id');
 
         const setFields: Partial<AuthSchemaType> = {};
@@ -287,7 +288,6 @@ export class AuthModel {
             // 🔧 Fix: antes se guardaba el password en texto plano, sin pasar por bcrypt
             setFields.password = await bcrypt.hash(Validation.password(password), SALT_ROUNDS);
         }
-        if (role !== undefined) setFields.role = role;
 
         const updated = await AuthSchema.findOneAndUpdate({ _id: _idResult }, { $set: setFields });
         if (!updated) throw new Error('User not found');

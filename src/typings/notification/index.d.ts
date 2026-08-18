@@ -24,6 +24,7 @@ type NotificationPayload = LowStockNotificationPayload | SaleNotificationPayload
 
 interface NotificationEntity {
     _id:     string;
+    kiosco_id: string;
     type:    NotificationType;
     payload: NotificationPayload;
 }

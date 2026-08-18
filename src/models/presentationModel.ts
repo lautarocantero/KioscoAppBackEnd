@@ -8,18 +8,22 @@ import { PresentationMongo } from '../schemas/presentationSchema';
 ──────────────────────────────
 📜 Propósito: Gestión completa de presentaciones de producto contra MongoDB
 🧩 Dependencias: PresentationMongo (schemas/presentationSchema), Validation
+
+🏪 Todas las consultas/escrituras van scoped por kiosco_id (resuelto por
+requireKioscoContext, nunca confiado del body del cliente).
 ──────────────────────────────*/
 
 export class PresentationModel {
 
   //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-  static async getPresentations(): Promise<presentation[]> {
-    const results = await PresentationMongo.find().lean();
+  static async getPresentations(kioscoId: string): Promise<presentation[]> {
+    const results = await PresentationMongo.find({ kiosco_id: kioscoId }).lean();
     return results as unknown as presentation[];
   }
 
   static async getPresentationByField<T extends keyof PresentationSchemaType>(
+    kioscoId: string,
     field: T,
     value: PresentationSchemaType[T],
     type: 'string' | 'number',
@@ -30,21 +34,22 @@ export class PresentationModel {
     if (type === 'string') Validation.stringValidation(value, field as string);
     if (type === 'number') Validation.number(value, field as string);
 
-    const results = await PresentationMongo.find({ [field]: value }).lean();
+    const results = await PresentationMongo.find({ kiosco_id: kioscoId, [field]: value }).lean();
     return results as unknown as presentation[];
   }
 
-  static async getPresentationsByCategory(category: PresentationCategory): Promise<presentation[]> {
-    const results = await PresentationMongo.find({ category }).lean();
+  static async getPresentationsByCategory(kioscoId: string, category: PresentationCategory): Promise<presentation[]> {
+    const results = await PresentationMongo.find({ kiosco_id: kioscoId, category }).lean();
     return results as unknown as presentation[];
   }
 
-  static async searchByProductIdAndTerm(product_id: string, term: string): Promise<presentation[]> {
+  static async searchByProductIdAndTerm(kioscoId: string, product_id: string, term: string): Promise<presentation[]> {
     Validation.stringValidation(product_id, 'product_id');
 
     const regex = { $regex: term ?? '', $options: 'i' };
 
     const results = await PresentationMongo.find({
+      kiosco_id: kioscoId,
       product_id,
       $or: [
         { name: regex },
@@ -56,10 +61,11 @@ export class PresentationModel {
     return results as unknown as presentation[];
   }
 
-  static async getPresentationsWithStockByProductId(product_id: string): Promise<presentation[]> {
+  static async getPresentationsWithStockByProductId(kioscoId: string, product_id: string): Promise<presentation[]> {
       Validation.stringValidation(product_id, 'product_id');
 
       const results = await PresentationMongo.find({
+        kiosco_id: kioscoId,
         product_id,
         stock: { $gt: 0 },
       }).lean();
@@ -69,7 +75,7 @@ export class PresentationModel {
 
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
-  static async create(data: {
+  static async create(kioscoId: string, data: {
       product_id: string; sku?: string; name: string; description?: string;
       barcode?: string; brand?: string; image_url?: string; model_type?: ModelType; model_size?: number;
       model_unit?: ModelUnit; is_perishable: boolean; min_stock: number; stock: number; price: number;
@@ -110,6 +116,7 @@ export class PresentationModel {
 
       await PresentationMongo.create({
           _id,
+          kiosco_id: kioscoId,
           product_id: productIdResult,
           sku: skuResult,
           barcode: barcodeResult ?? '',
@@ -140,14 +147,14 @@ export class PresentationModel {
   // Devuelve las presentaciones ya actualizadas (post-descuento) — lo usa
   // createSell para saber cuáles quedaron por debajo de su min_stock y
   // así disparar la notificación de reposición correspondiente.
-  static async decreaseStock(items: { _id: string; stock_required: number }[]): Promise<{ _id: string; product_id: string; name: string; stock: number; min_stock: number }[]> {
+  static async decreaseStock(kioscoId: string, items: { _id: string; stock_required: number }[]): Promise<{ _id: string; product_id: string; name: string; stock: number; min_stock: number }[]> {
     const updated: { _id: string; product_id: string; name: string; stock: number; min_stock: number }[] = [];
 
     for (const { _id, stock_required } of items) {
       const idResult = Validation.stringValidation(_id, '_id');
       const qtyResult = Validation.number(stock_required, 'stock_required');
 
-      const presentation = await PresentationMongo.findOne({ _id: idResult }).lean();
+      const presentation = await PresentationMongo.findOne({ _id: idResult, kiosco_id: kioscoId }).lean();
       if (!presentation) throw new Error(`No existe presentación con id ${idResult}`);
 
       const isWeight = presentation.sale_type === 'weight';
@@ -158,7 +165,7 @@ export class PresentationModel {
       if (newStock < 0) throw new Error(`Stock insuficiente para la presentación ${idResult}`);
 
       const updatedPresentation = await PresentationMongo.findOneAndUpdate(
-        { _id: idResult },
+        { _id: idResult, kiosco_id: kioscoId },
         {
           $set: {
             stock: newStock,
@@ -188,15 +195,15 @@ export class PresentationModel {
 
   //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
-  static async delete(data: { _id: string }): Promise<void> {
+  static async delete(kioscoId: string, data: { _id: string }): Promise<void> {
     const _idResult = Validation.stringValidation(data._id, '_id');
-    const deleted = await PresentationMongo.findOneAndDelete({ _id: _idResult });
+    const deleted = await PresentationMongo.findOneAndDelete({ _id: _idResult, kiosco_id: kioscoId });
     if (!deleted) throw new Error('There is not any presentation with that id');
   }
 
   //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
-  static async edit(data: {
+  static async edit(kioscoId: string, data: {
     _id: string; sku?: string; barcode?: string; price: number; stock: number; min_stock: number;
     model_type?: ModelType; model_size: number; model_unit?: ModelUnit; is_perishable: boolean;
     image_url?: string; brand?: string; description?: string; expiration_date?: string; name: string;
@@ -238,7 +245,7 @@ export class PresentationModel {
       : (expiration_date ?? '');
 
     const updated = await PresentationMongo.findOneAndUpdate(
-      { _id: idResult },
+      { _id: idResult, kiosco_id: kioscoId },
       {
         $set: {
           sku: skuResult,

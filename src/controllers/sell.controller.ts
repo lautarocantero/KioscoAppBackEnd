@@ -61,12 +61,12 @@ export async function home(_req: Request, res: Response): Promise<void> {
 ║ 🛠️ Errores: handleControllerError      ║
 ╚═════════════════════════════════╝*/
 
-export async function getSells(_req: Request, res: Response): Promise<void> {
-    const limit = Number(_req.query.limit) || 100; 
-    const offset = Number(_req.query.offset) || 0;
+export async function getSells(req: Request, res: Response): Promise<void> {
+    const limit = Number(req.query.limit) || 100;
+    const offset = Number(req.query.offset) || 0;
 
     try{
-        const sells: SellType[] = await SellModel.getSells(limit, offset);
+        const sells: SellType[] = await SellModel.getSells(req.kioscoId!, limit, offset);
         res
             .status(200)
             .json({
@@ -94,7 +94,7 @@ export async function getSellById (req: GetSellByIdRequestType, res: Response): 
 
     try {
         // pese a ser un array de sell[], siempre devolvera uno solo.
-        const SellObject: SellType[] = await SellModel.getSellsByField('_id',_id,'string');
+        const SellObject: SellType[] = await SellModel.getSellsByField(req.kioscoId!, '_id',_id,'string');
         res
             .status(200)
             .json(SellObject);
@@ -114,7 +114,7 @@ export async function getSellsBySeller (req: GetSellsBySellerRequestType, res: R
     const { seller_name } = req.body;
 
     try {
-        const SellObject: SellType[] = await SellModel.getSellsByField('seller_name',seller_name,'string');
+        const SellObject: SellType[] = await SellModel.getSellsByField(req.kioscoId!, 'seller_name',seller_name,'string');
         res
             .status(200)
             .json(SellObject);
@@ -134,7 +134,7 @@ export async function getSellsByDate (req: GetSellsByDateRequestType, res: Respo
     const { purchase_date } = req.body;
 
     try {
-        const SellObject: SellType[] = await SellModel.getSellsByField('purchase_date',purchase_date,'string');
+        const SellObject: SellType[] = await SellModel.getSellsByField(req.kioscoId!, 'purchase_date',purchase_date,'string');
         res
             .status(200)
             .json(SellObject);
@@ -154,7 +154,7 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
     const { _id } = req.body;
 
     try {
-        const SellObject: SellType[] = await SellModel.getSellsByProduct({_id});
+        const SellObject: SellType[] = await SellModel.getSellsByProduct(req.kioscoId!, {_id});
         res
             .status(200)
             .json(SellObject);
@@ -171,9 +171,9 @@ export async function getSellsByProduct (req: GetSellsByProductRequestType, res:
 ║ 🛠️ Errores: handleControllerError          ║
 ╚═══════════════════════════════════════════╝*/
 
-export async function getTodaySellsCount(_req: Request, res: Response): Promise<void> {
+export async function getTodaySellsCount(req: Request, res: Response): Promise<void> {
     try {
-        const stats: { count: number; lastSaleAt: string | null; totalAmount: number } = await SellModel.getTodaySellsCount();
+        const stats: { count: number; lastSaleAt: string | null; totalAmount: number } = await SellModel.getTodaySellsCount(req.kioscoId!);
         res
             .status(200)
             .json(stats);
@@ -194,7 +194,7 @@ export async function searchSells(req: Request, res: Response): Promise<void> {
     const term = req.query.term as string;
 
     try {
-        const sells: SellType[] = await SellModel.searchSells(term);
+        const sells: SellType[] = await SellModel.searchSells(req.kioscoId!, term);
         res.status(200).json(sells);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -220,7 +220,7 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
     } = req.body;
 
     try{
-        const _id: string = await SellModel.create({
+        const _id: string = await SellModel.create(req.kioscoId!, {
             purchase_date, seller_id, seller_name, payment_method,
             products, sub_total, iva, total_amount, currency,
             status, amount_paid, debtor_name, settles_sell_id,
@@ -238,13 +238,13 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
                 throw new Error('Se encontraron productos sin _id válido al descontar stock');
             }
 
-            const updatedPresentations = await PresentationModel.decreaseStock(productsForStockUpdate);
+            const updatedPresentations = await PresentationModel.decreaseStock(req.kioscoId!, productsForStockUpdate);
 
             const lowStockPresentations = updatedPresentations.filter((p) => p.stock < p.min_stock);
 
             for (const presentation of lowStockPresentations) {
                 try {
-                    await NotificationModel.createLowStockNotification({
+                    await NotificationModel.createLowStockNotification(req.kioscoId!, {
                         presentationId: presentation._id,
                         productId: presentation.product_id,
                         productName: presentation.name,
@@ -262,7 +262,7 @@ export async function createSell (req: CreateSellRequestType, res: Response): Pr
         // un dato legado que no pasa una validación puntual) no debe tumbar a
         // las demás ni, mucho menos, la respuesta de una venta que ya se concretó.
         try {
-            await NotificationModel.createSaleNotification({
+            await NotificationModel.createSaleNotification(req.kioscoId!, {
                 sellId: _id,
                 sellerId: seller_id as string,
                 sellerName: seller_name as string,
@@ -297,7 +297,7 @@ export async function deleteSell (req: DeleteSellRequestType, res: Response): Pr
     const { _id } = req.params;
 
     try{
-        await SellModel.delete({ _id });
+        await SellModel.delete(req.kioscoId!, { _id });
         res
             .status(200)
             .json({
@@ -327,7 +327,7 @@ export async function editSell (req: EditSellRequestType, res: Response) : Promi
         settled_by_sell_id } = req.body;
 
     try{
-        await SellModel.edit({_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency, status, amount_paid, debtor_name, settled_by_sell_id});
+        await SellModel.edit(req.kioscoId!, {_id,purchase_date,modification_date,seller_id,seller_name,payment_method, products,sub_total, iva, total_amount, currency, status, amount_paid, debtor_name, settled_by_sell_id});
         res
             .status(200)
             .json({

@@ -1,4 +1,3 @@
-import { AuthRoleEnum } from './enums';
 import { SellerPublic } from '@typings/seller';
 
 interface AuthEntity {
@@ -6,7 +5,6 @@ interface AuthEntity {
   email: string;
   password: string;
   refreshToken: string | undefined;
-  role: AuthRoleEnum;
   isVerified: boolean;
   verificationToken: string | null;
   verificationTokenExpires: Date | null;
@@ -41,7 +39,7 @@ export type SessionUser = AuthPublic & SellerPublic;
 
 export type AuthPayload = AuthPayloadUnknown;
 
-export type AuthPublicSchema = Pick<Auth, '_id' | 'email' | 'role' | 'isVerified'>;
+export type AuthPublicSchema = Pick<Auth, '_id' | 'email' | 'isVerified'>;
 
 /*═══ PAYLOADS ═══*/
 
@@ -74,12 +72,12 @@ export type AuthCheckAuthPayload = Pick<AuthPayload, '_id'>;
 
 export type DeleteAuthPayload = Pick<AuthPayload, '_id'>;
 
-// Editar Auth ahora es SOLO credenciales/autorización. name/foto se editan vía Seller.
+// Editar Auth ahora es SOLO email/password (self-service). name/foto se editan vía Seller,
+// role vive en KioscoMembership (ver PUT /kiosco/:kiosco_id/member/:user_id/role).
 export type EditAuthPayload = {
   _id: string;
   email?: string;
   password?: string;
-  role?: AuthRoleEnum; // uso administrativo
 };
 
 export type VerifyEmailPayload = {

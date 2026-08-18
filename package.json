@@ -9,7 +9,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node build/index",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "docgen": "ts-node tools/docgen/generate-controller-docs.ts"
+    "docgen": "ts-node tools/docgen/generate-controller-docs.ts",
+    "migrate:kiosco": "ts-node src/scripts/migrateToKiosco.ts"
   },
   "keywords": [],
   "author": "",

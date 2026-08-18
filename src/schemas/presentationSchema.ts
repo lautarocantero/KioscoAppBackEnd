@@ -34,6 +34,7 @@ import { MODEL_TYPE_VALUES, MODEL_UNIT_VALUES, PRESENTATION_CATEGORY_VALUES, SAL
 
 const PresentationMongoSchema = new Schema<PresentationSchemaType>({
   _id:             { type: String,   required: true },
+  kiosco_id:       { type: String,   required: true, index: true },
   product_id:      { type: String,   required: true, index: true },
   sku:             { type: String,   required: true },
   barcode:         { type: String,   default: '' },

@@ -5,6 +5,7 @@ const PresentationSubSchema = new Schema({}, { strict: false, _id: false });
 
 const SellMongoSchema = new Schema<SellSchemaType>({
   _id:                  { type: String, required: true },
+  kiosco_id:            { type: String, required: true, index: true },
   currency:             { type: String, required: true },
   iva:                  { type: Number, required: true },
   modification_date:    { type: String, required: false },

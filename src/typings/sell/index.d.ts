@@ -12,7 +12,8 @@ import { Request } from "express";
 //──────────────────────────────────────────── 🔒 BASE PRINCIPAL 🔒 ───────────────────────────────────────────//
 
 interface SellEntityInterface {
-    _id: string; 
+    _id: string;
+    kiosco_id: string;
     currency: string;
     iva: number; 
     modification_date: string; 
@@ -72,7 +73,8 @@ declare module '@typings/sell' {
   export type GetSellsByProductPayloadType = Pick<SellPayloadType, '_id'>;
 
   // 🔧 FIX: se excluye 'products' del Omit (quedaba en `unknown`) y se redefine como presentation[]
-  export type CreateSellPayloadType = Omit<SellPayloadType, '_id' | 'modification_date' | 'products'> & {
+  // kiosco_id nunca viene del cliente: se resuelve del header x-kiosco-id (ver requireKioscoContext)
+  export type CreateSellPayloadType = Omit<SellPayloadType, '_id' | 'kiosco_id' | 'modification_date' | 'products'> & {
     products: ProductTicketType[];
     status: SellStatusEnum;
     amount_paid: number | null;
@@ -90,7 +92,7 @@ declare module '@typings/sell' {
   // status/amount_paid/debtor_name/settled_by_sell_id son opcionales: solo se
   // envían al saldar una deuda (parcial → completada). El resto de las
   // ediciones de venta (formulario completo) no los manda y edit() no los toca.
-  export type EditSellPayloadType = SellPayloadType & {
+  export type EditSellPayloadType = Omit<SellPayloadType, 'kiosco_id'> & {
     status?: SellStatusEnum;
     amount_paid?: number | null;
     debtor_name?: string | null;

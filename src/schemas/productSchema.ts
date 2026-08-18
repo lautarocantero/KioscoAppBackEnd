@@ -26,6 +26,7 @@ import { Product } from "@typings/product";
 
 const ProductMongoSchema = new Schema({
   _id:          { type: String, required: true },
+  kiosco_id:    { type: String, required: true, index: true },
   name:         { type: String, required: true },
   description:  { type: String },
   created_at:   { type: String },

@@ -11,6 +11,7 @@ type PresentationStatus = 'available' | 'out_of_stock' | 'unavailable';
 interface PresentationEntity {
     // ── Identidad ──────────────────────────────────────────────────────
     _id:            string;
+    kiosco_id:      string;
     product_id:     string;
     sku:            string;
     barcode:        string;
@@ -84,12 +85,13 @@ export type GetPresentationByStatusPayload      = Pick<PresentationPayload, 'sta
 export type GetPresentationByCategoryPayload    = Pick<PresentationPayload, 'category'>;
 export type GetPresentationByModelSizePayload   = Pick<PresentationPayload, 'model_size'>;
 
+// kiosco_id nunca viene del cliente: se resuelve del header x-kiosco-id (ver requireKioscoContext)
 export type CreatePresentationPayload = Omit<PresentationPayload,
-    '_id' | 'created_at' | 'updated_at' | 'status'
+    '_id' | 'kiosco_id' | 'created_at' | 'updated_at' | 'status'
     // status se calcula al crear: si stock > 0 → 'available', si no → 'out_of_stock'
 >;
 
-export type EditPresentationPayload = PresentationPayload;
+export type EditPresentationPayload = Omit<PresentationPayload, 'kiosco_id'>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUESTS                                                          ║

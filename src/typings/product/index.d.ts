@@ -8,6 +8,7 @@ declare module '@typings/product' {
 //base 
 interface ProductEntity {
     _id: string;
+    kiosco_id: string;
     name: string;
     description: string;
     created_at: string;
@@ -78,11 +79,12 @@ export type GetProductByNamePayload = Pick<ProductPayload, 'name' >;
 
 export type GetProductByBrandPayload = Pick<ProductPayload, 'brand' >;
 
-export type CreateProductPayload = Omit<ProductPayload, '_id' >;
+// kiosco_id nunca viene del cliente: se resuelve del header x-kiosco-id (ver requireKioscoContext)
+export type CreateProductPayload = Omit<ProductPayload, '_id' | 'kiosco_id'>;
 
 export type DeleteProductPayload = Pick<ProductPayload, '_id'>;
 
-export type EditProductPayload = ProductPayload;
+export type EditProductPayload = Omit<ProductPayload, 'kiosco_id'>;
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║

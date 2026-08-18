@@ -13,8 +13,7 @@ import {
   resetPassword,
   // verifyEmail
 } from '../controllers/auth.controller';
-import { authMiddleware, requireRole } from '../middlewares/authMiddleware';
-import { AuthRoleEnum } from '../typings/auth/enums';
+import { authMiddleware } from '../middlewares/authMiddleware';
 
 const router = express.Router();
 
@@ -48,8 +47,8 @@ router.post('/refresh', refresh);
 // router.post('/verify-email', verifyEmail); // TODO(email-verification): reactivar cuando se pague Resend.
 router.post('/request-password-reset', requestPasswordReset);
 router.post('/reset-password', resetPassword);
-// Elimina identidad + cascada a Seller: solo un admin puede borrar cuentas.
-router.delete('/delete-auth', authMiddleware, requireRole([AuthRoleEnum.Admin]), deleteAuth);
+// Self-service: cada usuario borra SU PROPIA cuenta (cascada a Seller y a sus membresías de kiosco).
+router.delete('/delete-auth', authMiddleware, deleteAuth);
 router.put('/edit-auth', authMiddleware, editAuth);
 
 export default router;

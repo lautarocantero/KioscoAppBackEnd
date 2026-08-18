@@ -9,30 +9,22 @@ import { ProductMongo } from "../schemas/productSchema";
 🧩 Dependencias: ProductMongo (schemas/productSchema), Validation
 ⚠️ Este modelo solo conoce la colección "products".
 Todo lo que combine products + presentations vive en services/catalogService.ts
+
+🏪 Todas las consultas/escrituras van scoped por kiosco_id (resuelto por
+requireKioscoContext, nunca confiado del body del cliente).
 ──────────────────────────────*/
 
 export class ProductModel {
 
   //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-  /*══════════ 🎮 getProducts ══════════╗
-  ║ 📥 Entrada: ninguna                  ║
-  ║ ⚙️ Proceso: obtiene hasta 100 productos de MongoDB ║
-  ║ 📤 Salida: Product[]                 ║
-  ╚═════════════════════════════════════╝*/
-
-  static async getProducts(): Promise<Product[]> {
-    const results = await ProductMongo.find().limit(100).lean();
+  static async getProducts(kioscoId: string): Promise<Product[]> {
+    const results = await ProductMongo.find({ kiosco_id: kioscoId }).limit(100).lean();
     return results as unknown as Product[];
   }
 
-  /*══════════ 🎮 getProductByField ══════════╗
-  ║ 📥 Entrada: field, value, type            ║
-  ║ ⚙️ Proceso: busca productos por campo     ║
-  ║ 📤 Salida: Product[]                      ║
-  ╚══════════════════════════════════════════╝*/
-
   static async getProductByField<T extends keyof Product>(
+    kioscoId: string,
     field: T,
     value: Product[T],
     type: 'string' | 'number',
@@ -43,18 +35,12 @@ export class ProductModel {
     if (type === 'string') Validation.stringValidation(value, field as string);
     if (type === 'number') Validation.number(value, field as string);
 
-    const results = await ProductMongo.find({ [field]: value }).lean();
+    const results = await ProductMongo.find({ kiosco_id: kioscoId, [field]: value }).lean();
     return results as unknown as Product[];
   }
 
-  /*══════════ 🎮 searchByField ══════════╗
-  ║ 📥 Entrada: field, value (string)      ║
-  ║ ⚙️ Proceso: busca coincidencia parcial,║
-  ║            case-insensitive            ║
-  ║ 📤 Salida: Product[]                   ║
-  ╚═════════════════════════════════════════╝*/
-
   static async searchByField(
+    kioscoId: string,
     field: 'name' | 'brand',
     value: string,
   ): Promise<Product[]> {
@@ -62,6 +48,7 @@ export class ProductModel {
     Validation.stringValidation(value, field);
 
     const results = await ProductMongo.find({
+      kiosco_id: kioscoId,
       [field]: { $regex: value, $options: 'i' }
     }).lean();
 
@@ -70,13 +57,7 @@ export class ProductModel {
 
   //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
-  /*══════════ 🎮 create ══════════╗
-  ║ 📥 Entrada: CreateProductPayload ║
-  ║ ⚙️ Proceso: valida, controla duplicados, guarda en MongoDB ║
-  ║ 📤 Salida: string _id generado   ║
-  ╚══════════════════════════════════╝*/
-
-  static async create(data: CreateProductPayload): Promise<string> {
+  static async create(kioscoId: string, data: CreateProductPayload): Promise<string> {
     const {
       name, description, created_at, updated_at,
       image_url, brand,
@@ -88,14 +69,15 @@ export class ProductModel {
     const updatedAtResult: string   = Validation.date(updated_at, 'updated_at');
     const brandResult: string       = Validation.stringValidation(brand, 'brand');
 
-    // Control de duplicados
-    const existing = await ProductMongo.findOne({ name: nameResult }).lean();
+    // Control de duplicados (dentro del mismo kiosco: otro kiosco puede tener el mismo nombre)
+    const existing = await ProductMongo.findOne({ kiosco_id: kioscoId, name: nameResult }).lean();
     if (existing) throw new Error('product already exists');
 
     const _id = crypto.randomUUID();
 
     await ProductMongo.create({
       _id,
+      kiosco_id:    kioscoId,
       name:         nameResult,
       description:  descriptionResult,
       created_at:   createdAtResult,
@@ -109,20 +91,12 @@ export class ProductModel {
 
   //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
-  /*══════════ 🎮 delete ══════════╗
-    ║ 📥 Entrada: DeleteProductPayload {_id}                    ║
-    ║ ⚙️ Proceso: valida id, elimina el producto y en cascada    ║
-    ║            todas las presentations con ese product_id      ║
-    ║            (regla de integridad del propio dominio product)║
-    ║ 📤 Salida: void                                             ║
-    ╚════════════════════════════════════════════════════════════╝*/
-
-  static async delete(data: DeleteProductPayload): Promise<void> {
+  static async delete(kioscoId: string, data: DeleteProductPayload): Promise<void> {
     const { _id } = data;
 
     const _idResult: string = Validation.stringValidation(_id, '_id');
 
-    const deleted = await ProductMongo.findOneAndDelete({ _id: _idResult });
+    const deleted = await ProductMongo.findOneAndDelete({ _id: _idResult, kiosco_id: kioscoId });
 
     if (!deleted) throw new Error('There is not any product with that id');
 
@@ -131,13 +105,7 @@ export class ProductModel {
 
   //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
-  /*══════════ 🎮 edit ══════════╗
-  ║ 📥 Entrada: EditProductPayload ║
-  ║ ⚙️ Proceso: valida campos y actualiza en MongoDB ║
-  ║ 📤 Salida: void                                  ║
-  ╚══════════════════════════════════════════════════╝*/
-
-  static async edit(data: EditProductPayload): Promise<void> {
+  static async edit(kioscoId: string, data: EditProductPayload): Promise<void> {
     const {
       _id, name, description, created_at,
       updated_at, image_url,
@@ -152,7 +120,7 @@ export class ProductModel {
     const brandResult: string         = Validation.stringValidation(brand, 'brand');
 
     const updated = await ProductMongo.findOneAndUpdate(
-      { _id: _idResult },
+      { _id: _idResult, kiosco_id: kioscoId },
       {
         $set: {
           name:         nameResult,

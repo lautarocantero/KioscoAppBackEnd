@@ -14,6 +14,7 @@ import { ProviderSchemaType } from '@typings/provider';
 
 const ProviderMongoSchema = new Schema<ProviderSchemaType>({
     _id:            { type: String, required: true },
+    kiosco_id:      { type: String, required: true, index: true },
     name:           { type: String, required: true },
     valoration:     { type: Number, required: true, min: 1, max: 5 },
     contact_phone:  { type: String, required: true },

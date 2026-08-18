@@ -7,6 +7,7 @@ Cada archivo en `/routes` define los endpoints disponibles para un recurso espec
 
 🧩 Organización:
 - auth.routes.ts → Rutas de autenticación
+- kiosco.routes.ts → Rutas de kioscos (multi-tenant)
 - product.routes.ts → Rutas de productos
 - presentation.routes.ts → Rutas de presentationes de producto
 - provider.routes.ts → Rutas de proveedores
@@ -18,6 +19,17 @@ Cada archivo en `/routes` define los endpoints disponibles para un recurso espec
 - Validaciones y manejo de errores se realizan en los controladores.
 - Nunca se exponen datos sensibles en respuestas.
 
+🏪 Multi-kiosco (ver KioscoRouter más abajo):
+- Todos los routers de recursos de negocio (Product, Presentation,
+  Provider, Sell, Seller, Receipts) exigen `authMiddleware` +
+  `requireKioscoContext`: el kiosco activo viaja en el header
+  `x-kiosco-id` y se valida contra la membership del usuario logueado
+  (403 si no pertenece a ese kiosco). Las rutas en sí no cambiaron de
+  forma — el scoping es transparente, no hay `:kiosco_id` en la URL de
+  estos recursos.
+- El rol (`admin`/`seller`) ya no es global sobre `Auth` — vive por-kiosco
+  en `KioscoMembership`. Ver KioscoRouter.
+
 🌀 Flujo estándar:
 [Request] → [Router] → [Controller] → [Model] → [DB] → [Response]
 
@@ -26,13 +38,43 @@ Cada archivo en `/routes` define los endpoints disponibles para un recurso espec
 ──────────────────────────────
 🔑 AuthRouter
 ──────────────────────────────
-- GET    /              → home (lista de endpoints)
-- POST   /register      → registrar usuario
-- POST   /login         → iniciar sesión
-- POST   /logout        → cerrar sesión
-- POST   /check-auth    → verificar autenticación
-- DELETE /delete-auth   → eliminar credenciales
-- PUT    /edit-auth     → editar credenciales
+- GET    /                       → home (lista de endpoints)
+- POST   /register                → registrar usuario
+- POST   /login                   → iniciar sesión
+- POST   /google                  → login/registro vía Google
+- POST   /logout                  → cerrar sesión
+- POST   /check-auth              → verificar autenticación
+- POST   /refresh                 → renovar access token
+- POST   /request-password-reset  → solicitar reset de contraseña
+- POST   /reset-password          → aplicar nueva contraseña
+- DELETE /delete-auth              → eliminar la PROPIA cuenta (self-service,
+                                      cascada a Seller + membresías de kiosco;
+                                      ya no acepta un _id ajeno en el body)
+- PUT    /edit-auth                → editar credenciales (email/password —
+                                      `role` se eliminó del body, ver KioscoRouter)
+
+Todas menos `/`, `/register`, `/login`, `/google`, `/check-auth`,
+`/request-password-reset` y `/reset-password` requieren `authMiddleware`.
+
+──────────────────────────────
+🏪 KioscoRouter
+──────────────────────────────
+- POST   /create                          → crear un kiosco nuevo (el creador queda como admin)
+- GET    /my-kioscos                      → kioscos a los que pertenece el usuario, con stats
+- POST   /join                            → unirse a un kiosco existente vía invite_code
+- GET    /:kiosco_id/invite-info          → código/link de invitación (solo admin)
+- PUT    /:kiosco_id                      → editar nombre/dirección/moneda (solo admin)
+- POST   /:kiosco_id/select               → marcar "último acceso" al entrar a ese kiosco
+- DELETE /:kiosco_id/member/:user_id      → sacar a un vendedor del kiosco (solo admin, NO borra su cuenta)
+- PUT    /:kiosco_id/member/:user_id/role → cambiar el rol de un vendedor en ese kiosco (solo admin)
+
+Todas requieren `authMiddleware`. Las que operan sobre un `:kiosco_id`
+puntual además exigen `requireKioscoContext` (¿pertenece el usuario a ese
+kiosco?) y, salvo `/select`, `requireKioscoRole([admin])`.
+
+Los vendedores de un kiosco se listan en `GET /seller/get-sellers`, scoped
+por el header `x-kiosco-id` — no hay un endpoint `/kiosco/:id/sellers`
+separado.
 
 ──────────────────────────────
 📦 ProductRouter
@@ -87,11 +129,14 @@ Cada archivo en `/routes` define los endpoints disponibles para un recurso espec
 ──────────────────────────────
 🧑‍💼 SellerRouter
 ──────────────────────────────
-- GET    /get-sellers        → obtener todos los vendedores
-- GET    /get-seller-by-id   → obtener vendedor por ID
-- GET    /get-seller-by-name → obtener vendedores por nombre
-- GET    /get-seller-by-email→ obtener vendedor por email
-- GET    /get-seller-by-rol  → obtener vendedores por rol
-- POST   /create-seller      → crear nuevo vendedor
-- DELETE /delete-seller      → eliminar vendedor
-- PUT    /edit-seller        → editar vendedor existente
+- GET    /get-sellers         → vendedores del KIOSCO ACTIVO (perfil + email + rol, join con KioscoMembership)
+- GET    /get-seller-by-id    → obtener vendedor por ID
+- GET    /get-seller-by-name  → obtener vendedores por nombre
+- GET    /get-seller-by-email → obtener vendedor por email
+- PUT    /edit-seller         → editar vendedor existente (solo name/profilePhoto/user_status)
+
+Ya no hay `/create-seller`, `/delete-seller` ni `/get-seller-by-rol` en
+este router: crear una cuenta se hace vía `/auth/register`, sumar/sacar
+de un kiosco vía `KioscoRouter` (`/kiosco/join`,
+`/kiosco/:id/member/:user_id`), y el rol se resuelve por kiosco (no hay
+"vendedores por rol" global).

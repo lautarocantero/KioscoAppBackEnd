@@ -1,18 +1,20 @@
 import express from 'express';
-import { 
-  createProduct, 
-  deleteProduct, 
-  editProduct, 
-  getProductByBrand, 
-  getProductById, 
-  getProductByName, 
-  getProducts, 
-  getProductStats, 
-  getProductsWithPresentations, 
-  getProductsWithStock, 
-  home, 
+import {
+  createProduct,
+  deleteProduct,
+  editProduct,
+  getProductByBrand,
+  getProductById,
+  getProductByName,
+  getProducts,
+  getProductStats,
+  getProductsWithPresentations,
+  getProductsWithStock,
+  home,
   searchProductsWithPresentations
 } from '../controllers/product.controller';
+import { authMiddleware } from '../middlewares/authMiddleware';
+import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
 
 const router = express.Router();
 
@@ -21,6 +23,7 @@ const router = express.Router();
 ──────────────────────────────
 📜 Propósito:
 Define las rutas relacionadas con productos y las conecta con sus controladores.
+Todas las rutas requieren sesión + pertenencia al kiosco (header x-kiosco-id).
 
 📂 Endpoints:
 - GET    /                   → home (lista de endpoints)
@@ -35,6 +38,8 @@ Define las rutas relacionadas con productos y las conecta con sus controladores.
 
 - PUT    /edit-product       → editar producto existente
 ──────────────────────────────*/
+
+router.use(authMiddleware, requireKioscoContext);
 
 router.get('/', home);
 router.get('/get-products', getProducts);

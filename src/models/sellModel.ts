@@ -15,14 +15,17 @@ import { Validation } from './validation';
 ──────────────────────────────
 📜 Propósito: Gestión completa de ventas contra MongoDB
 🧩 Dependencias: SellSchema, Validation, sellTypes
+
+🏪 Todas las consultas/escrituras van scoped por kiosco_id (resuelto por
+requireKioscoContext, nunca confiado del body del cliente).
 ──────────────────────────────*/
 
 export class SellModel {
 
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-    static async getSells(limit = 100, offset = 0): Promise<SellType[]> {
-        const results = await SellSchema.find()
+    static async getSells(kioscoId: string, limit = 100, offset = 0): Promise<SellType[]> {
+        const results = await SellSchema.find({ kiosco_id: kioscoId })
             .sort({ createdAt: -1 })
             .skip(offset)
             .limit(limit)
@@ -31,6 +34,7 @@ export class SellModel {
     }
 
     static async getSellsByField<T extends keyof SellRawPayloadType>(
+        kioscoId: string,
         field: T,
         value: SellRawPayloadType[T],
         type: 'string' | 'number',
@@ -39,17 +43,18 @@ export class SellModel {
         if (type === 'string') Validation.stringValidation(value, field as string);
         if (type === 'number') Validation.number(value, field as string);
 
-        const results = await SellSchema.find({ [field]: value }).lean();
+        const results = await SellSchema.find({ kiosco_id: kioscoId, [field]: value }).lean();
         return results as unknown as SellType[];
     }
 
-    static async getSellsByProduct(data: GetSellsByProductPayloadType): Promise<SellType[]> {
+    static async getSellsByProduct(kioscoId: string, data: GetSellsByProductPayloadType): Promise<SellType[]> {
         const { _id }: { _id: unknown } = data;
 
         const _idResult: string = Validation.stringValidation(_id, '_id');
 
         // Busca ventas donde algún producto dentro del array tenga ese product_id
         const results = await SellSchema.find({
+            kiosco_id: kioscoId,
             'products.product_id': _idResult,
         }).limit(100).lean();
 
@@ -68,9 +73,9 @@ export class SellModel {
     ║ 📤 Salida: { count, lastSaleAt, totalAmount }              ║
     ╚═════════════════════════════════════════════════════════╝*/
 
-    static async getTodaySellsCount(): Promise<{ count: number; lastSaleAt: string | null; totalAmount: number }> {
+    static async getTodaySellsCount(kioscoId: string): Promise<{ count: number; lastSaleAt: string | null; totalAmount: number }> {
         // Traemos purchase_date, createdAt y total_amount; nada más, para no cargar documentos completos.
-        const results = await SellSchema.find({}, { purchase_date: 1, createdAt: 1, total_amount: 1 }).lean();
+        const results = await SellSchema.find({ kiosco_id: kioscoId }, { purchase_date: 1, createdAt: 1, total_amount: 1 }).lean();
 
         const todayStr: string = new Date().toDateString();
 
@@ -113,7 +118,7 @@ export class SellModel {
     ║ 📤 Salida: SellType[]                 ║
     ╚═══════════════════════════════════════╝*/
 
-    static async searchSells(term: unknown): Promise<SellType[]> {
+    static async searchSells(kioscoId: string, term: unknown): Promise<SellType[]> {
         const termResult: string = Validation.stringValidation(term, 'term');
         const regex = { $regex: termResult, $options: 'i' };
 
@@ -135,13 +140,13 @@ export class SellModel {
             orConditions.push({ purchase_date: { $regex: dateStr, $options: 'i' } });
         }
 
-        const results = await SellSchema.find({ $or: orConditions }).limit(100).lean();
+        const results = await SellSchema.find({ kiosco_id: kioscoId, $or: orConditions }).limit(100).lean();
         return results as unknown as SellType[];
     }
 
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
-    static async create(data: CreateSellPayloadType): Promise<string> {
+    static async create(kioscoId: string, data: CreateSellPayloadType): Promise<string> {
         const {
             currency, iva, payment_method, products,
             purchase_date, seller_id, seller_name,
@@ -196,6 +201,7 @@ export class SellModel {
 
         await SellSchema.create({
             _id,
+            kiosco_id:         kioscoId,
             purchase_date:     purchaseDateResult,
             modification_date: '',
             seller_id:         sellerIdResult,
@@ -217,18 +223,18 @@ export class SellModel {
 
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
-    static async delete(data: DeleteSellPayloadType): Promise<void> {
+    static async delete(kioscoId: string, data: DeleteSellPayloadType): Promise<void> {
         const { _id }: { _id: unknown } = data;
 
         const _idResult: string = Validation.stringValidation(_id, '_id');
 
-        const deleted = await SellSchema.findOneAndDelete({ _id: _idResult });
+        const deleted = await SellSchema.findOneAndDelete({ _id: _idResult, kiosco_id: kioscoId });
         if (!deleted) throw new Error(`There is not any sell with that id ${_id}`);
     }
 
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
-    static async edit(data: EditSellPayloadType): Promise<void> {
+    static async edit(kioscoId: string, data: EditSellPayloadType): Promise<void> {
         const { _id, products, purchase_date, seller_name, total_amount, status, amount_paid, debtor_name, settled_by_sell_id } = data;
 
         const _idResult: string                = Validation.stringValidation(_id, '_id');
@@ -267,7 +273,7 @@ export class SellModel {
         }
 
         const updated = await SellSchema.findOneAndUpdate(
-            { _id: _idResult },
+            { _id: _idResult, kiosco_id: kioscoId },
             { $set: setFields },
         );
 

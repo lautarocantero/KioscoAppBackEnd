@@ -11,18 +11,22 @@ import { Validation } from './validation';
 🏢 ProviderModel — Mongoose
 ──────────────────────────────
 📜 Propósito: Gestión completa de proveedores contra MongoDB
+
+🏪 Todas las consultas/escrituras van scoped por kiosco_id (resuelto por
+requireKioscoContext, nunca confiado del body del cliente).
 ──────────────────────────────*/
 
 export class ProviderModel {
 
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-    static async getProviders(): Promise<Provider[]> {
-        const results = await ProviderSchema.find().limit(100).lean();
+    static async getProviders(kioscoId: string): Promise<Provider[]> {
+        const results = await ProviderSchema.find({ kiosco_id: kioscoId }).limit(100).lean();
         return results as unknown as Provider[];
     }
 
     static async getProviderByField<T extends keyof Provider>(
+        kioscoId: string,
         field: T,
         value: unknown,
         type: 'string' | 'number',
@@ -31,15 +35,16 @@ export class ProviderModel {
         if (type === 'string') Validation.stringValidation(value, field as string);
         if (type === 'number') Validation.number(value, field as string);
 
-        const results = await ProviderSchema.find({ [field]: value }).lean();
+        const results = await ProviderSchema.find({ kiosco_id: kioscoId, [field]: value }).lean();
         return results as unknown as Provider[];
     }
 
     // Busca por teléfono O email de contacto (un solo término de búsqueda).
-    static async getProvidersByContact(contact: unknown): Promise<Provider[]> {
+    static async getProvidersByContact(kioscoId: string, contact: unknown): Promise<Provider[]> {
         const contactResult = Validation.stringValidation(contact, 'contact');
 
         const results = await ProviderSchema.find({
+            kiosco_id: kioscoId,
             $or: [{ contact_phone: contactResult }, { contact_email: contactResult }],
         }).lean();
 
@@ -48,13 +53,13 @@ export class ProviderModel {
 
     //──────────────────────────────────────────── 📊 STATS 📊 ───────────────────────────────────────────//
 
-    static async getProvidersCount(): Promise<number> {
-        return await ProviderSchema.countDocuments();
+    static async getProvidersCount(kioscoId: string): Promise<number> {
+        return await ProviderSchema.countDocuments({ kiosco_id: kioscoId });
     }
 
     //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 
-    static async create(data: CreateProviderPayload): Promise<string> {
+    static async create(kioscoId: string, data: CreateProviderPayload): Promise<string> {
         const { name, valoration, contact_phone, contact_email } = data;
 
         const nameResult         = Validation.stringValidation(name, 'name');
@@ -62,13 +67,14 @@ export class ProviderModel {
         const contactPhoneResult = Validation.stringValidation(contact_phone, 'contact phone');
         const contactEmailResult = Validation.email(contact_email);
 
-        const existing = await ProviderSchema.findOne({ name: nameResult }).lean();
+        const existing = await ProviderSchema.findOne({ kiosco_id: kioscoId, name: nameResult }).lean();
         if (existing) throw new Error('provider already exists');
 
         const _id: string = crypto.randomUUID();
 
         await ProviderSchema.create({
             _id,
+            kiosco_id:       kioscoId,
             name:            nameResult,
             valoration:      valorationResult,
             contact_phone:   contactPhoneResult,
@@ -80,19 +86,19 @@ export class ProviderModel {
 
     //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
-    static async delete(data: DeleteProviderPayload): Promise<void> {
+    static async delete(kioscoId: string, data: DeleteProviderPayload): Promise<void> {
         const { _id } = data;
 
         const _idResult = Validation.stringValidation(_id, '_id');
 
-        const deleted = await ProviderSchema.findOneAndDelete({ _id: _idResult });
+        const deleted = await ProviderSchema.findOneAndDelete({ _id: _idResult, kiosco_id: kioscoId });
         if (!deleted) throw new Error('There is not any provider with that id');
     }
 
     //──────────────────────────────────────────── 🛠️ PUT 🛠️ ───────────────────────────────────────────//
 
     // Solo pisa los campos que vengan definidos (igual que SellerModel.edit).
-    static async edit(data: EditProviderPayload): Promise<void> {
+    static async edit(kioscoId: string, data: EditProviderPayload): Promise<void> {
         const { _id, name, valoration, contact_phone, contact_email } = data;
 
         const _idResult = Validation.stringValidation(_id, '_id');
@@ -103,7 +109,7 @@ export class ProviderModel {
         if (contact_phone !== undefined) setFields.contact_phone = Validation.stringValidation(contact_phone, 'contact phone');
         if (contact_email !== undefined) setFields.contact_email = Validation.email(contact_email);
 
-        const updated = await ProviderSchema.findOneAndUpdate({ _id: _idResult }, { $set: setFields });
+        const updated = await ProviderSchema.findOneAndUpdate({ _id: _idResult, kiosco_id: kioscoId }, { $set: setFields });
         if (!updated) throw new Error('There is not any provider with that id');
     }
 }

@@ -28,11 +28,15 @@ import {
   getSellsByProduct, 
   getSellsBySeller, 
   getTodaySellsCount,
-  home, 
+  home,
   searchSells
 } from '../controllers/sell.controller';
+import { authMiddleware } from '../middlewares/authMiddleware';
+import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
 
 const router = express.Router();
+
+router.use(authMiddleware, requireKioscoContext);
 
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 router.get('/', home);

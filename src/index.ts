@@ -5,6 +5,7 @@ import express from 'express';
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./docs/swagger";
 import authRoutes from './routes/auth.routes';
+import kioscoRoutes from './routes/kiosco.routes';
 import productRoutes from './routes/product.routes';
 import productVariantRoutes from './routes/presentation.routes';
 import providerRoutes from './routes/provider.routes';
@@ -34,6 +35,7 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 
 app.use('/auth', authRoutes);
+app.use('/kiosco', kioscoRoutes);
 app.use('/sell', sellRoutes);
 app.use('/seller', sellerRoutes);
 app.use('/provider', providerRoutes);

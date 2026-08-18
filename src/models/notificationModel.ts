@@ -22,8 +22,8 @@ export class NotificationModel {
 
   //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
-  static async getAll(userId: string): Promise<NotificationDTO[]> {
-    const results = await NotificationSchema.find().sort({ createdAt: -1 }).lean();
+  static async getAll(kioscoId: string, userId: string): Promise<NotificationDTO[]> {
+    const results = await NotificationSchema.find({ kiosco_id: kioscoId }).sort({ createdAt: -1 }).lean();
 
     return (results as unknown as NotificationSchemaType[]).map(({ readBy, ...rest }) => ({
       ...rest,
@@ -33,7 +33,7 @@ export class NotificationModel {
 
   //──────────────────────────────────────────── 📤 CREATE 📤 ───────────────────────────────────────────//
 
-  static async createSaleNotification(data: SaleNotificationPayload): Promise<void> {
+  static async createSaleNotification(kioscoId: string, data: SaleNotificationPayload): Promise<void> {
     const { sellId, sellerId, sellerName, amount, currency } = data;
 
     const sellIdResult     = Validation.stringValidation(sellId, 'sell_id');
@@ -44,6 +44,7 @@ export class NotificationModel {
 
     await NotificationSchema.create({
       _id: crypto.randomUUID(),
+      kiosco_id: kioscoId,
       type: 'sale',
       payload: {
         sellId: sellIdResult,
@@ -56,7 +57,7 @@ export class NotificationModel {
     });
   }
 
-  static async createLowStockNotification(data: LowStockNotificationPayload): Promise<void> {
+  static async createLowStockNotification(kioscoId: string, data: LowStockNotificationPayload): Promise<void> {
     const { presentationId, productId, productName, units, minStock } = data;
 
     const presentationIdResult = Validation.stringValidation(presentationId, 'presentation_id');
@@ -69,6 +70,7 @@ export class NotificationModel {
 
     await NotificationSchema.create({
       _id: crypto.randomUUID(),
+      kiosco_id: kioscoId,
       type: 'low_stock',
       payload: {
         presentationId: presentationIdResult,
@@ -83,45 +85,45 @@ export class NotificationModel {
 
   //──────────────────────────────────────────── 🛠️ PATCH 🛠️ ───────────────────────────────────────────//
 
-  static async markAsRead(_id: string, userId: string): Promise<void> {
+  static async markAsRead(kioscoId: string, _id: string, userId: string): Promise<void> {
     const idResult = Validation.stringValidation(_id, '_id');
 
     const updated = await NotificationSchema.findOneAndUpdate(
-      { _id: idResult },
+      { _id: idResult, kiosco_id: kioscoId },
       { $addToSet: { readBy: userId } },
     );
 
     if (!updated) throw new Error(`There is not any notification with that id ${_id}`);
   }
 
-  static async markAsUnread(_id: string, userId: string): Promise<void> {
+  static async markAsUnread(kioscoId: string, _id: string, userId: string): Promise<void> {
     const idResult = Validation.stringValidation(_id, '_id');
 
     const updated = await NotificationSchema.findOneAndUpdate(
-      { _id: idResult },
+      { _id: idResult, kiosco_id: kioscoId },
       { $pull: { readBy: userId } },
     );
 
     if (!updated) throw new Error(`There is not any notification with that id ${_id}`);
   }
 
-  static async markAllAsRead(userId: string): Promise<void> {
+  static async markAllAsRead(kioscoId: string, userId: string): Promise<void> {
     await NotificationSchema.updateMany(
-      { readBy: { $ne: userId } },
+      { kiosco_id: kioscoId, readBy: { $ne: userId } },
       { $addToSet: { readBy: userId } },
     );
   }
 
   //──────────────────────────────────────────── 🗑️ DELETE 🗑️ ───────────────────────────────────────────//
 
-  static async deleteOne(_id: string): Promise<void> {
+  static async deleteOne(kioscoId: string, _id: string): Promise<void> {
     const idResult = Validation.stringValidation(_id, '_id');
 
-    const deleted = await NotificationSchema.findOneAndDelete({ _id: idResult });
+    const deleted = await NotificationSchema.findOneAndDelete({ _id: idResult, kiosco_id: kioscoId });
     if (!deleted) throw new Error(`There is not any notification with that id ${_id}`);
   }
 
-  static async deleteAll(): Promise<void> {
-    await NotificationSchema.deleteMany({});
+  static async deleteAll(kioscoId: string): Promise<void> {
+    await NotificationSchema.deleteMany({ kiosco_id: kioscoId });
   }
 }

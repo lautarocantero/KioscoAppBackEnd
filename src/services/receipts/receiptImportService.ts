@@ -100,7 +100,7 @@ export function analyzeWorkbook(buffer: Buffer): { report: ReceiptReportCluster[
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🎮 buildDocsFromReport → reporte -> docs listos para Mongo            ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-export function buildDocsFromReport(clusters: ReceiptReportCluster[]) {
+export function buildDocsFromReport(clusters: ReceiptReportCluster[], kioscoId: string) {
   const products: ProductDoc[] = [];
   const presentations: PresentationDoc[] = [];
   const pendingReview: ReceiptPendingReviewType[] = [];
@@ -114,6 +114,7 @@ export function buildDocsFromReport(clusters: ReceiptReportCluster[]) {
 
     products.push({
       _id: productId,
+      kiosco_id: kioscoId,
       name: cluster.suggested_product_name,
       description: cluster.suggested_product_name,
       created_at,
@@ -126,6 +127,7 @@ export function buildDocsFromReport(clusters: ReceiptReportCluster[]) {
     cluster.presentations.forEach((p, i) => {
       presentations.push({
         _id: presentationIds[i],
+        kiosco_id: kioscoId,
         product_id: productId,
         sku: p.sku,
         barcode: p.barcode ?? "",
@@ -163,15 +165,17 @@ export function buildDocsFromReport(clusters: ReceiptReportCluster[]) {
 ║    match -> "update" contra ese _id existente. Products no se tocan.  ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 export async function matchPresentations(
-  presentations: PresentationDoc[]
+  presentations: PresentationDoc[],
+  kioscoId: string,
 ): Promise<ReceiptMatchedPresentationDocType[]> {
   const skus = presentations.map((p) => p.sku).filter(Boolean);
 
   // Traemos también product_id: si esta presentation ya existe, necesitamos
   // saber a qué producto real pertenece para resolver el cluster completo
   // (ver resolveProductInserts) y no crear un producto duplicado.
+  // Scoped por kiosco_id: un SKU no es único entre kioscos distintos.
   const existing = skus.length > 0
-    ? await PresentationMongo.find({ sku: { $in: skus } }, { _id: 1, sku: 1, product_id: 1 }).lean()
+    ? await PresentationMongo.find({ kiosco_id: kioscoId, sku: { $in: skus } }, { _id: 1, sku: 1, product_id: 1 }).lean()
     : [];
 
   const bySku = new Map(existing.map((e: any) => [e.sku, e]));
@@ -418,10 +422,10 @@ export async function applyReceiptDocs(
 ║ 🎮 previewReceiptImport → analiza + matchea presentations, SIN        ║
 ║    insertar/actualizar nada.                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-export async function previewReceiptImport(buffer: Buffer): Promise<ReceiptPreviewResultType> {
+export async function previewReceiptImport(buffer: Buffer, kioscoId: string): Promise<ReceiptPreviewResultType> {
   const { report, stats } = analyzeWorkbook(buffer);
-  const { products, presentations, pendingReview } = buildDocsFromReport(report);
-  const matchedPresentations = await matchPresentations(presentations);
+  const { products, presentations, pendingReview } = buildDocsFromReport(report, kioscoId);
+  const matchedPresentations = await matchPresentations(presentations, kioscoId);
   const { productsToInsert, productsAlreadyExisting, resolvedPresentations } = resolveProductInserts(
     products,
     matchedPresentations

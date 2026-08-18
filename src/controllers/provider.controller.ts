@@ -48,9 +48,9 @@ export async function home(_req: Request, res: Response): Promise<void> {
         `);
 }
 
-export async function getProviders(_req: Request, res: Response): Promise<void> {
+export async function getProviders(req: Request, res: Response): Promise<void> {
     try {
-        const providersResult: Provider[] = await ProviderModel.getProviders();
+        const providersResult: Provider[] = await ProviderModel.getProviders(req.kioscoId!);
         res.status(200).json(providersResult);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -63,7 +63,7 @@ export async function getProviderById(req: GetProviderByIdRequest, res: Response
 
     try {
         // pese a ser un array de Provider[], siempre devolverá uno solo.
-        const providerResult: Provider[] = await ProviderModel.getProviderByField('_id', _id, 'string');
+        const providerResult: Provider[] = await ProviderModel.getProviderByField(req.kioscoId!, '_id', _id, 'string');
         res.status(200).json(providerResult);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -74,7 +74,7 @@ export async function getProvidersByName(req: GetProviderByNameRequest, res: Res
     const { name } = req.query;
 
     try {
-        const providersResult: Provider[] = await ProviderModel.getProviderByField('name', name, 'string');
+        const providersResult: Provider[] = await ProviderModel.getProviderByField(req.kioscoId!, 'name', name, 'string');
         res.status(200).json(providersResult);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -86,7 +86,7 @@ export async function getProvidersByValoration(req: GetProviderByValorationReque
 
     try {
         const valorationResult = valoration === undefined ? undefined : Number(valoration);
-        const providersResult: Provider[] = await ProviderModel.getProviderByField('valoration', valorationResult, 'number');
+        const providersResult: Provider[] = await ProviderModel.getProviderByField(req.kioscoId!, 'valoration', valorationResult, 'number');
         res.status(200).json(providersResult);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -97,16 +97,16 @@ export async function getProvidersByContact(req: GetProviderByContactRequest, re
     const { contact } = req.query;
 
     try {
-        const providersResult: Provider[] = await ProviderModel.getProvidersByContact(contact);
+        const providersResult: Provider[] = await ProviderModel.getProvidersByContact(req.kioscoId!, contact);
         res.status(200).json(providersResult);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }
 }
 
-export async function getProvidersStats(_req: Request, res: Response): Promise<void> {
+export async function getProvidersStats(req: Request, res: Response): Promise<void> {
     try {
-        const totalProviders: number = await ProviderModel.getProvidersCount();
+        const totalProviders: number = await ProviderModel.getProvidersCount(req.kioscoId!);
         res.status(200).json({ totalProviders });
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -119,7 +119,7 @@ export async function createProvider(req: CreateProviderRequest, res: Response):
     const { name, valoration, contact_phone, contact_email } = req.body;
 
     try {
-        const _id: string = await ProviderModel.create({ name, valoration, contact_phone, contact_email });
+        const _id: string = await ProviderModel.create(req.kioscoId!, { name, valoration, contact_phone, contact_email });
         res
             .status(200)
             .json({
@@ -137,7 +137,7 @@ export async function deleteProvider(req: DeleteProviderRequest, res: Response):
     const { _id } = req.body;
 
     try {
-        await ProviderModel.delete({ _id });
+        await ProviderModel.delete(req.kioscoId!, { _id });
         res.status(200).json({ message: 'The provider has been removed correctly' });
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -150,7 +150,7 @@ export async function editProvider(req: EditProviderRequest, res: Response): Pro
     const { _id, name, valoration, contact_phone, contact_email } = req.body;
 
     try {
-        await ProviderModel.edit({ _id, name, valoration, contact_phone, contact_email });
+        await ProviderModel.edit(req.kioscoId!, { _id, name, valoration, contact_phone, contact_email });
         res.status(200).json({ message: 'The provider has been edited successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);

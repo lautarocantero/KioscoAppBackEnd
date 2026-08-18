@@ -37,9 +37,9 @@ export async function home(_req: Request, res: Response): Promise<void> {
     `);
 }
 
-export async function getPresentations(_req: Request, res: Response): Promise<void> {
+export async function getPresentations(req: Request, res: Response): Promise<void> {
     try {
-        const presentations = await PresentationModel.getPresentations();
+        const presentations = await PresentationModel.getPresentations(req.kioscoId!);
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -49,7 +49,7 @@ export async function getPresentations(_req: Request, res: Response): Promise<vo
 export async function getPresentationById(req: GetPresentationByIdRequest, res: Response): Promise<void> {
     const { product_presentation_id } = req.params;
     try {
-        const presentations = await PresentationModel.getPresentationByField('_id', product_presentation_id, 'string');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, '_id', product_presentation_id, 'string');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -59,7 +59,7 @@ export async function getPresentationById(req: GetPresentationByIdRequest, res: 
 export async function getPresentationByProductId(req: GetPresentationByProductIdRequest, res: Response): Promise<void> {
     const { product_id } = req.params;
     try {
-        const presentations = await PresentationModel.getPresentationByField('product_id', product_id, 'string');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, 'product_id', product_id, 'string');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -69,7 +69,7 @@ export async function getPresentationByProductId(req: GetPresentationByProductId
 export async function getPresentationsWithStockByProductId(req: GetPresentationByProductIdRequest, res: Response): Promise<void> {
     const { product_id } = req.params;
     try {
-        const presentations = await PresentationModel.getPresentationsWithStockByProductId(product_id);
+        const presentations = await PresentationModel.getPresentationsWithStockByProductId(req.kioscoId!, product_id);
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -79,7 +79,7 @@ export async function getPresentationsWithStockByProductId(req: GetPresentationB
 export async function getPresentationByStock(req: GetPresentationByStockRequest, res: Response): Promise<void> {
     const { stock } = req.body;
     try {
-        const presentations = await PresentationModel.getPresentationByField('stock', stock, 'number');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, 'stock', stock, 'number');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -89,7 +89,7 @@ export async function getPresentationByStock(req: GetPresentationByStockRequest,
 export async function getPresentationByPrice(req: GetPresentationByPriceRequest, res: Response): Promise<void> {
     const { price } = req.body;
     try {
-        const presentations = await PresentationModel.getPresentationByField('price', price, 'number');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, 'price', price, 'number');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -99,7 +99,7 @@ export async function getPresentationByPrice(req: GetPresentationByPriceRequest,
 export async function getPresentationByStatus(req: GetPresentationByStatusRequest, res: Response): Promise<void> {
     const { status } = req.body;
     try {
-        const presentations = await PresentationModel.getPresentationByField('status', status, 'string');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, 'status', status, 'string');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -109,7 +109,7 @@ export async function getPresentationByStatus(req: GetPresentationByStatusReques
 export async function getPresentationByModelSize(req: GetPresentationByModelSizeRequest, res: Response): Promise<void> {
     const { model_size } = req.body;
     try {
-        const presentations = await PresentationModel.getPresentationByField('model_size', model_size, 'number');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, 'model_size', model_size, 'number');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -123,7 +123,7 @@ export async function searchPresentationsByProductId(
     const { product_id } = req.params;
     const term = (req.query.term as string) ?? '';
     try {
-        const presentations = await PresentationModel.searchByProductIdAndTerm(product_id, term);
+        const presentations = await PresentationModel.searchByProductIdAndTerm(req.kioscoId!, product_id, term);
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -133,7 +133,7 @@ export async function searchPresentationsByProductId(
 export async function getPresentationByBarcode(req: GetPresentationByBarcodeRequest, res: Response): Promise<void> {
     const { barcode } = req.params;
     try {
-        const presentations = await PresentationModel.getPresentationByField('barcode', barcode, 'string');
+        const presentations = await PresentationModel.getPresentationByField(req.kioscoId!, 'barcode', barcode, 'string');
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -145,7 +145,7 @@ export async function getPresentationByBarcode(req: GetPresentationByBarcodeRequ
 export async function getPresentationByCategory(req: GetPresentationByCategoryRequest, res: Response): Promise<void> {
     const { category } = req.body;
     try {
-        const presentations = await PresentationModel.getPresentationsByCategory(category);
+        const presentations = await PresentationModel.getPresentationsByCategory(req.kioscoId!, category);
         res.status(200).json(presentations);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -169,7 +169,7 @@ export async function getPresentationAnalytics(
     const { start_date, end_date, seller_id } = req.query;
 
     try {
-        const analytics = await PresentationAnalyticsService.getAnalytics(presentation_id, start_date, end_date, seller_id);
+        const analytics = await PresentationAnalyticsService.getAnalytics(req.kioscoId!, presentation_id, start_date, end_date, seller_id);
         res.status(200).json(analytics);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -188,7 +188,7 @@ export async function createPresentation(req: CreatePresentationRequest, res: Re
     const imageUrl = req.file ? req.file.path : image_url;
 
     try {
-        const _id = await PresentationModel.create({
+        const _id = await PresentationModel.create(req.kioscoId!, {
             product_id, sku, barcode, name, description, brand,
             image_url: imageUrl, model_type, model_size: Number(model_size), model_unit, sale_type,
             is_perishable: is_perishable === true || is_perishable === 'true',
@@ -212,7 +212,7 @@ export async function editPresentation(req: EditPresentationRequest, res: Respon
     } = req.body;
 
     try {
-        await PresentationModel.edit({
+        await PresentationModel.edit(req.kioscoId!, {
             _id: presentation_id, sku, barcode, price: Number(price), stock: Number(stock),
             min_stock: Number(min_stock), model_type, model_size: Number(model_size), model_unit,
             is_perishable: is_perishable === true || is_perishable === 'true',
@@ -230,7 +230,7 @@ export async function editPresentation(req: EditPresentationRequest, res: Respon
 export async function deletePresentation(req: DeletePresentationRequest, res: Response): Promise<void> {
     const { _id } = req.body;
     try {
-        await PresentationModel.delete({ _id });
+        await PresentationModel.delete(req.kioscoId!, { _id });
         res.status(200).json({ _id, message: 'Product presentation deleted successfully' });
     } catch (error: unknown) {
         handleControllerError(res, error);
