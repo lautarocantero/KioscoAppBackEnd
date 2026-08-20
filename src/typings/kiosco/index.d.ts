@@ -17,6 +17,7 @@ pertenecen productos, presentaciones, proveedores, ventas y vendedores).
 ──────────────────────────────*/
 
 import { AuthRoleEnum } from '@typings/auth/enums';
+import { KioscoPlanEnum, KioscoPlanStatusEnum } from '@typings/membership/enums';
 
 declare module '@typings/kiosco' {
 
@@ -25,14 +26,22 @@ declare module '@typings/kiosco' {
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 interface KioscoEntity {
-    _id:          string;
-    name:         string;
-    address:      string;
-    owner_id:     string;
-    invite_code:  string;
-    currency:     string;
-    created_at:   string;
-    updated_at:   string;
+    _id:                 string;
+    name:                string;
+    address:             string;
+    owner_id:            string;
+    invite_code:         string;
+    currency:            string;
+    // Tier de suscripción del kiosco (ver @typings/membership). Default 'stocko'
+    // para todo kiosco existente/nuevo: no requiere pago hasta que el admin
+    // elija upgradear a un tier superior.
+    plan:                KioscoPlanEnum;
+    plan_status:         KioscoPlanStatusEnum;
+    // Id de la última suscripción (preapproval) creada en Mercado Pago para
+    // este kiosco. null si nunca inició un checkout.
+    mp_preapproval_id:   string | null;
+    created_at:          string;
+    updated_at:          string;
 }
 
 type KioscoPayloadUnknown = Record<keyof KioscoEntity, unknown>;

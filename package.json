@@ -10,7 +10,8 @@
     "start": "node build/index",
     "test": "echo \"Error: no test specified\" && exit 1",
     "docgen": "ts-node tools/docgen/generate-controller-docs.ts",
-    "migrate:kiosco": "ts-node src/scripts/migrateToKiosco.ts"
+    "migrate:kiosco": "ts-node src/scripts/migrateToKiosco.ts",
+    "migrate:membership-plans": "ts-node src/scripts/migrateMembershipPlans.ts"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +43,7 @@
     "dotenv": "^17.4.2",
     "express": "5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mercadopago": "^3.4.0",
     "mongoose": "^9.5.0",
     "multer": "^2.1.1",
     "resend": "^6.18.1",

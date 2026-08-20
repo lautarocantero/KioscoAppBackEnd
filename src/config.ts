@@ -5,6 +5,11 @@ export const {
     RESEND_API_KEY,
     EMAIL_FROM = 'Stocko <onboarding@resend.dev>',
     FRONTEND_URL = 'http://localhost:5173',
+    // Opcionales: sin ellas el checkout de membresías responde 400 en vez de
+    // tirar abajo todo el server (a diferencia de RESEND_API_KEY, que sí es
+    // crítico desde el arranque). Ver services/mercadoPagoService.ts.
+    MP_ACCESS_TOKEN,
+    MP_WEBHOOK_SECRET,
 } = process.env;
 
 export const SALT_ROUNDS = Number(process.env.SALT_ROUNDS) || 10;
