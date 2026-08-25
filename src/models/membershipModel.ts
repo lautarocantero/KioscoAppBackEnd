@@ -53,8 +53,12 @@ export class MembershipModel {
         }
 
         return {
-            plan: kiosco.plan as KioscoPlanEnum,
-            plan_status: kiosco.plan_status as KioscoPlanStatusEnum,
+            // Fallback defensivo: un kiosco creado por un proceso con schema
+            // desactualizado (o insertado a mano) puede no tener plan/plan_status
+            // en Mongo — migrate:membership-plans backfillea esto, pero leer con
+            // default evita 500 mientras esa migración no corrió todavía.
+            plan: (kiosco.plan as KioscoPlanEnum) ?? KioscoPlanEnum.Stocko,
+            plan_status: (kiosco.plan_status as KioscoPlanStatusEnum) ?? KioscoPlanStatusEnum.Active,
             next_payment_date,
         };
     }
