@@ -1,4 +1,4 @@
-import { KioscoSchema } from '../schemas/kioscoSchema';
+import { AuthSchema } from '../schemas/authSchema';
 import { MercadoPagoService } from '../services/mercadoPagoService';
 import { MEMBERSHIP_PLANS } from '../config/membershipPlans';
 import { KioscoPlanEnum, KioscoPlanStatusEnum } from '../typings/membership/enums';
@@ -12,25 +12,27 @@ import {
 /*──────────────────────────────
 💳 MembershipModel
 ──────────────────────────────
-📜 Propósito: Gestión del tier de suscripción de un kiosco (checkout y
-aplicación de resultados de Mercado Pago). No confundir con KioscoModel
-(datos del kiosco en sí) ni con KioscoMembership (rol usuario↔kiosco).
+📜 Propósito: Gestión del tier de suscripción de una CUENTA (checkout y
+aplicación de resultados de Mercado Pago). El plan es de Auth, no de
+Kiosco: un usuario paga un único plan que aplica a todos los kioscos donde
+participa (ver services/planService.ts para cómo se resuelve el plan
+efectivo de un kiosco a partir de su dueño).
 ──────────────────────────────*/
 
 function isValidPlan(value: unknown): value is KioscoPlanEnum {
     return typeof value === 'string' && Object.values(KioscoPlanEnum).includes(value as KioscoPlanEnum);
 }
 
-// external_reference de la preapproval: "<kiosco_id>:<plan>". Evita necesitar
+// external_reference de la preapproval: "<user_id>:<plan>". Evita necesitar
 // una colección aparte para trackear checkouts pendientes.
-function buildExternalReference(kioscoId: string, plan: KioscoPlanEnum): string {
-    return `${kioscoId}:${plan}`;
+function buildExternalReference(userId: string, plan: KioscoPlanEnum): string {
+    return `${userId}:${plan}`;
 }
 
-function parseExternalReference(externalReference: string): { kioscoId: string; plan: KioscoPlanEnum } | null {
-    const [kioscoId, plan] = externalReference.split(':');
-    if (!kioscoId || !isValidPlan(plan)) return null;
-    return { kioscoId, plan };
+function parseExternalReference(externalReference: string): { userId: string; plan: KioscoPlanEnum } | null {
+    const [userId, plan] = externalReference.split(':');
+    if (!userId || !isValidPlan(plan)) return null;
+    return { userId, plan };
 }
 
 export class MembershipModel {
@@ -38,13 +40,13 @@ export class MembershipModel {
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
     static async getStatus(data: GetMembershipStatusPayload): Promise<MembershipStatus> {
-        const kiosco = await KioscoSchema.findOne({ _id: data.kiosco_id }).lean();
-        if (!kiosco) throw new Error('Kiosco not found');
+        const auth = await AuthSchema.findOne({ _id: data.user_id }).lean();
+        if (!auth) throw new Error('User not found');
 
         let next_payment_date: string | null = null;
-        if (kiosco.mp_preapproval_id && kiosco.plan_status === KioscoPlanStatusEnum.Active) {
+        if (auth.mp_preapproval_id && auth.plan_status === KioscoPlanStatusEnum.Active) {
             try {
-                const preapproval = await MercadoPagoService.getPreapproval(kiosco.mp_preapproval_id);
+                const preapproval = await MercadoPagoService.getPreapproval(auth.mp_preapproval_id);
                 next_payment_date = preapproval.next_payment_date ?? null;
             } catch {
                 // Si Mercado Pago no está configurado o la preapproval ya no existe,
@@ -53,12 +55,9 @@ export class MembershipModel {
         }
 
         return {
-            // Fallback defensivo: un kiosco creado por un proceso con schema
-            // desactualizado (o insertado a mano) puede no tener plan/plan_status
-            // en Mongo — migrate:membership-plans backfillea esto, pero leer con
-            // default evita 500 mientras esa migración no corrió todavía.
-            plan: (kiosco.plan as KioscoPlanEnum) ?? KioscoPlanEnum.Stocko,
-            plan_status: (kiosco.plan_status as KioscoPlanStatusEnum) ?? KioscoPlanStatusEnum.Active,
+            // Fallback defensivo: ver PlanService.getUserPlan.
+            plan: (auth.plan as KioscoPlanEnum) ?? KioscoPlanEnum.Standard,
+            plan_status: (auth.plan_status as KioscoPlanStatusEnum) ?? KioscoPlanStatusEnum.Active,
             next_payment_date,
         };
     }
@@ -69,10 +68,10 @@ export class MembershipModel {
         if (!isValidPlan(data.plan)) throw new Error('Invalid plan');
         const planDefinition = MEMBERSHIP_PLANS[data.plan];
 
-        const kiosco = await KioscoSchema.findOne({ _id: data.kiosco_id }).lean();
-        if (!kiosco) throw new Error('Kiosco not found');
-        if (kiosco.plan === data.plan && kiosco.plan_status === KioscoPlanStatusEnum.Active) {
-            throw new Error('This kiosco is already subscribed to this plan');
+        const auth = await AuthSchema.findOne({ _id: data.user_id }).lean();
+        if (!auth) throw new Error('User not found');
+        if (auth.plan === data.plan && auth.plan_status === KioscoPlanStatusEnum.Active) {
+            throw new Error('This account is already subscribed to this plan');
         }
 
         const preapproval = await MercadoPagoService.createPreapproval({
@@ -80,18 +79,17 @@ export class MembershipModel {
             payer_email: data.payer_email,
             transaction_amount: planDefinition.price,
             currency_id: planDefinition.currency_id,
-            external_reference: buildExternalReference(data.kiosco_id, data.plan),
+            external_reference: buildExternalReference(data.user_id, data.plan),
         });
 
         if (!preapproval.id || !preapproval.init_point) throw new Error('Mercado Pago did not return a valid checkout link');
 
-        await KioscoSchema.findOneAndUpdate(
-            { _id: data.kiosco_id },
+        await AuthSchema.findOneAndUpdate(
+            { _id: data.user_id },
             {
                 $set: {
                     plan_status: KioscoPlanStatusEnum.PendingPayment,
                     mp_preapproval_id: preapproval.id,
-                    updated_at: new Date().toISOString(),
                 },
             },
         );
@@ -111,24 +109,23 @@ export class MembershipModel {
         const parsed = parseExternalReference(preapproval.external_reference);
         if (!parsed) throw new Error('Could not parse external_reference');
 
-        const kiosco = await KioscoSchema.findOne({ _id: parsed.kioscoId }).lean();
-        if (!kiosco) throw new Error('Kiosco not found');
+        const auth = await AuthSchema.findOne({ _id: parsed.userId }).lean();
+        if (!auth) throw new Error('User not found');
         // Evita que una notificación vieja/fuera de orden pise el estado de una
-        // preapproval más nueva del mismo kiosco.
-        if (kiosco.mp_preapproval_id !== preapprovalId) return;
+        // preapproval más nueva de la misma cuenta.
+        if (auth.mp_preapproval_id !== preapprovalId) return;
 
         const planStatus = mapPreapprovalStatus(preapproval.status);
-        // Cancelada/pausada: el kiosco cae al tier base (Stocko) en vez de
-        // quedar "activo" en un tier que ya no está pagando.
-        const plan = planStatus === KioscoPlanStatusEnum.Active ? parsed.plan : KioscoPlanEnum.Stocko;
+        // Cancelada/pausada: la cuenta cae al tier base (Standard) en vez de
+        // quedar "activa" en un tier que ya no está pagando.
+        const plan = planStatus === KioscoPlanStatusEnum.Active ? parsed.plan : KioscoPlanEnum.Standard;
 
-        await KioscoSchema.findOneAndUpdate(
-            { _id: parsed.kioscoId },
+        await AuthSchema.findOneAndUpdate(
+            { _id: parsed.userId },
             {
                 $set: {
                     plan,
                     plan_status: planStatus,
-                    updated_at: new Date().toISOString(),
                 },
             },
         );

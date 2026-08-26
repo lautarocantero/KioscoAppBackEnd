@@ -12,21 +12,23 @@ Define las rutas relacionadas con ventas y las conecta con sus controladores.
 - GET    /sell/get-sells-by-date  → obtener ventas por fecha
 - GET    /sell/get-sells-by-product → obtener ventas por producto
 - GET    /sell/get-today-sells-count → cantidad de ventas de hoy
+- GET    /sell/monthly-report     → reporte básico del mes en curso
 - POST   /sell/create-sell        → crear nueva venta
 - DELETE /sell/delete-sell        → eliminar venta
 - PUT    /sell/edit-sell          → editar venta existente
 ──────────────────────────────*/
 
 import express from 'express';
-import { 
-  createSell, 
-  deleteSell, 
-  editSell, 
-  getSellById, 
-  getSells, 
-  getSellsByDate, 
-  getSellsByProduct, 
-  getSellsBySeller, 
+import {
+  createSell,
+  deleteSell,
+  editSell,
+  getMonthlySalesReport,
+  getSellById,
+  getSells,
+  getSellsByDate,
+  getSellsByProduct,
+  getSellsBySeller,
   getTodaySellsCount,
   home,
   searchSells
@@ -46,6 +48,7 @@ router.get('/get-sells-by-seller', getSellsBySeller);
 router.get('/get-sells-by-date', getSellsByDate);
 router.get('/get-sells-by-product', getSellsByProduct);
 router.get('/get-today-sells-count', getTodaySellsCount);
+router.get('/monthly-report', getMonthlySalesReport);
 router.get('/search-sells', searchSells);
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 router.post('/create-sell', createSell);

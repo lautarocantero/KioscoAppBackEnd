@@ -70,7 +70,7 @@ export async function confirmReceipt(req: Request, res: Response): Promise<void>
     const products = body.products.map((p) => ({ ...p, kiosco_id: req.kioscoId! }));
     const presentations = body.presentations.map((p) => ({ ...p, kiosco_id: req.kioscoId! }));
 
-    const insertResult = await confirmReceiptImport(products, presentations);
+    const { skippedByPlanLimit, ...insertResult } = await confirmReceiptImport(products, presentations, req.kioscoId!);
     const result: ReceiptImportResultType = {
       stats: body.stats ?? {
         totalRows: 0, totalProducts: 0, multiPresentation: 0,
@@ -79,6 +79,7 @@ export async function confirmReceipt(req: Request, res: Response): Promise<void>
       pendingReview: body.pendingReview ?? [],
       insertResult,
       productsAlreadyExisting: body.productsAlreadyExisting ?? [],
+      skippedByPlanLimit,
     };
     res.status(200).json(result);
   } catch (error: unknown) {

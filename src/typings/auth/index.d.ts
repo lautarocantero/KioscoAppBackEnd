@@ -1,4 +1,5 @@
 import { SellerPublic } from '@typings/seller';
+import { KioscoPlanEnum, KioscoPlanStatusEnum } from '@typings/membership/enums';
 
 interface AuthEntity {
   _id: string; // == Seller._id
@@ -10,6 +11,13 @@ interface AuthEntity {
   verificationTokenExpires: Date | null;
   resetPasswordToken: string | null;
   resetPasswordTokenExpires: Date | null;
+  // Tier de suscripción de la CUENTA (no del kiosco): un usuario puede ser
+  // dueño/miembro de varios kioscos, pero paga un único plan. Default 'standard'.
+  plan: KioscoPlanEnum;
+  plan_status: KioscoPlanStatusEnum;
+  // Id de la última suscripción (preapproval) creada en Mercado Pago para
+  // esta cuenta. null si nunca inició un checkout.
+  mp_preapproval_id: string | null;
 }
 
 type AuthSchema = AuthEntity;

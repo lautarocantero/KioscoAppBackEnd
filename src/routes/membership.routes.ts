@@ -1,9 +1,5 @@
 import express from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware';
-import { requireKioscoContext, requireKioscoRole } from '../middlewares/kioscoMiddleware';
-// Import relativo (no @typings): acá se usa como VALOR (AuthRoleEnum.Admin),
-// y el alias solo resuelve en tiempo de compilación, no en runtime (ts-node-dev).
-import { AuthRoleEnum } from '../typings/auth/enums';
 import {
   createMembershipCheckout,
   getMembershipPlans,
@@ -17,21 +13,19 @@ const router = express.Router();
 💳 MembershipRouter
 ──────────────────────────────
 📂 Endpoints:
-- GET  /plans      → precio/moneda de los 3 tiers (copy de marketing vive en el frontend)
-- GET  /status      → plan y estado de la suscripción del kiosco activo (header x-kiosco-id)
-- POST /checkout    → crea una preapproval de Mercado Pago y devuelve el link de pago (solo admin)
+- GET  /plans      → precio/moneda de los 2 tiers (copy de marketing vive en el frontend)
+- GET  /status      → plan y estado de la suscripción de la cuenta autenticada
+- POST /checkout    → crea una preapproval de Mercado Pago para la cuenta autenticada y devuelve el link de pago
 - POST /webhook     → notificaciones de Mercado Pago (sin auth propia, validado por firma HMAC)
+
+📌 El plan es de la cuenta (Auth), no de un kiosco puntual: cualquier
+   usuario autenticado gestiona SU PROPIO plan, sin importar su rol dentro
+   de los kioscos donde participa (por eso no hay requireKioscoContext acá).
 ──────────────────────────────*/
 
 router.get('/plans', authMiddleware, getMembershipPlans);
-router.get('/status', authMiddleware, requireKioscoContext, getMembershipStatus);
-router.post(
-  '/checkout',
-  authMiddleware,
-  requireKioscoContext,
-  requireKioscoRole([AuthRoleEnum.Admin]),
-  createMembershipCheckout,
-);
+router.get('/status', authMiddleware, getMembershipStatus);
+router.post('/checkout', authMiddleware, createMembershipCheckout);
 router.post('/webhook', receiveMembershipWebhook);
 
 export default router;

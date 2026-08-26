@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { SellModel } from "../models/sellModel";
 import { handleControllerError } from "../utils/handleControllerError";
-import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, SellType } from "@typings/sell";
+import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, MonthlySalesReportType, SellType } from "@typings/sell";
 import { PresentationModel } from "../models/presentationModel";
 import { NotificationModel } from "../models/notificationModel";
 
@@ -177,6 +177,23 @@ export async function getTodaySellsCount(req: Request, res: Response): Promise<v
         res
             .status(200)
             .json(stats);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+/*══════════ 🎮 getMonthlySalesReport ══════════╗
+║ 📥 Entrada: -                                  ║
+║ ⚙️ Proceso: totales de ventas del mes en curso ║
+║ 📤 Salida: { month, totalSales, totalRevenue,  ║
+║    averageTicket }                              ║
+║ 🛠️ Errores: handleControllerError              ║
+╚═════════════════════════════════════════════╝*/
+
+export async function getMonthlySalesReport(req: Request, res: Response): Promise<void> {
+    try {
+        const report: MonthlySalesReportType = await SellModel.getMonthlySummary(req.kioscoId!);
+        res.status(200).json(report);
     } catch (error: unknown) {
         handleControllerError(res, error);
     }

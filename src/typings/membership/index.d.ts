@@ -3,8 +3,10 @@
 📘 MembershipTypes
 ──────────────────────────────
 📜 Propósito:
-Definir tipados para el tier de suscripción de un kiosco y el checkout de
-Mercado Pago (Preapproval / suscripciones) que lo activa.
+Definir tipados para el tier de suscripción de una CUENTA (Auth, no Kiosco:
+un usuario paga un único plan que aplica a todos los kioscos donde
+participa) y el checkout de Mercado Pago (Preapproval / suscripciones) que
+lo activa.
 ──────────────────────────────*/
 
 import { KioscoPlanEnum, KioscoPlanStatusEnum } from '@typings/membership/enums';
@@ -37,7 +39,7 @@ export type MembershipStatus = {
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
 export type CreateMembershipCheckoutPayload = {
-  kiosco_id: string;
+  user_id: string;
   plan: unknown;
   payer_email: string;
 };
@@ -48,17 +50,17 @@ export type CreateMembershipCheckoutResult = {
 };
 
 export type GetMembershipStatusPayload = {
-  kiosco_id: string;
+  user_id: string;
 };
 
 /*══════════════════════════════════════════════════════════════════════╗
 ║ 🔔 WEBHOOK 🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔🔔           ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-// external_reference de la preapproval: "<kiosco_id>:<plan>", parseado en el
-// webhook para saber a qué kiosco/tier aplicar la actualización.
+// external_reference de la preapproval: "<user_id>:<plan>", parseado en el
+// webhook para saber a qué cuenta/tier aplicar la actualización.
 export type MembershipExternalReference = {
-  kiosco_id: string;
+  user_id: string;
   plan: KioscoPlanEnum;
 };
 
@@ -66,6 +68,6 @@ export type MembershipExternalReference = {
 ║ 🔗 REQUEST 🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗🔗                     ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 
-export type CreateMembershipCheckoutRequest = Request<unknown, unknown, Omit<CreateMembershipCheckoutPayload, 'kiosco_id' | 'payer_email'>>;
+export type CreateMembershipCheckoutRequest = Request<unknown, unknown, Omit<CreateMembershipCheckoutPayload, 'user_id' | 'payer_email'>>;
 
 }

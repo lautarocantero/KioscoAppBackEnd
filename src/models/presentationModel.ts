@@ -2,6 +2,9 @@ import { PresentationSchemaType, presentation } from '@typings/presentation';
 import { Validation } from './validation';
 import { ModelType, ModelUnit, PresentationCategory, SaleType } from '../typings/presentation/presentationEnum';
 import { PresentationMongo } from '../schemas/presentationSchema';
+import { CatalogService } from '../services/catalogService';
+import { PlanService } from '../services/planService';
+import { PLAN_LIMITS } from '../config/planLimits';
 
 /*──────────────────────────────
 🎭 PresentationModel — Mongoose
@@ -105,6 +108,13 @@ export class PresentationModel {
       const minStockResult = Validation.number(min_stock, 'min_stock', true); // isZeroValid: 0 kg/g de stock inicial es válido
       const stockResult    = Validation.number(stock, 'stock', true);
       const priceResult    = Validation.number(price, 'price');
+
+      const ownerPlan = await PlanService.getKioscoOwnerPlan(kioscoId);
+      const maxCatalogUnits = PLAN_LIMITS[ownerPlan].maxCatalogUnits;
+      if (maxCatalogUnits !== null) {
+        const currentUnits = await CatalogService.getUnitCount(kioscoId);
+        if (currentUnits >= maxCatalogUnits) throw new Error('This kiosco reached its plan catalog limit (products + presentations)');
+      }
 
       // expiration_date solo se exige si el producto es perecedero
       const expirationDateResult = isPerishableResult

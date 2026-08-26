@@ -10,13 +10,13 @@ import {
 } from '@typings/membership';
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
-║ 🕹️ Controlador de endpoints de membresía (plan/suscripción del kiosco) 🕹️                                                  ║
+║ 🕹️ Controlador de endpoints de membresía (plan/suscripción de la cuenta) 🕹️                                                ║
 ╠═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╣
 ║ Tipo   | Link       | Función            | Auth Req                                            | Status          ║
 ║--------|------------|--------------------|------------------------------------------------------|-----------------║
 ║ GET    | /plans     | getMembershipPlans | authMiddleware                                        | 200,500         ║
-║ GET    | /status    | getMembershipStatus| authMiddleware, requireKioscoContext                  | 200,404,500     ║
-║ POST   | /checkout  | createCheckout     | authMiddleware, requireKioscoContext, requireRole(admin)| 200,400,500   ║
+║ GET    | /status    | getMembershipStatus| authMiddleware                                        | 200,404,500     ║
+║ POST   | /checkout  | createCheckout     | authMiddleware                                        | 200,400,500     ║
 ║ POST   | /webhook   | receiveWebhook     | (público, validado por firma de Mercado Pago)         | 200,401         ║
 ╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝*/
 
@@ -26,7 +26,7 @@ export async function getMembershipPlans(_req: Request, res: Response): Promise<
 
 export async function getMembershipStatus(req: Request, res: Response): Promise<void> {
     try {
-        const status: MembershipStatus = await MembershipModel.getStatus({ kiosco_id: req.kioscoId! });
+        const status: MembershipStatus = await MembershipModel.getStatus({ user_id: req.user!.id });
         res.status(200).json(status);
     } catch (error: unknown) {
         handleControllerError(res, error);
@@ -38,7 +38,7 @@ export async function createMembershipCheckout(req: CreateMembershipCheckoutRequ
 
     try {
         const result: CreateMembershipCheckoutResult = await MembershipModel.createCheckout({
-            kiosco_id: req.kioscoId!,
+            user_id: req.user!.id,
             plan,
             payer_email: req.user!.email,
         });

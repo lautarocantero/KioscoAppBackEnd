@@ -1,8 +1,8 @@
 # Membresías (planes de kiosco) + Mercado Pago
 
-Cada kiosco tiene un tier de suscripción (`plan`) con 3 niveles: `stocko` (default,
-sin costo hasta que se hace upgrade), `super_stocko` y `maxi_stocko`. El upgrade se
-paga como una suscripción mensual recurrente en Mercado Pago (API de
+Cada kiosco tiene un tier de suscripción (`plan`) con 2 niveles: `standard` (default,
+sin costo hasta que se hace upgrade) y `deluxe`. El upgrade se paga como una
+suscripción mensual recurrente en Mercado Pago (API de
 [Preapproval](https://www.mercadopago.com.ar/developers/es/docs/subscriptions/landing)).
 
 ## Setup
@@ -17,7 +17,7 @@ paga como una suscripción mensual recurrente en Mercado Pago (API de
 5. Sin `MP_WEBHOOK_SECRET`, el webhook no valida la firma (queda un warning en el log) —
    configurarlo antes de ir a producción.
 6. **Kioscos creados antes de este feature**: correr `npm run migrate:membership-plans`
-   una vez — backfillea `plan: 'stocko'`, `plan_status: 'active'` en los kioscos que no
+   una vez — backfillea `plan: 'standard'`, `plan_status: 'active'` en los kioscos que no
    tienen esos campos todavía (Mongoose `default` solo aplica a documentos nuevos).
    Idempotente. Sin esto, `GET /membership/status` devuelve un kiosco sin `plan`, y la
    validación Zod del frontend lo rechaza.
@@ -26,7 +26,7 @@ paga como una suscripción mensual recurrente en Mercado Pago (API de
 
 | Método | Ruta         | Auth                                  | Descripción                                   |
 |--------|--------------|----------------------------------------|------------------------------------------------|
-| GET    | `/plans`     | `authMiddleware`                       | Precio/moneda de los 3 tiers                    |
+| GET    | `/plans`     | `authMiddleware`                       | Precio/moneda de los 2 tiers                    |
 | GET    | `/status`    | `authMiddleware` + kiosco context      | Plan/estado actual del kiosco activo            |
 | POST   | `/checkout`  | `authMiddleware` + kiosco context, admin | Crea la suscripción en Mercado Pago y devuelve `init_point` (URL de checkout) |
 | POST   | `/webhook`   | firma HMAC de Mercado Pago             | Recibe la notificación y actualiza el plan del kiosco |
@@ -41,10 +41,10 @@ paga como una suscripción mensual recurrente en Mercado Pago (API de
 4. Mercado Pago notifica `POST /membership/webhook` cuando la suscripción queda
    `authorized` (o `cancelled`). El backend relee la preapproval, y actualiza
    `Kiosco.plan` / `Kiosco.plan_status` según corresponda. Una preapproval cancelada
-   hace caer al kiosco de vuelta al tier `stocko`.
+   hace caer al kiosco de vuelta al tier `standard`.
 
-## Límites conocidos
+## Límites por tier
 
-- No hay enforcement de las features de cada tier en el resto de la app (vendedores,
-  productos, kioscos, etc.) — este cambio solo persiste y refleja el plan pagado. El
-  gating funcional queda para una iteración futura.
+Ver `src/config/planLimits.ts` para los límites concretos de `standard` (vendedores,
+kioscos propios, unidades de catálogo, alcance de reportes/historial) y su
+enforcement en los modelos correspondientes. `deluxe` no tiene límites.

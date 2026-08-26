@@ -1,6 +1,9 @@
 import { CreateProductPayload, DeleteProductPayload, EditProductPayload, Product } from "@typings/product";
 import { Validation } from "./validation";
 import { ProductMongo } from "../schemas/productSchema";
+import { CatalogService } from "../services/catalogService";
+import { PlanService } from "../services/planService";
+import { PLAN_LIMITS } from "../config/planLimits";
 
 /*──────────────────────────────
 📦 ProductModel — Mongoose
@@ -72,6 +75,13 @@ export class ProductModel {
     // Control de duplicados (dentro del mismo kiosco: otro kiosco puede tener el mismo nombre)
     const existing = await ProductMongo.findOne({ kiosco_id: kioscoId, name: nameResult }).lean();
     if (existing) throw new Error('product already exists');
+
+    const ownerPlan = await PlanService.getKioscoOwnerPlan(kioscoId);
+    const maxCatalogUnits = PLAN_LIMITS[ownerPlan].maxCatalogUnits;
+    if (maxCatalogUnits !== null) {
+      const currentUnits = await CatalogService.getUnitCount(kioscoId);
+      if (currentUnits >= maxCatalogUnits) throw new Error('This kiosco reached its plan catalog limit (products + presentations)');
+    }
 
     const _id = crypto.randomUUID();
 
