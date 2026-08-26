@@ -9,6 +9,8 @@ import {
 } from '@typings/sell';
 import { SellSchema } from '../schemas/sellSchema';
 import { Validation } from './validation';
+import { PlanService } from '../services/planService';
+import { MonthlySalesReportType } from '@typings/sell';
 
 /*──────────────────────────────
 💰 SellModel — Mongoose
@@ -24,13 +26,52 @@ export class SellModel {
 
     //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 
+    // El historial de ventas de un kiosco cuyo dueño está en el plan Standard
+    // se limita al mes en curso (reportsScope 'currentMonth', ver PlanService)
+    // — se fuerza acá, server-side, sin importar qué pida el cliente.
     static async getSells(kioscoId: string, limit = 100, offset = 0): Promise<SellType[]> {
-        const results = await SellSchema.find({ kiosco_id: kioscoId })
+        const dateFloor = await PlanService.getSellsDateFloor(kioscoId);
+        const results = await SellSchema.find({
+            kiosco_id: kioscoId,
+            ...(dateFloor ? { createdAt: { $gte: dateFloor } } : {}),
+        })
             .sort({ createdAt: -1 })
             .skip(offset)
             .limit(limit)
             .lean();
         return results as unknown as SellType[];
+    }
+
+    /*══════════ 📊 getMonthlySummary ══════════╗
+    ║ 📥 Entrada: kioscoId                                    ║
+    ║ ⚙️ Proceso: totales de ventas del mes en curso (siempre  ║
+    ║    el mes en curso, sin importar el plan — para Standard ║
+    ║    es el único reporte disponible; para Deluxe es la     ║
+    ║    versión "básica" de un reporte más amplio)             ║
+    ║ 📤 Salida: { month, totalSales, totalRevenue,             ║
+    ║    averageTicket }                                        ║
+    ╚═══════════════════════════════════════════════════════╝*/
+
+    static async getMonthlySummary(kioscoId: string): Promise<MonthlySalesReportType> {
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        const sells = await SellSchema.find(
+            { kiosco_id: kioscoId, createdAt: { $gte: monthStart } },
+            { total_amount: 1 },
+        ).lean();
+
+        const totalSales = sells.length;
+        const totalRevenue = (sells as unknown as { total_amount: number }[])
+            .reduce((sum, sell) => sum + (sell.total_amount ?? 0), 0);
+        const averageTicket = totalSales > 0 ? totalRevenue / totalSales : 0;
+
+        return {
+            month: monthStart.toISOString(),
+            totalSales,
+            totalRevenue,
+            averageTicket,
+        };
     }
 
     static async getSellsByField<T extends keyof SellRawPayloadType>(

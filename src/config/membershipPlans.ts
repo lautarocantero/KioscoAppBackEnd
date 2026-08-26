@@ -1,4 +1,4 @@
-// Import relativo (no @typings): acá se usa como VALOR (KioscoPlanEnum.Stocko
+// Import relativo (no @typings): acá se usa como VALOR (KioscoPlanEnum.Standard
 // como computed key), y el alias solo resuelve en tiempo de compilación, no
 // en runtime (ts-node-dev).
 import { KioscoPlanEnum } from '../typings/membership/enums';
@@ -14,22 +14,16 @@ copy de marketing (ventajas, textos) vive en el frontend.
 ──────────────────────────────*/
 
 export const MEMBERSHIP_PLANS: Record<KioscoPlanEnum, MembershipPlanDefinition> = {
-    [KioscoPlanEnum.Stocko]: {
-        id: KioscoPlanEnum.Stocko,
-        name: 'Stocko',
-        price: 9999,
+    [KioscoPlanEnum.Standard]: {
+        id: KioscoPlanEnum.Standard,
+        name: 'Standard',
+        price: 50000,
         currency_id: 'ARS',
     },
-    [KioscoPlanEnum.SuperStocko]: {
-        id: KioscoPlanEnum.SuperStocko,
-        name: 'Super Stocko',
-        price: 15000,
-        currency_id: 'ARS',
-    },
-    [KioscoPlanEnum.MaxiStocko]: {
-        id: KioscoPlanEnum.MaxiStocko,
-        name: 'Maxi Stocko',
-        price: 20000,
+    [KioscoPlanEnum.Deluxe]: {
+        id: KioscoPlanEnum.Deluxe,
+        name: 'Deluxe',
+        price: 65000,
         currency_id: 'ARS',
     },
 };

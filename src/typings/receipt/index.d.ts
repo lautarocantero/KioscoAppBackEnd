@@ -102,6 +102,10 @@ interface ReceiptImportResultV2 {
         presentations: ReceiptBulkWriteResult;
     };
     productsAlreadyExisting:  string[];
+    // Unidades de catálogo (productos + presentaciones nuevas) que no se
+    // insertaron por haber alcanzado el tope del plan (ver planLimits) —
+    // 0 en Deluxe (sin tope) o cuando el archivo entró completo.
+    skippedByPlanLimit:       number;
 }
 
 // Doc de producto en memoria, previo a insertar: extiende la entidad real

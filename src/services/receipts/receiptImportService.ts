@@ -8,6 +8,9 @@ import { ProductMongo } from "../../schemas/productSchema";
 import { PresentationMongo } from "../../schemas/presentationSchema";
 import { ModelType, ModelUnit } from "../../typings/presentation/presentationEnum";
 import { NeedsReviewReason, ReceiptDocAction } from "../../typings/receipt/receiptEnum";
+import { CatalogService } from "../catalogService";
+import { PlanService } from "../planService";
+import { PLAN_LIMITS } from "../../config/planLimits";
 import type {
   receiptRawRow,
   ReceiptReportCluster,
@@ -408,14 +411,75 @@ async function applyPresentations(
   return { created, updated, unchanged, failed };
 }
 
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 capToRemainingCatalogHeadroom → si el kiosco tiene tope de catálogo ║
+║    (plan Standard), recorta products/presentations-a-crear para que    ║
+║    no lo superen, EN VEZ de rechazar todo el archivo. Admite de a      ║
+║    "grupos" (un producto nuevo + sus presentations nuevas cuelgan      ║
+║    juntas) para no dejar presentations huérfanas de un producto que    ║
+║    terminó descartado. Las presentations "update" no consumen cupo     ║
+║    (no son unidades nuevas) y siempre se aplican.                      ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+async function capToRemainingCatalogHeadroom(
+  products: ProductDoc[],
+  presentations: ReceiptMatchedPresentationDocType[],
+  kioscoId: string,
+): Promise<{ products: ProductDoc[]; presentations: ReceiptMatchedPresentationDocType[]; skippedByPlanLimit: number }> {
+  const ownerPlan = await PlanService.getKioscoOwnerPlan(kioscoId);
+  const maxCatalogUnits = PLAN_LIMITS[ownerPlan].maxCatalogUnits;
+  if (maxCatalogUnits === null) return { products, presentations, skippedByPlanLimit: 0 };
+
+  const currentUnits = await CatalogService.getUnitCount(kioscoId);
+  let headroom = Math.max(maxCatalogUnits - currentUnits, 0);
+  let skippedByPlanLimit = 0;
+
+  const toCreateByProductId = new Map<string, ReceiptMatchedPresentationDocType[]>();
+  const alwaysApplied: ReceiptMatchedPresentationDocType[] = [];
+  for (const p of presentations) {
+    if (p.action !== ReceiptDocAction.Create) { alwaysApplied.push(p); continue; }
+    const list = toCreateByProductId.get(p.product_id) ?? [];
+    list.push(p);
+    toCreateByProductId.set(p.product_id, list);
+  }
+
+  const admittedProducts: ProductDoc[] = [];
+  const admittedCreates: ReceiptMatchedPresentationDocType[] = [];
+  const newProductIds = new Set(products.map((p) => p._id));
+
+  // Grupo = 1 producto nuevo + sus presentations nuevas (entran juntas o no entra ninguna).
+  for (const product of products) {
+    const ownCreates = toCreateByProductId.get(product._id) ?? [];
+    const groupCost = 1 + ownCreates.length;
+    if (groupCost > headroom) { skippedByPlanLimit += groupCost; continue; }
+    admittedProducts.push(product);
+    admittedCreates.push(...ownCreates);
+    headroom -= groupCost;
+  }
+
+  // Presentations nuevas de un producto YA EXISTENTE (no está en `products`):
+  // cada una es su propio grupo de costo 1.
+  for (const [productId, list] of toCreateByProductId) {
+    if (newProductIds.has(productId)) continue;
+    for (const presentation of list) {
+      if (headroom < 1) { skippedByPlanLimit += 1; continue; }
+      admittedCreates.push(presentation);
+      headroom -= 1;
+    }
+  }
+
+  return { products: admittedProducts, presentations: [...admittedCreates, ...alwaysApplied], skippedByPlanLimit };
+}
+
 export async function applyReceiptDocs(
   products: ProductDoc[],
-  presentations: ReceiptMatchedPresentationDocType[]
+  presentations: ReceiptMatchedPresentationDocType[],
+  kioscoId: string,
 ) {
-  const productResult = await insertProducts(products);
+  const capped = await capToRemainingCatalogHeadroom(products, presentations, kioscoId);
+  const productResult = await insertProducts(capped.products);
   const failedProductIds = new Set(productResult.failed.map((f) => f._id));
-  const presentationResult = await applyPresentations(presentations, failedProductIds);
-  return { products: productResult, presentations: presentationResult };
+  const presentationResult = await applyPresentations(capped.presentations, failedProductIds);
+  return { products: productResult, presentations: presentationResult, skippedByPlanLimit: capped.skippedByPlanLimit };
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
@@ -444,7 +508,8 @@ export async function previewReceiptImport(buffer: Buffer, kioscoId: string): Pr
 ╚══════════════════════════════════════════════════════════════════════╝*/
 export async function confirmReceiptImport(
   products: ProductDoc[],
-  presentations: ReceiptMatchedPresentationDocType[]
+  presentations: ReceiptMatchedPresentationDocType[],
+  kioscoId: string,
 ) {
-  return applyReceiptDocs(products, presentations);
+  return applyReceiptDocs(products, presentations, kioscoId);
 }

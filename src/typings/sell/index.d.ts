@@ -121,6 +121,18 @@ declare module '@typings/sell' {
 
   export type EditSellRequestType = Request<Record<string, never>, unknown, EditSellPayloadType>;
 
+  //──────────────────────────────────────────── 📊 REPORTS 📊 ───────────────────────────────────────────//
+
+  // Reporte básico del mes en curso — para el plan Standard es el único
+  // reporte disponible (ver PlanService.getSellsDateFloor); para Deluxe es
+  // un resumen rápido además del historial completo sin restricción.
+  export type MonthlySalesReportType = {
+    month: string;
+    totalSales: number;
+    totalRevenue: number;
+    averageTicket: number;
+  };
+
 }
 
   //──────────────────────────────────────────── 🔗 ANALYTICS 🔗 ───────────────────────────────────────────//

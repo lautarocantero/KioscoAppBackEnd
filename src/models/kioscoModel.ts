@@ -5,6 +5,11 @@ import { SellSchema } from '../schemas/sellSchema';
 import { SellerSchema } from '../schemas/sellerSchema';
 import { AuthSchema } from '../schemas/authSchema';
 import { Validation } from './validation';
+import { PlanService } from '../services/planService';
+import { PLAN_LIMITS } from '../config/planLimits';
+// Import relativo (no @typings): acá se usa como VALOR (KioscoPlanEnum.Deluxe),
+// y el alias solo resuelve en tiempo de compilación, no en runtime (ts-node-dev).
+import { KioscoPlanEnum } from '../typings/membership/enums';
 import {
     CreateKioscoPayload,
     EditKioscoPayload,
@@ -50,6 +55,18 @@ export class KioscoModel {
         const nameResult = Validation.stringValidation(name, 'name');
         const addressResult = Validation.stringValidation(address, 'address', 1);
 
+        // El límite de kioscos es de la CUENTA, no de un kiosco puntual: cuenta
+        // toda membresía (propia o como vendedor de otro kiosco), porque crear
+        // uno nuevo es, en el fondo, sumarse una membresía más.
+        const ownerPlan = await PlanService.getUserPlan(owner_id);
+        const membershipLimit = PLAN_LIMITS[ownerPlan].maxKioscoMemberships;
+        if (membershipLimit !== null) {
+            const membershipCount = await KioscoMembershipSchema.countDocuments({ user_id: owner_id });
+            if (membershipCount >= membershipLimit) {
+                throw new Error('Your account reached its kiosco limit for the current plan. Upgrade to Deluxe to create more.');
+            }
+        }
+
         const _id = crypto.randomUUID();
         const now = new Date().toISOString();
         const invite_code = generateInviteCode();
@@ -88,6 +105,27 @@ export class KioscoModel {
 
         const existing = await KioscoMembershipSchema.findOne({ kiosco_id: kiosco._id, user_id }).lean();
         if (existing) throw new Error('You already belong to this kiosco');
+
+        // Tope de miembros del kiosco: se evalúa contra el plan de SU DUEÑO
+        // (el kiosco ya no tiene plan propio, ver PlanService).
+        const ownerPlan = await PlanService.getUserPlan(kiosco.owner_id);
+        const memberLimit = PLAN_LIMITS[ownerPlan].maxKioscoMembers;
+        if (memberLimit !== null) {
+            const memberCount = await KioscoMembershipSchema.countDocuments({ kiosco_id: kiosco._id });
+            if (memberCount >= memberLimit) throw new Error('This kiosco reached its plan member limit');
+        }
+
+        // Tope de membresías DE QUIEN SE UNE: cuántos kioscos puede integrar en
+        // total su propia cuenta. Excepción: si quien lo invita (el dueño de
+        // este kiosco) tiene Deluxe, puede sumarse aunque ya esté en el tope.
+        const joinerPlan = await PlanService.getUserPlan(user_id);
+        const joinerMembershipLimit = PLAN_LIMITS[joinerPlan].maxKioscoMemberships;
+        if (joinerMembershipLimit !== null && ownerPlan !== KioscoPlanEnum.Deluxe) {
+            const joinerMembershipCount = await KioscoMembershipSchema.countDocuments({ user_id });
+            if (joinerMembershipCount >= joinerMembershipLimit) {
+                throw new Error('Your account already belongs to another kiosco. Ask this kiosco\'s admin to upgrade to Deluxe, or upgrade your own plan.');
+            }
+        }
 
         const now = new Date().toISOString();
         await KioscoMembershipSchema.create({

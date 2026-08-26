@@ -207,4 +207,21 @@ export class CatalogService {
     return { totalProducts, lowStockPresentations };
   }
 
+  /*══════════ 🎮 getUnitCount ══════════╗
+  ║ 📥 Entrada: kioscoId                                       ║
+  ║ ⚙️ Proceso: cuenta "unidades de catálogo" = productos +     ║
+  ║            presentaciones (cada uno cuenta 1). Es el        ║
+  ║            número que se compara contra PLAN_LIMITS         ║
+  ║            .maxCatalogUnits (ver planService/planLimits)     ║
+  ║ 📤 Salida: number                                            ║
+  ╚═══════════════════════════════════════════════════════════╝*/
+
+  static async getUnitCount(kioscoId: string): Promise<number> {
+    const [totalProducts, totalPresentations] = await Promise.all([
+      ProductMongo.countDocuments({ kiosco_id: kioscoId }),
+      PresentationMongo.countDocuments({ kiosco_id: kioscoId }),
+    ]);
+    return totalProducts + totalPresentations;
+  }
+
 }
