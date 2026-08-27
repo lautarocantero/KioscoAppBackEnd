@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { SellModel } from "../models/sellModel";
 import { handleControllerError } from "../utils/handleControllerError";
-import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, MonthlySalesReportType, SellType } from "@typings/sell";
+import { CreateSellRequestType, DeleteSellRequestType, EditSellRequestType, GetSellByIdRequestType, GetSellsByDateRequestType, GetSellsByProductRequestType, GetSellsBySellerRequestType, MonthlyReportCompareWithType, MonthlyReportDetailType, MonthlySalesReportType, SellType } from "@typings/sell";
 import { PresentationModel } from "../models/presentationModel";
 import { NotificationModel } from "../models/notificationModel";
+import { MonthlyReportService } from "../services/monthlyReportService";
+
+const COMPARE_WITH_VALUES: MonthlyReportCompareWithType[] = ['previous_month', 'previous_year', 'none'];
 
 /*═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗
 ║ 🕹️ Controlador de endpoints relacionados con ventas 🕹️                                                                    ║
@@ -193,6 +196,37 @@ export async function getTodaySellsCount(req: Request, res: Response): Promise<v
 export async function getMonthlySalesReport(req: Request, res: Response): Promise<void> {
     try {
         const report: MonthlySalesReportType = await SellModel.getMonthlySummary(req.kioscoId!);
+        res.status(200).json(report);
+    } catch (error: unknown) {
+        handleControllerError(res, error);
+    }
+}
+
+/*══════════ 🎮 getMonthlySalesReportDetail ══════════╗
+║ 📥 Entrada: query: { month?: 'YYYY-MM', compareWith?: 'previous_month' |    ║
+║    'previous_year' | 'none' }                                              ║
+║ ⚙️ Proceso: delega en MonthlyReportService.getDetail — ventas por día,      ║
+║    medios de pago, por vendedor, franjas horarias, quiebres/stock muerto   ║
+║    y cuenta corriente del mes pedido, respetando el plan del kiosco         ║
+║ 📤 Salida: MonthlyReportDetailType                                          ║
+║ 🛠️ Errores: handleControllerError (mes fuera del plan Standard, etc.)       ║
+╚═════════════════════════════════════════════════════════════════════════╝*/
+
+export async function getMonthlySalesReportDetail(req: Request, res: Response): Promise<void> {
+    const month = typeof req.query.month === 'string' ? req.query.month : undefined;
+    const compareWithParam = typeof req.query.compareWith === 'string' ? req.query.compareWith : undefined;
+
+    if (compareWithParam && !COMPARE_WITH_VALUES.includes(compareWithParam as MonthlyReportCompareWithType)) {
+        res.status(400).json({ message: `compareWith debe ser uno de: ${COMPARE_WITH_VALUES.join(', ')}` });
+        return;
+    }
+
+    try {
+        const report: MonthlyReportDetailType = await MonthlyReportService.getDetail(
+            req.kioscoId!,
+            month,
+            compareWithParam as MonthlyReportCompareWithType | undefined,
+        );
         res.status(200).json(report);
     } catch (error: unknown) {
         handleControllerError(res, error);

@@ -13,6 +13,7 @@ Define las rutas relacionadas con ventas y las conecta con sus controladores.
 - GET    /sell/get-sells-by-product → obtener ventas por producto
 - GET    /sell/get-today-sells-count → cantidad de ventas de hoy
 - GET    /sell/monthly-report     → reporte básico del mes en curso
+- GET    /sell/monthly-report/detail → detalle del reporte mensual (día, medios de pago, vendedores, horarios, stock, cta. cte.)
 - POST   /sell/create-sell        → crear nueva venta
 - DELETE /sell/delete-sell        → eliminar venta
 - PUT    /sell/edit-sell          → editar venta existente
@@ -24,6 +25,7 @@ import {
   deleteSell,
   editSell,
   getMonthlySalesReport,
+  getMonthlySalesReportDetail,
   getSellById,
   getSells,
   getSellsByDate,
@@ -49,6 +51,7 @@ router.get('/get-sells-by-date', getSellsByDate);
 router.get('/get-sells-by-product', getSellsByProduct);
 router.get('/get-today-sells-count', getTodaySellsCount);
 router.get('/monthly-report', getMonthlySalesReport);
+router.get('/monthly-report/detail', getMonthlySalesReportDetail);
 router.get('/search-sells', searchSells);
 //──────────────────────────────────────────── 📤 POST 📤 ───────────────────────────────────────────//
 router.post('/create-sell', createSell);

@@ -133,6 +133,101 @@ declare module '@typings/sell' {
     averageTicket: number;
   };
 
+  //──────────────────────────────────────────── 📊 MONTHLY REPORT DETAIL 📊 ───────────────────────────────────────────//
+
+  // compareWith resuelto por el cliente; 'none' no pide comparación,
+  // 'previous_month'/'previous_year' la piden pero pueden no estar
+  // disponibles (ver PlanService.getSellsDateFloor) — en ese caso
+  // comparisonMonth/summary.previous vienen en null, nunca en cero.
+  export type MonthlyReportCompareWithType = 'previous_month' | 'previous_year' | 'none';
+
+  export type DailySalePointType = {
+    isoDate: string;
+    label: string;
+    amount: number;
+    isBest: boolean;
+  };
+
+  export type PaymentMethodBreakdownType = {
+    method: string;
+    amount: number;
+    percentage: number;
+  };
+
+  export type SellerReportRowType = {
+    sellerId: string;
+    sellerName: string;
+    amount: number;
+    ticketsCount: number;
+    participationPct: number;
+    changePct: number | null;
+    isNew: boolean;
+    maxTicketAmount: number;
+  };
+
+  export type HourlyBucketType = {
+    label: string;
+    amount: number;
+    isPeak: boolean;
+    isLow: boolean;
+  };
+
+  export type StockAlertsType = {
+    outOfStockCount: number;
+    outOfStockSoldInComparisonCount: number;
+    estimatedLostRevenue: number;
+    deadStockCount: number;
+    deadStockValue: number;
+    oldestDeadStock: { name: string; days: number } | null;
+  };
+
+  export type CurrentAccountSummaryType = {
+    debtorsCount: number;
+    totalDebt: number;
+    collectedThisMonth: number;
+    newDebtThisMonth: number;
+    paymentsCount: number;
+  };
+
+  export type MonthlyReportMetaType = {
+    availableMonths: string[];
+    canCompare: boolean;
+    daysInMonth: number;
+    generatedAt: string;
+  };
+
+  export type MonthlyReportDetailType = {
+    month: string;
+    comparisonMonth: string | null;
+    meta: MonthlyReportMetaType;
+    summary: {
+      totalSales: number;
+      totalRevenue: number;
+      averageTicket: number;
+      ticketsPerDay: number;
+      previous: {
+        totalSales: number;
+        totalRevenue: number;
+        averageTicket: number;
+      } | null;
+    };
+    dailySales: DailySalePointType[];
+    dailySalesSummary: {
+      avgPerDay: number;
+      closedDays: number;
+      bestDay: DailySalePointType | null;
+      worstDay: DailySalePointType | null;
+      bestWeek: { label: string; amount: number } | null;
+    };
+    paymentMethods: PaymentMethodBreakdownType[];
+    sellers: SellerReportRowType[];
+    sellersNote: { sellerName: string; maxTicketAmount: number } | null;
+    hourlyBuckets: HourlyBucketType[];
+    hourlySummary: { peakLabel: string | null; lowLabel: string | null };
+    stockAlerts: StockAlertsType;
+    currentAccount: CurrentAccountSummaryType;
+  };
+
 }
 
   //──────────────────────────────────────────── 🔗 ANALYTICS 🔗 ───────────────────────────────────────────//
