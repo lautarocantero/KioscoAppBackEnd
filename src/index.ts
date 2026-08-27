@@ -21,6 +21,7 @@ const app = express();
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
+    'http://localhost:5175',
     'https://69545059c2c5900008ded560--kioscoapp.netlify.app',
     'https://kioscoapp.netlify.app'
 ];
