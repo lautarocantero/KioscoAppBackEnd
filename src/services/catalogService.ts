@@ -23,11 +23,15 @@ export class CatalogService {
   /*══════════ 🎮 buildPresentationsLookupStage ══════════╗
   ║ 📥 Entrada: ninguna                                    ║
   ║ ⚙️ Proceso: arma el stage $lookup reutilizable que      ║
-  ║            trae presentations resumidas (sku, name,    ║
-  ║            description, model_type, model_size, stock, ║
-  ║            min_stock, category, barcode) para el        ║
-  ║            producto cuyo _id coincide con product_id    ║
-  ║            de la presentation                           ║
+  ║            trae las presentations (sku, name,           ║
+  ║            description, model_type, model_size, stock,  ║
+  ║            min_stock, category, sale_type, barcode,      ║
+  ║            price, product_id, brand, expiration_date,    ║
+  ║            image_url — todo lo que necesita el frontend  ║
+  ║            para agregar una presentation al carrito      ║
+  ║            directo desde el catálogo, sin abrir el       ║
+  ║            detalle del producto) para el producto cuyo   ║
+  ║            _id coincide con product_id de la presentation║
   ║ 📤 Salida: objeto stage $lookup para usar en aggregate  ║
   ╚═══════════════════════════════════════════════════════╝*/
 
@@ -40,7 +44,7 @@ export class CatalogService {
           { $match: { $expr: { $eq: ['$product_id', '$$productId'] }, kiosco_id: kioscoId } },
           {
             $project: {
-              _id: 0,
+              _id: 1,
               sku: 1,
               name: 1,
               description: 1,
@@ -51,6 +55,11 @@ export class CatalogService {
               category: 1,
               sale_type: 1,
               barcode: 1,
+              price: 1,
+              product_id: 1,
+              brand: 1,
+              expiration_date: 1,
+              image_url: 1,
             },
           },
         ],
