@@ -25,6 +25,10 @@ export type CreatePreapprovalParams = {
     transaction_amount: number;
     currency_id: string;
     external_reference: string;
+    // Token de un solo uso del Card Payment Brick: si viene presente, la
+    // preapproval se autoriza directamente contra esa tarjeta (sin
+    // redirect a checkout hospedado).
+    card_token_id?: string;
 };
 
 export class MercadoPagoService {
@@ -40,7 +44,11 @@ export class MercadoPagoService {
                 payer_email: params.payer_email,
                 external_reference: params.external_reference,
                 back_url: `${FRONTEND_URL}/membership/checkout/result`,
-                status: 'pending',
+                // Con card_token_id la preapproval se autoriza ya mismo contra esa
+                // tarjeta; sin token, queda 'pending' hasta que el pagador la
+                // autorice en el checkout hospedado (init_point).
+                status: params.card_token_id ? 'authorized' : 'pending',
+                card_token_id: params.card_token_id,
                 auto_recurring: {
                     frequency: 1,
                     frequency_type: 'months',

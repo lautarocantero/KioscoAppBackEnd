@@ -34,13 +34,15 @@ export async function getMembershipStatus(req: Request, res: Response): Promise<
 }
 
 export async function createMembershipCheckout(req: CreateMembershipCheckoutRequest, res: Response): Promise<void> {
-    const { plan } = req.body;
+    const { plan, payment_method, card_token_id } = req.body;
 
     try {
         const result: CreateMembershipCheckoutResult = await MembershipModel.createCheckout({
             user_id: req.user!.id,
             plan,
             payer_email: req.user!.email,
+            payment_method,
+            card_token_id,
         });
         res.status(200).json(result);
     } catch (error: unknown) {

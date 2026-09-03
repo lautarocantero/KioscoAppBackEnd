@@ -42,10 +42,14 @@ export type CreateMembershipCheckoutPayload = {
   user_id: string;
   plan: unknown;
   payer_email: string;
+  payment_method?: unknown;
+  card_token_id?: string;
 };
 
 export type CreateMembershipCheckoutResult = {
-  init_point: string;
+  // Ausente cuando el checkout se autoriza directamente con card_token_id
+  // (Card Payment Brick) — no hay checkout hospedado al que redirigir.
+  init_point?: string;
   preapproval_id: string;
 };
 
