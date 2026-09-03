@@ -17,13 +17,13 @@ export const MEMBERSHIP_PLANS: Record<KioscoPlanEnum, MembershipPlanDefinition> 
     [KioscoPlanEnum.Standard]: {
         id: KioscoPlanEnum.Standard,
         name: 'Standard',
-        price: 50000,
+        price: 49900,
         currency_id: 'ARS',
     },
     [KioscoPlanEnum.Deluxe]: {
         id: KioscoPlanEnum.Deluxe,
         name: 'Deluxe',
-        price: 65000,
+        price: 64900,
         currency_id: 'ARS',
     },
 };
