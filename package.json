@@ -8,7 +8,7 @@
     "linter": "eslint 'src/**/*.ts' --max-warnings 0",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "start": "node build/index",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "docgen": "ts-node tools/docgen/generate-controller-docs.ts",
     "migrate:kiosco": "ts-node src/scripts/migrateToKiosco.ts",
     "migrate:membership-plans": "ts-node src/scripts/migrateMembershipPlans.ts"
@@ -28,7 +28,8 @@
     "eslint": "^8.57.1",
     "mongodb": "^7.5.0",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
   },
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
