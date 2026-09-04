@@ -58,6 +58,10 @@ const isImageUrl = (value: string): boolean => {
 };
 const isShortString = (string: string, length: number = 3): boolean => string.length < length;
 const isLongString = (string: string): boolean => string.length > 30;
+// Sanitización client-side (sanitizeAuthInput.ts en KioscoApp) no reemplaza la
+// validación real: acá se corta cualquier string sin forma de email (sin
+// segmentos non-space@non-space.non-space), venga de la app o de un curl directo.
+const isEmailFormat = (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const isSKU = (value: string): boolean => /^[A-Z0-9_-]+$/i.test(value);
 const isZero = (value: number): boolean => value === 0;
 const isBarcode = (value: string): boolean => /^\d{13}$/.test(value);
@@ -110,14 +114,15 @@ export class Validation {
 
   /*══════════ 🎮 email ══════════╗
   ║ 📥 Entrada: email (unknown)   ║
-  ║ ⚙️ Proceso: valida que sea string y >= 3 caracteres ║
+  ║ ⚙️ Proceso: valida que sea string, >= 3 caracteres y con forma de email ║
   ║ 📤 Salida: string validado    ║
-  ║ 🛠️ Errores: no provisto, no string, demasiado corto ║
+  ║ 🛠️ Errores: no provisto, no string, demasiado corto, formato inválido ║
   ╚══════════════════════════════╝*/
   static email(email: unknown): string {
     if (!email) throw new Error(`No email provided`);
     if (!isString(email)) throw new Error('email must be a string');
     if (isShortString(email as string)) throw new Error('email must be at least 3 characters long');
+    if (!isEmailFormat(email as string)) throw new Error('email has an invalid format');
     return email as string;
   }
 

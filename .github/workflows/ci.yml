@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  # No hay "lint"/"test" reales todavía (ts-standard falla en ~todo el
+  # codebase preexistente, "test" no tiene ningún test runner configurado).
+  # Ver docs/tasks.md.
+
+  audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true # informativo: no bloquea merges, ver el reporte en los logs del job.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high

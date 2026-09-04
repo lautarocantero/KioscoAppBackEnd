@@ -14,6 +14,7 @@ import {
   // verifyEmail
 } from '../controllers/auth.controller';
 import { authMiddleware } from '../middlewares/authMiddleware';
+import { authRateLimiter } from '../middlewares/rateLimitMiddleware';
 
 const router = express.Router();
 
@@ -38,15 +39,15 @@ Define las rutas de autenticación y las conecta con sus controladores.
 ──────────────────────────────*/
 
 router.get('/', home);
-router.post('/register', register);
-router.post('/login', login);
+router.post('/register', authRateLimiter, register);
+router.post('/login', authRateLimiter, login);
 router.post('/google', googleLogin);
 router.post('/logout', logout);
 router.post('/check-auth', checkAuth);
 router.post('/refresh', refresh);
 // router.post('/verify-email', verifyEmail); // TODO(email-verification): reactivar cuando se pague Resend.
-router.post('/request-password-reset', requestPasswordReset);
-router.post('/reset-password', resetPassword);
+router.post('/request-password-reset', authRateLimiter, requestPasswordReset);
+router.post('/reset-password', authRateLimiter, resetPassword);
 // Self-service: cada usuario borra SU PROPIA cuenta (cascada a Seller y a sus membresías de kiosco).
 router.delete('/delete-auth', authMiddleware, deleteAuth);
 router.put('/edit-auth', authMiddleware, editAuth);

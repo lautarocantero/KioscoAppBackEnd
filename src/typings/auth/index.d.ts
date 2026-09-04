@@ -82,11 +82,16 @@ export type DeleteAuthPayload = Pick<AuthPayload, '_id'>;
 
 // Editar Auth ahora es SOLO email/password (self-service). name/foto se editan vía Seller,
 // role vive en KioscoMembership (ver PUT /kiosco/:kiosco_id/member/:user_id/role).
+// `_id` nunca viaja en el body: el controller lo deriva de la sesión
+// (req.user.id), igual que deleteAuth — ver EditAuthRequestBody para el
+// shape que sí puede mandar el cliente.
 export type EditAuthPayload = {
   _id: string;
   email?: string;
   password?: string;
 };
+
+export type EditAuthRequestBody = Omit<EditAuthPayload, '_id'>;
 
 export type VerifyEmailPayload = {
   token: string;
@@ -109,7 +114,7 @@ export type AuthLogoutRequest = Request<AuthParams, unknown, AuthLogoutPayload>;
 export type AuthCheckAuthRequest = Request<AuthParams, unknown, AuthCheckAuthPayload>;
 export type AuthRefreshRequest = Request<AuthParams, unknown, unknown>;
 export type DeleteAuthRequest = Request<AuthParams, unknown, DeleteAuthPayload>;
-export type EditAuthRequest = Request<AuthParams, unknown, EditAuthPayload>;
+export type EditAuthRequest = Request<AuthParams, unknown, EditAuthRequestBody>;
 export type VerifyEmailRequest = Request<AuthParams, unknown, VerifyEmailPayload>;
 export type RequestPasswordResetRequest = Request<AuthParams, unknown, RequestPasswordResetPayload>;
 export type ResetPasswordRequest = Request<AuthParams, unknown, ResetPasswordPayload>;

@@ -282,22 +282,25 @@ export async function requestPasswordReset(req: Request, res: Response): Promise
     try {
         const result = await AuthModel.requestPasswordReset({ email });
 
-        // 🚧 BYPASS TEMPORAL (sin Resend pago): devolvemos el token directo en la
-        // respuesta para que el frontend pueda navegar a /reset-password sin
-        // depender del email.
+        // 🚧 BYPASS TEMPORAL (pendiente de pagar/activar Resend): devolvemos el
+        // token directo en la respuesta para que el frontend pueda navegar a
+        // /reset-password sin depender del email.
         //
         // ⚠️ SEGURIDAD: esto rompe a propósito la protección de "no revelar si
-        // el email existe" (el `token` viene presente solo si existe). NO
-        // DEJAR este bypass en producción.
+        // el email existe" (el `token` viene presente solo si existe). Riesgo
+        // alto conocido y aceptado mientras dure el bypass — ver
+        // docs/usefull/securityAudit.md en el repo del frontend. NO DEJAR este
+        // bypass en producción más de lo necesario.
         //
-        // Para reactivar cuando se pague Resend:
+        // Para reactivar cuando se resuelva el envío de mail (dominio propio
+        // verificado en Resend, o un proveedor con verificación de sender):
         // 1. Descomentar el bloque de EmailService de abajo (resolviendo el
         //    `name` contra Seller por _id, ya que ya no vive en Auth).
         // 2. Sacar `token` del response.status(200).json(...).
         // 3. Restaurar el mensaje genérico sin datos condicionales.
         //
         // if (result) {
-        //     const seller = await SellerModel.getSellerByField('_id', result._id, 'string');
+        //     const seller = await SellerSchema.findOne({ _id: result._id }).lean();
         //     await EmailService.sendPasswordResetEmail({ to: email, username: seller.name, token: result.resetToken });
         // }
 
@@ -363,8 +366,13 @@ export async function deleteAuth(req: DeleteAuthRequest, res: Response): Promise
 ║    role va por PUT /kiosco/:kiosco_id/member/:user_id/role                 ║
 ╚═══════════════════════════════════════════════════════════════════════════╝*/
 
+// Self-service: cada usuario solo puede editar SU PROPIA cuenta. El _id se
+// deriva de la sesión (req.user.id), igual que deleteAuth — nunca se acepta
+// uno en el body (si no, cualquier sesión válida podría editar email/password
+// de cualquier otra cuenta con solo conocer su _id).
 export async function editAuth(req: EditAuthRequest, res: Response): Promise<void> {
-  const { _id, email, password } = req.body;
+  const _id = req.user!.id;
+  const { email, password } = req.body;
 
   try {
     await AuthModel.editAuth({ _id, email, password });
