@@ -46,7 +46,6 @@ export class AuthModel {
         ).lean();
         if (!sellerObject) throw new Error('Seller profile not found');
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _p, refreshToken: _rt, verificationToken: _vt, verificationTokenExpires: _vte,
                 resetPasswordToken: _rpt, resetPasswordTokenExpires: _rpte, ...authPublic } = authObject as AuthSchemaType;
 
@@ -113,7 +112,6 @@ export class AuthModel {
         ).lean();
         if (!sellerObject) throw new Error('Seller profile not found');
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password: _p, refreshToken: _rt, verificationToken: _vt, verificationTokenExpires: _vte,
                 resetPasswordToken: _rpt, resetPasswordTokenExpires: _rpte, ...authPublic } = authObject as AuthSchemaType;
 
@@ -134,7 +132,6 @@ export class AuthModel {
                 { returnDocument: 'after' },
             ).lean();
             if (!sellerObject) throw new Error('Seller profile not found');
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { password: _p, refreshToken: _rt, verificationToken: _vt, verificationTokenExpires: _vte,
                     resetPasswordToken: _rpt, resetPasswordTokenExpires: _rpte, ...authPublic } = existingAuth as AuthSchemaType;
             return { ...authPublic, ...sellerObject } as SessionUser;

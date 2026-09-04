@@ -18,9 +18,18 @@ jobs:
       - run: npm ci
       - run: npx tsc --noEmit
 
-  # No hay "lint"/"test" reales todavía (ts-standard falla en ~todo el
-  # codebase preexistente, "test" no tiene ningún test runner configurado).
-  # Ver docs/tasks.md.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run linter
+
+  # "test" sigue sin test runner configurado (placeholder). Ver docs/tasks.md.
 
   audit:
     runs-on: ubuntu-latest

@@ -38,7 +38,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
     const payload = jwt.verify(accessToken, ACCESS_SECRET) as AuthenticatedUser;
     req.user = { id: payload.id, email: payload.email };
     next();
-  } catch (error: unknown) {
+  } catch {
     res.status(401).json({ message: 'Invalid or expired access token' });
   }
 }

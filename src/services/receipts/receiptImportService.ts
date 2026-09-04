@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
 import crypto from "node:crypto";
+import { MongoBulkWriteError, type WriteError } from "mongodb";
 import { mapCategory } from "./categoryMap";
 import { extractSize, extractModelType, baseName } from "./extract";
 import { cleanString, classifyCode, normalizeDate, toNumber } from "./normalize";
@@ -181,10 +182,10 @@ export async function matchPresentations(
     ? await PresentationMongo.find({ kiosco_id: kioscoId, sku: { $in: skus } }, { _id: 1, sku: 1, product_id: 1 }).lean()
     : [];
 
-  const bySku = new Map(existing.map((e: any) => [e.sku, e]));
+  const bySku = new Map(existing.map((e) => [e.sku, e]));
 
   return presentations.map((p) => {
-    const match: any = p.sku ? bySku.get(p.sku) : undefined;
+    const match = p.sku ? bySku.get(p.sku) : undefined;
     return {
       ...p,
       action: match ? ReceiptDocAction.Update : ReceiptDocAction.Create,
@@ -256,7 +257,7 @@ async function insertProducts(products: ProductDoc[]): Promise<ReceiptBulkInsert
 
   const ids = products.map((d) => d._id);
   const existing = ids.length > 0 ? await ProductMongo.find({ _id: { $in: ids } }, { _id: 1 }).lean() : [];
-  const existingIds = new Set(existing.map((e: any) => e._id));
+  const existingIds = new Set(existing.map((e) => e._id));
 
   const toInsert = products.filter((d) => {
     if (existingIds.has(d._id)) { skippedDuplicates.push(d._id); return false; }
@@ -268,15 +269,15 @@ async function insertProducts(products: ProductDoc[]): Promise<ReceiptBulkInsert
   for (const batch of chunk(docsToInsert, 500)) {
     try {
       await ProductMongo.insertMany(batch, { ordered: false });
-      inserted.push(...batch.map((b: any) => b._id));
-    } catch (err: any) {
-      const writeErrors = err.writeErrors ?? [];
+      inserted.push(...batch.map((b) => b._id));
+    } catch (err) {
+      const writeErrors: WriteError[] = ([] as WriteError[]).concat(err instanceof MongoBulkWriteError ? err.writeErrors ?? [] : []);
       for (const we of writeErrors) {
         const failedDoc = batch[we.index];
         failed.push({ _id: failedDoc?._id ?? "desconocido", error: we.errmsg ?? String(we) });
       }
       const failedIds = new Set(failed.map((f) => f._id));
-      inserted.push(...batch.map((b: any) => b._id).filter((id: string) => !failedIds.has(id)));
+      inserted.push(...batch.map((b) => b._id).filter((id) => !failedIds.has(id)));
     }
   }
 
@@ -310,7 +311,7 @@ const PRESENTATION_FIELDS_TO_COMPARE = [
   "expiration_date",
 ] as const;
 
-function presentationHasChanges(existing: any, incoming: Record<string, any>): boolean {
+function presentationHasChanges(existing: Record<string, unknown> | null | undefined, incoming: Record<string, unknown>): boolean {
   return PRESENTATION_FIELDS_TO_COMPARE.some((field) => {
     const a = existing?.[field];
     const b = incoming[field];
@@ -339,20 +340,20 @@ async function applyPresentations(
 
   const toCreate = presentations
     .filter((p) => p.action === ReceiptDocAction.Create && !failedProductIds.has(p.product_id))
-    .map(({ action, existingId, ...rest }) => rest);
+    .map(({ action: _action, existingId: _existingId, ...rest }) => rest);
 
   for (const batch of chunk(toCreate, 500)) {
     try {
       await PresentationMongo.insertMany(batch, { ordered: false });
-      created.push(...batch.map((b: any) => b._id));
-    } catch (err: any) {
-      const writeErrors = err.writeErrors ?? [];
+      created.push(...batch.map((b) => b._id));
+    } catch (err) {
+      const writeErrors: WriteError[] = ([] as WriteError[]).concat(err instanceof MongoBulkWriteError ? err.writeErrors ?? [] : []);
       for (const we of writeErrors) {
         const failedDoc = batch[we.index];
         failed.push({ _id: failedDoc?._id ?? "desconocido", error: we.errmsg ?? String(we) });
       }
       const failedIds = new Set(failed.map((f) => f._id));
-      created.push(...batch.map((b: any) => b._id).filter((id: string) => !failedIds.has(id)));
+      created.push(...batch.map((b) => b._id).filter((id) => !failedIds.has(id)));
     }
   }
 
@@ -364,16 +365,16 @@ async function applyPresentations(
   const existingDocs = existingIds.length > 0
     ? await PresentationMongo.find({ _id: { $in: existingIds } }).lean()
     : [];
-  const existingById = new Map(existingDocs.map((d: any) => [d._id, d]));
+  const existingById = new Map(existingDocs.map((d) => [d._id, d]));
 
   const toUpdate: ReceiptMatchedPresentationDocType[] = [];
   for (const p of updateCandidates) {
     // created_at nunca debe pisarse en un update, así que ni siquiera
     // entra en la comparación ni en el $set.
-    const { _id, action, existingId, product_id, created_at, ...fields } = p;
-    const existing = existingById.get(p.existingId);
+    const { _id, action: _action, existingId: _existingId, product_id: _productId, created_at: _createdAt, ...fields } = p;
+    const existing = existingById.get(p.existingId as string);
 
-    if (existing && !presentationHasChanges(existing, fields)) {
+    if (existing && !presentationHasChanges(existing as unknown as Record<string, unknown>, fields)) {
       unchanged.push(p.existingId as string);
     } else {
       toUpdate.push(p);
@@ -384,19 +385,19 @@ async function applyPresentations(
     // product_id y created_at se excluyen del $set: un update no debe
     // mover la presentation a otro producto ni pisar su fecha de alta.
     const ops = batch.map((p) => {
-      const { _id, action, existingId, product_id, created_at, ...fields } = p;
+      const { _id, action: _action, existingId, product_id: _productId, created_at: _createdAt, ...fields } = p;
       return { updateOne: { filter: { _id: existingId }, update: { $set: fields } } };
     });
 
     try {
       await PresentationMongo.bulkWrite(ops, { ordered: false });
       updated.push(...batch.map((p) => p.existingId as string));
-    } catch (err: any) {
-      const writeErrors = err.writeErrors ?? [];
-      const failedIndexes = new Set(writeErrors.map((we: any) => we.index));
+    } catch (err) {
+      const writeErrors: WriteError[] = ([] as WriteError[]).concat(err instanceof MongoBulkWriteError ? err.writeErrors ?? [] : []);
+      const failedIndexes = new Set(writeErrors.map((we) => we.index));
       batch.forEach((p, i) => {
         if (failedIndexes.has(i)) {
-          const we = writeErrors.find((w: any) => w.index === i);
+          const we = writeErrors.find((w) => w.index === i);
           failed.push({ _id: p.existingId as string, error: we?.errmsg ?? String(we) });
         } else {
           updated.push(p.existingId as string);

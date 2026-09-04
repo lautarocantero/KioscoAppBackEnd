@@ -5,7 +5,6 @@
  Este archivo contiene únicamente los tipos.
 ───────────────────────────────────────────────*/
 
-import { presentation } from "@typings/presentation";
 import { ProductTicketType } from "@typings/product";
 import { Request } from "express";
 

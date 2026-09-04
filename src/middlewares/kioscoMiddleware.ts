@@ -47,6 +47,7 @@ export async function requireKioscoContext(req: Request, res: Response, next: Ne
     req.kioscoRole = membership.role;
     next();
   } catch (error: unknown) {
+    console.error('Failed to resolve kiosco membership', error);
     res.status(500).json({ message: 'Failed to resolve kiosco membership' });
   }
 }
