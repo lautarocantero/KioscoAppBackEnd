@@ -1,4 +1,5 @@
-import * as XLSX from "xlsx";
+import { Workbook } from "exceljs";
+import type { Cell, Worksheet } from "exceljs";
 import crypto from "node:crypto";
 import { MongoBulkWriteError, type WriteError } from "mongodb";
 import { mapCategory } from "./categoryMap";
@@ -35,12 +36,68 @@ function titleCase(s: string): string {
 }
 
 /*══════════════════════════════════════════════════════════════════════╗
-║ 🎮 analyzeWorkbook → xls en memoria -> reporte agrupado por producto  ║
+║ 🎮 getCellValue → normaliza el value crudo de una celda de ExcelJS a  ║
+║    un primitivo (string/number/Date), igual que esperaban los          ║
+║    helpers puros (cleanString/normalizeDate/toNumber). ExcelJS puede   ║
+║    devolver objetos para rich text, fórmulas o hipervínculos en vez    ║
+║    de un valor plano, a diferencia de xlsx.utils.sheet_to_json.        ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
-export function analyzeWorkbook(buffer: Buffer): { report: ReceiptReportCluster[]; stats: ReceiptStatsType } {
-  const wb = XLSX.read(buffer, { type: "buffer", cellDates: true });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rawRows: receiptRawRow[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+function getCellValue(cell: Cell): unknown {
+  const value = cell.value;
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date) return value;
+  if (typeof value === "object") {
+    if ("richText" in value) return (value.richText as { text: string }[]).map((r) => r.text).join("");
+    if ("result" in value) return (value as { result: unknown }).result ?? "";
+    if ("text" in value) return (value as { text: unknown }).text;
+    if ("hyperlink" in value) return (value as { hyperlink: unknown }).hyperlink;
+  }
+  return value;
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 sheetToRows → reconstruye el mismo shape que antes daba             ║
+║    xlsx.utils.sheet_to_json(sheet, { defval: "" }): 1 objeto por fila, ║
+║    con las claves tomadas literalmente de la fila de encabezado y ""   ║
+║    para celdas vacías/ausentes. Se saltean las filas totalmente vacías ║
+║    (ExcelJS las sigue contando dentro de rowCount).                    ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+function sheetToRows(worksheet: Worksheet): receiptRawRow[] {
+  const headers: string[] = [];
+  worksheet.getRow(1).eachCell({ includeEmpty: true }, (cell, colNumber) => {
+    headers[colNumber] = cleanString(getCellValue(cell));
+  });
+
+  const rows: receiptRawRow[] = [];
+  for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+    const row = worksheet.getRow(rowNumber);
+    const record: Record<string, unknown> = {};
+    let hasValue = false;
+
+    headers.forEach((header, colNumber) => {
+      if (!header) return;
+      const cellValue = getCellValue(row.getCell(colNumber));
+      if (cellValue !== "") hasValue = true;
+      record[header] = cellValue;
+    });
+
+    if (hasValue) rows.push(record as unknown as receiptRawRow);
+  }
+  return rows;
+}
+
+/*══════════════════════════════════════════════════════════════════════╗
+║ 🎮 analyzeWorkbook → xlsx en memoria -> reporte agrupado por producto ║
+╚══════════════════════════════════════════════════════════════════════╝*/
+export async function analyzeWorkbook(buffer: Buffer): Promise<{ report: ReceiptReportCluster[]; stats: ReceiptStatsType }> {
+  const workbook = new Workbook();
+  // 👇 Cast solo de typings: el .d.ts de exceljs declara su propio `Buffer`
+  // global (extends ArrayBuffer) para entornos sin @types/node, que choca
+  // con el Buffer<ArrayBufferLike> genérico de @types/node al mergearse.
+  // Un Buffer de Node ES un ArrayBuffer válido en runtime; no cambia el dato.
+  await workbook.xlsx.load(buffer as unknown as ArrayBuffer);
+  const worksheet = workbook.worksheets[0];
+  const rawRows: receiptRawRow[] = sheetToRows(worksheet);
 
   const processed = rawRows.map((row, index) => {
     const name = cleanString(row.DETALLE);
@@ -488,7 +545,7 @@ export async function applyReceiptDocs(
 ║    insertar/actualizar nada.                                          ║
 ╚══════════════════════════════════════════════════════════════════════╝*/
 export async function previewReceiptImport(buffer: Buffer, kioscoId: string): Promise<ReceiptPreviewResultType> {
-  const { report, stats } = analyzeWorkbook(buffer);
+  const { report, stats } = await analyzeWorkbook(buffer);
   const { products, presentations, pendingReview } = buildDocsFromReport(report, kioscoId);
   const matchedPresentations = await matchPresentations(presentations, kioscoId);
   const { productsToInsert, productsAlreadyExisting, resolvedPresentations } = resolveProductInserts(

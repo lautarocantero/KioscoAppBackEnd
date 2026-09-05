@@ -13,11 +13,14 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const ok = /\.(xlsx|xls)$/i.test(file.originalname);
+    // 👇 Solo .xlsx: la migración de xlsx (SheetJS) a exceljs (sin CVEs
+    // abiertos) dejó sin soporte el binario legacy .xls (pre-2007, OLE2),
+    // que exceljs no parsea. Ver docs/usefull/securityAudit.md.
+    const ok = /\.xlsx$/i.test(file.originalname);
     if (ok) {
       cb(null, true);
     } else {
-      cb(new Error("Formato de archivo no permitido. Usá .xlsx o .xls"));
+      cb(new Error("Formato de archivo no permitido. Usá .xlsx"));
     }
   },
 });
