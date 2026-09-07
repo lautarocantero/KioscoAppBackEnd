@@ -55,19 +55,33 @@ seguridad:
 
 ---
 testing:
-- [ xxx ] Cerrado (2026-09-07): `auth.controller`/`authModel` y `membership.controller`/
-          `membershipModel` — los dos módulos que tocan cuentas y plata — ya tienen cobertura
-          completa. Son 13 archivos de test / 202 tests en total ahora (antes 9/113): se sumaron
-          `authModel.test.ts` (36 tests: register/login/Google/reset/verify/delete/edit,
-          mockeando AuthSchema/SellerSchema/KioscoMembershipSchema y una sesión Mongo fake para
-          las transacciones de `create`/`deleteAuth`), `auth.controller.test.ts` (23 tests,
-          mockeando AuthModel/KioscoModel/SellerModel/axios), `membershipModel.test.ts` (19
-          tests: checkout redirect/tarjeta, rechazo de tarjeta con mensaje genérico, webhook
-          idempotente y out-of-order) y `membership.controller.test.ts` (12 tests, incluida la
-          validación de firma del webhook). De paso `controllerTestUtils.ts` (`buildRes`) ahora
-          también mockea `cookie`/`clearCookie`, necesarios para testear login/logout/refresh.
-          Falta el resto de controllers/models (presentation, provider, seller, kiosco,
-          receipts, notification) — sin prioridad de dinero/cuentas, pueden ir después.
+- [ xxx ] Cerrado (2026-09-07): todos los controllers/models del backend ya tienen tests —
+          de 9 archivos / 113 tests a **24 archivos / 360 tests**. Orden en que se cerró
+          (dinero/cuentas primero): `auth.controller`/`authModel` (36+23 tests: register/login/
+          Google/reset/verify/delete/edit, mockeando AuthSchema/SellerSchema/
+          KioscoMembershipSchema y una sesión Mongo fake para las transacciones de
+          `create`/`deleteAuth`) y `membership.controller`/`membershipModel` (19+12 tests:
+          checkout redirect/tarjeta, rechazo de tarjeta con mensaje genérico, webhook idempotente
+          y out-of-order). Después, sin prioridad de dinero: `seller`, `notification`, `receipt`
+          (mockeando `receiptImportService` y el memory storage de `multer`), `provider`,
+          `kiosco` (incluye los límites por plan de `create`/`join` y las excepciones Deluxe) y
+          `presentation` (incluye `decreaseStock` — el método con el problema de atomicidad
+          documentado en la sección "ventas" de arriba; los tests fijan el comportamiento
+          *actual*, no atómico, como base para verificar la futura corrección). De paso
+          `controllerTestUtils.ts` (`buildRes`) ahora también mockea `cookie`/`clearCookie`,
+          necesarios para testear login/logout/refresh.
+          **Nota para quien siga escribiendo tests de modelos con `mockResolvedValueOnce`:**
+          si el código bajo test tiene un branch que a veces SALTEA una llamada (ej. plan sin
+          límite → nunca llama a `getUnitCount`), un `mockResolvedValueOnce` puesto para esa
+          rama queda sin consumir y se filtra al test siguiente que sí llama a esa función,
+          rompiéndolo de forma no obvia (ver el fix en `presentationModel.test.ts`, describe
+          `create`). Solo encolar `mockResolvedValueOnce` en la rama que efectivamente invoca
+          esa función.
+          Sigue sin cubrir: `receiptImportService.ts` más allá de sus helpers puros
+          (`matchPresentations`, `confirmReceiptImport`, `applyReceiptDocs` no tienen test
+          directo), `productModel.ts`/`sellModel.ts` (solo sus controllers están cubiertos, vía
+          mocks) y los middlewares `kioscoMiddleware`/`rateLimitMiddleware` (solo `authMiddleware`
+          tiene test). Ninguno toca dinero/cuentas directamente — menor prioridad.
 
 ---
 ## ⛔ Fase final — depende de cuentas/servicios externos (post-desarrollo)
