@@ -55,13 +55,19 @@ seguridad:
 
 ---
 testing:
-- [ xxx ] Son 9 archivos de test en total (verificado 2026-09-07): validation, authMiddleware,
-          sell.controller, product.controller, y 5 helpers de receipts (analyzeWorkbook,
-          categoryMap, cluster, extract, normalize). `auth.controller.ts`/`authModel.ts`
-          (login, registro, reset) y `membership.controller.ts`/`membershipModel.ts` siguen sin
-          ningún test — son los dos módulos que tocan cuentas y plata, prioridad más alta antes
-          que el resto de controllers/models (presentation, provider, seller, kiosco, receipts,
-          notification).
+- [ xxx ] Cerrado (2026-09-07): `auth.controller`/`authModel` y `membership.controller`/
+          `membershipModel` — los dos módulos que tocan cuentas y plata — ya tienen cobertura
+          completa. Son 13 archivos de test / 202 tests en total ahora (antes 9/113): se sumaron
+          `authModel.test.ts` (36 tests: register/login/Google/reset/verify/delete/edit,
+          mockeando AuthSchema/SellerSchema/KioscoMembershipSchema y una sesión Mongo fake para
+          las transacciones de `create`/`deleteAuth`), `auth.controller.test.ts` (23 tests,
+          mockeando AuthModel/KioscoModel/SellerModel/axios), `membershipModel.test.ts` (19
+          tests: checkout redirect/tarjeta, rechazo de tarjeta con mensaje genérico, webhook
+          idempotente y out-of-order) y `membership.controller.test.ts` (12 tests, incluida la
+          validación de firma del webhook). De paso `controllerTestUtils.ts` (`buildRes`) ahora
+          también mockea `cookie`/`clearCookie`, necesarios para testear login/logout/refresh.
+          Falta el resto de controllers/models (presentation, provider, seller, kiosco,
+          receipts, notification) — sin prioridad de dinero/cuentas, pueden ir después.
 
 ---
 ## ⛔ Fase final — depende de cuentas/servicios externos (post-desarrollo)
