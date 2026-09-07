@@ -7,6 +7,12 @@ suscripción mensual recurrente en Mercado Pago (API de
 
 ## Setup
 
+Guía completa (crear la app en Mercado Pago, usuarios/tarjetas de prueba, dónde va cada
+credencial en local vs. producción, checklist de QA): ver
+[`MercadoPagoSetup.md`](./MercadoPagoSetup.md).
+
+Resumen:
+
 1. Crear una aplicación en https://www.mercadopago.com.ar/developers/panel/app
 2. Copiar el **Access Token** (de prueba o de producción) a `MP_ACCESS_TOKEN` en `.env`.
 3. En la sección "Webhooks" de la app, dar de alta la URL `<tu backend>/membership/webhook`
@@ -14,8 +20,9 @@ suscripción mensual recurrente en Mercado Pago (API de
    `MP_WEBHOOK_SECRET`.
 4. Sin `MP_ACCESS_TOKEN`, `POST /membership/checkout` responde 400 pero el resto del
    servidor sigue funcionando normalmente.
-5. Sin `MP_WEBHOOK_SECRET`, el webhook no valida la firma (queda un warning en el log) —
-   configurarlo antes de ir a producción.
+5. Sin `MP_WEBHOOK_SECRET`, el webhook rechaza la notificación en producción
+   (`NODE_ENV=production`, fail-closed); en desarrollo no valida la firma y deja un warning
+   en el log — configurar el secret antes de ir a producción.
 6. **Kioscos creados antes de este feature**: correr `npm run migrate:membership-plans`
    una vez — backfillea `plan: 'standard'`, `plan_status: 'active'` en los kioscos que no
    tienen esos campos todavía (Mongoose `default` solo aplica a documentos nuevos).

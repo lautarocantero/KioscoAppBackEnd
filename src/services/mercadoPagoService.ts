@@ -68,13 +68,18 @@ export class MercadoPagoService {
 
     //──────────────────────────────────────────── 🔔 WEBHOOK 🔔 ───────────────────────────────────────────//
 
-    // Sin MP_WEBHOOK_SECRET configurado no podemos validar la firma: se deja
-    // pasar (con warning) para no bloquear el flujo antes de tener
-    // credenciales, pero es inseguro — configurar el secret ni bien haya
-    // credenciales reales de Mercado Pago.
+    // Sin MP_WEBHOOK_SECRET configurado no podemos validar la firma. En
+    // producción esto rechaza el webhook (fail-closed): dejarlo pasar
+    // permitiría a cualquiera que conozca la URL simular una confirmación de
+    // pago. En desarrollo se deja pasar con warning para no bloquear el
+    // trabajo local antes de tener credenciales — configurar el secret ni
+    // bien haya credenciales reales de Mercado Pago.
     static validateWebhookSignature(options: { xSignature: string | string[] | undefined; xRequestId: string | string[] | undefined; dataId: string | string[] | undefined }): void {
         if (!MP_WEBHOOK_SECRET) {
-            console.warn('⚠️  MP_WEBHOOK_SECRET is not set — skipping webhook signature validation');
+            if (process.env.NODE_ENV === 'production') {
+                throw new Error('MP_WEBHOOK_SECRET is not set — refusing to accept webhook in production');
+            }
+            console.warn('⚠️  MP_WEBHOOK_SECRET is not set — skipping webhook signature validation (development only)');
             return;
         }
 
