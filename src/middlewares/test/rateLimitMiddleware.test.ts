@@ -18,9 +18,10 @@ const buildReq = (ip: string): Request => ({
 } as unknown as Request);
 
 const buildRes = (): Response => {
-    const res = {} as Response;
-    res.headersSent = false;
-    res.writableEnded = false;
+    const res = {
+        headersSent: false,
+        writableEnded: false,
+    } as unknown as Response;
     res.setHeader = vi.fn().mockReturnValue(res);
     res.status = vi.fn().mockReturnValue(res);
     res.send = vi.fn().mockReturnValue(res);

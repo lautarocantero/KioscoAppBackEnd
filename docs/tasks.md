@@ -48,12 +48,13 @@ El bloque de Mercado Pago (credenciales) está separado al final bajo "Fase fina
 
 ---
 
-### Testing
+### Importación de remitos
 
-- [ xxx ] **Cerrando huecos de cobertura restantes** (dinero primero):
-  1. `src/services/*.ts` — capa entera sin tests: `mercadoPagoService`, `catalogService`, `monthlyReportService`, `planService`, `emailService`, `presentationAnalysticsService`; más las funciones sin cubrir de `receiptImportService.ts` (`matchPresentations`, `confirmReceiptImport`, `applyReceiptDocs`).
-  2. `productModel.ts` / `sellModel.ts`.
-  3. Middlewares `kioscoMiddleware.ts` / `rateLimitMiddleware.ts`.
+- [ xxx ] **`applyReceiptDocs` descarta en silencio las presentations de un producto que falló al insertarse.**
+
+  En `receiptImportService.ts`, si `insertProducts` falla al insertar un producto (bulk write error), las presentations `create` de ese `product_id` se filtran (`!failedProductIds.has(p.product_id)`) antes de llegar a `applyPresentations` — no se crean, y tampoco aparecen en `presentationResult.failed`. El usuario ve el producto en `products.failed` pero pierde sus presentations sin ningún rastro.
+
+  Fix: que esas presentations aparezcan también en `presentationResult.failed` (o algún campo nuevo) en vez de desaparecer.
 
 ---
 

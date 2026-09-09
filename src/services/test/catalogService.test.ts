@@ -31,7 +31,7 @@ describe('CatalogService', () => {
             const result = await CatalogService.getProductsWithPresentations('kiosco-1');
 
             expect(result).toEqual([{ _id: 'prod-1' }]);
-            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as Record<string, unknown>[];
+            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as unknown as Record<string, unknown>[];
             expect(pipeline[0]).toEqual({ $match: { kiosco_id: 'kiosco-1' } });
             expect(pipeline[1]).toHaveProperty('$lookup');
             expect(pipeline).toContainEqual({ $limit: 100 });
@@ -45,7 +45,7 @@ describe('CatalogService', () => {
 
             await CatalogService.getProductsWithStock('kiosco-1');
 
-            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as Record<string, unknown>[];
+            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as unknown as Record<string, unknown>[];
             expect(pipeline).toContainEqual({ $match: { 'presentations.stock': { $gt: 0 } } });
         });
     });
@@ -66,7 +66,7 @@ describe('CatalogService', () => {
 
             await CatalogService.searchProductsWithPresentations('kiosco-1', 'coca');
 
-            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as Record<string, unknown>[];
+            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as unknown as Record<string, unknown>[];
             const orMatch = pipeline.find((stage) => (stage.$match as Record<string, unknown>)?.$or) as { $match: { $or: unknown[] } };
             expect(orMatch.$match.$or).toHaveLength(6);
             expect(orMatch.$match.$or[0]).toEqual({ name: { $regex: 'coca', $options: 'i' } });
@@ -78,7 +78,7 @@ describe('CatalogService', () => {
 
             await CatalogService.searchProductsWithPresentations('kiosco-1', 'coca', undefined, true);
 
-            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as Record<string, unknown>[];
+            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as unknown as Record<string, unknown>[];
             const orMatch = pipeline.find((stage) => (stage.$match as Record<string, unknown>)?.$or) as { $match: { $or: { name: { $regex: string } }[] } };
             expect(orMatch.$match.$or[0].name.$regex).toBe('^coca$');
         });
@@ -88,7 +88,7 @@ describe('CatalogService', () => {
 
             await CatalogService.searchProductsWithPresentations('kiosco-1', '3.2+2');
 
-            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as Record<string, unknown>[];
+            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as unknown as Record<string, unknown>[];
             const orMatch = pipeline.find((stage) => (stage.$match as Record<string, unknown>)?.$or) as { $match: { $or: { name: { $regex: string } }[] } };
             expect(orMatch.$match.$or[0].name.$regex).toBe('3\\.2\\+2');
         });
@@ -98,7 +98,7 @@ describe('CatalogService', () => {
 
             await CatalogService.searchProductsWithPresentations('kiosco-1', undefined as unknown as string, 'snacks');
 
-            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as Record<string, unknown>[];
+            const pipeline = mockedProductMongo.aggregate.mock.calls[0][0] as unknown as Record<string, unknown>[];
             expect(pipeline).toContainEqual({ $match: { 'presentations.category': 'snacks' } });
         });
     });

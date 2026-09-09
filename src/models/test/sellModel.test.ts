@@ -201,7 +201,7 @@ describe('SellModel', () => {
             await SellModel.searchSells('kiosco-1', '1500');
 
             const [query] = mockedSellSchema.find.mock.calls[0];
-            expect((query as { $or: unknown[] }).$or).toContainEqual({ total_amount: 1500 });
+            expect((query as unknown as { $or: unknown[] }).$or).toContainEqual({ total_amount: 1500 });
         });
 
         it('term con forma dd/mm/yyyy: agrega match de purchase_date por el toDateString esperado', async () => {
@@ -211,7 +211,7 @@ describe('SellModel', () => {
 
             const expectedDateStr = new Date(2026, 6, 1).toDateString();
             const [query] = mockedSellSchema.find.mock.calls[0];
-            expect((query as { $or: unknown[] }).$or).toContainEqual({ purchase_date: { $regex: expectedDateStr, $options: 'i' } });
+            expect((query as unknown as { $or: unknown[] }).$or).toContainEqual({ purchase_date: { $regex: expectedDateStr, $options: 'i' } });
         });
 
         it('rechaza un term vacío', async () => {

@@ -221,7 +221,7 @@ describe('applyReceiptDocs', () => {
 
     it('update: una presentation con cambios dispara bulkWrite (sin tocar product_id/created_at) y cuenta como updated', async () => {
         mockedPlanService.getKioscoOwnerPlan.mockResolvedValueOnce(KioscoPlanEnum.Deluxe);
-        mockedPresentationMongo.find.mockReturnValueOnce(lean([{ _id: 'existing-1', ...mkPresentation({ price: 100 }) }]) as never);
+        mockedPresentationMongo.find.mockReturnValueOnce(lean([{ ...mkPresentation({ price: 100 }), _id: 'existing-1' }]) as never);
         mockedPresentationMongo.bulkWrite.mockResolvedValueOnce({} as never);
 
         const presentations = [mkMatchedPresentation({
