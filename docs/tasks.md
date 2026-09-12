@@ -58,6 +58,21 @@ El bloque de Mercado Pago (credenciales) está separado al final bajo "Fase fina
 
 ---
 
+### UI/UX (notas rápidas)
+
+- [ xxx ] Mejorar header de select-kiosco.
+- [ xxx ] Modificar botón de tutorial.
+- [ xxx ] Agregar opción de reducir animaciones.
+- [ xxx ] Mover atajos de nueva venta al lado del título.
+- [ xxx ] Actualizar tarjeta de Stocko (publicidad).
+
+**Credenciales de prueba** (creadas directo en Mongo, sin pasar por register/checkout — pass igual para las 3: `Testing123!`):
+- admin.standard.test@stocko.dev — admin, dueño de "Kiosco Test Standard", plan Standard
+- seller.test@stocko.dev — seller de "Kiosco Test Standard"
+- admin.deluxe.test@stocko.dev — admin, dueño de "Kiosco Test Deluxe", plan Deluxe
+
+---
+
 ## ⛔ Fase final — depende de cuentas/servicios externos (post-desarrollo)
 
 ### Membresías (bloqueado por credenciales de Mercado Pago)
