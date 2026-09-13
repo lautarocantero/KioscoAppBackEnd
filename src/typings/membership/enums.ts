@@ -14,6 +14,13 @@ export enum KioscoPlanStatusEnum {
   Active = 'active',
   PendingPayment = 'pending_payment',
   Cancelled = 'cancelled',
+  // Free trial de 7 días desde el alta de la cuenta (ver AuthModel.create /
+  // authSchema.trial_ends_at). Usa los límites de Standard (PLAN_LIMITS).
+  Trial = 'trial',
+  // Trial vencido sin suscripción activa: PlanService.getMembershipState lo
+  // setea de forma perezosa (no hay cron), y requireActiveMembership bloquea
+  // cualquier acción de negocio hasta que la cuenta pague.
+  Blocked = 'blocked',
 }
 
 /*══════════════════════════════════════════════════════════════════════╗

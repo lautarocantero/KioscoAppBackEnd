@@ -29,21 +29,34 @@ describe('MembershipModel', () => {
     });
 
     describe('getStatus', () => {
+        // getStatus lee el doc completo una vez y PlanService.getMembershipState
+        // (vencimiento perezoso del trial) hace su propia lectura proyectada:
+        // cada test encola dos findOne, uno por cada lectura.
+        const mockAuthTwice = (data: Record<string, unknown>) => {
+            mockedAuthSchema.findOne.mockReturnValueOnce(lean(data) as never);
+            mockedAuthSchema.findOne.mockReturnValueOnce(lean(data) as never);
+        };
+
         it('devuelve plan/estado guardados sin consultar Mercado Pago si no hay preapproval', async () => {
-            mockedAuthSchema.findOne.mockReturnValueOnce(lean({
-                plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Active, mp_preapproval_id: null,
-            }) as never);
+            mockAuthTwice({
+                plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Active,
+                mp_preapproval_id: null, trial_ends_at: null,
+            });
 
             const result = await MembershipModel.getStatus({ user_id: 'user-1' });
 
-            expect(result).toEqual({ plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Active, next_payment_date: null });
+            expect(result).toEqual({
+                plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Active,
+                next_payment_date: null, trial_ends_at: null,
+            });
             expect(mockedMercadoPagoService.getPreapproval).not.toHaveBeenCalled();
         });
 
         it('agrega next_payment_date si hay una preapproval activa', async () => {
-            mockedAuthSchema.findOne.mockReturnValueOnce(lean({
-                plan: KioscoPlanEnum.Deluxe, plan_status: KioscoPlanStatusEnum.Active, mp_preapproval_id: 'pre-1',
-            }) as never);
+            mockAuthTwice({
+                plan: KioscoPlanEnum.Deluxe, plan_status: KioscoPlanStatusEnum.Active,
+                mp_preapproval_id: 'pre-1', trial_ends_at: null,
+            });
             mockedMercadoPagoService.getPreapproval.mockResolvedValueOnce({ next_payment_date: '2026-10-01' } as never);
 
             const result = await MembershipModel.getStatus({ user_id: 'user-1' });
@@ -52,9 +65,10 @@ describe('MembershipModel', () => {
         });
 
         it('no rompe si Mercado Pago falla al consultar la preapproval', async () => {
-            mockedAuthSchema.findOne.mockReturnValueOnce(lean({
-                plan: KioscoPlanEnum.Deluxe, plan_status: KioscoPlanStatusEnum.Active, mp_preapproval_id: 'pre-1',
-            }) as never);
+            mockAuthTwice({
+                plan: KioscoPlanEnum.Deluxe, plan_status: KioscoPlanStatusEnum.Active,
+                mp_preapproval_id: 'pre-1', trial_ends_at: null,
+            });
             mockedMercadoPagoService.getPreapproval.mockRejectedValueOnce(new Error('MP down'));
 
             const result = await MembershipModel.getStatus({ user_id: 'user-1' });
@@ -66,6 +80,34 @@ describe('MembershipModel', () => {
             mockedAuthSchema.findOne.mockReturnValueOnce(lean(null) as never);
 
             await expect(MembershipModel.getStatus({ user_id: 'user-1' })).rejects.toThrow('User not found');
+        });
+
+        it('vence el trial y bloquea la cuenta si trial_ends_at ya pasó', async () => {
+            mockAuthTwice({
+                plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Trial,
+                mp_preapproval_id: null, trial_ends_at: new Date('2020-01-01'),
+            });
+            mockedAuthSchema.findOneAndUpdate.mockResolvedValueOnce(undefined as never);
+
+            const result = await MembershipModel.getStatus({ user_id: 'user-1' });
+
+            expect(result.plan_status).toEqual(KioscoPlanStatusEnum.Blocked);
+            expect(mockedAuthSchema.findOneAndUpdate).toHaveBeenCalledWith(
+                { _id: 'user-1' },
+                { $set: { plan_status: KioscoPlanStatusEnum.Blocked } },
+            );
+        });
+
+        it('mantiene el trial si todavía no venció', async () => {
+            mockAuthTwice({
+                plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Trial,
+                mp_preapproval_id: null, trial_ends_at: new Date(Date.now() + 60_000),
+            });
+
+            const result = await MembershipModel.getStatus({ user_id: 'user-1' });
+
+            expect(result.plan_status).toEqual(KioscoPlanStatusEnum.Trial);
+            expect(mockedAuthSchema.findOneAndUpdate).not.toHaveBeenCalled();
         });
     });
 

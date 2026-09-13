@@ -1,5 +1,6 @@
 import { AuthSchema } from '../schemas/authSchema';
 import { MercadoPagoService } from '../services/mercadoPagoService';
+import { PlanService } from '../services/planService';
 import { MEMBERSHIP_PLANS } from '../config/membershipPlans';
 import { KioscoPlanEnum, KioscoPlanStatusEnum, MembershipPaymentMethodEnum } from '../typings/membership/enums';
 import {
@@ -48,8 +49,11 @@ export class MembershipModel {
         const auth = await AuthSchema.findOne({ _id: data.user_id }).lean();
         if (!auth) throw new Error('User not found');
 
+        // Perezoso: si el trial venció, esto ya persiste el pase a Blocked.
+        const { plan, plan_status, trial_ends_at } = await PlanService.getMembershipState(data.user_id);
+
         let next_payment_date: string | null = null;
-        if (auth.mp_preapproval_id && auth.plan_status === KioscoPlanStatusEnum.Active) {
+        if (auth.mp_preapproval_id && plan_status === KioscoPlanStatusEnum.Active) {
             try {
                 const preapproval = await MercadoPagoService.getPreapproval(auth.mp_preapproval_id);
                 next_payment_date = preapproval.next_payment_date ?? null;
@@ -60,10 +64,10 @@ export class MembershipModel {
         }
 
         return {
-            // Fallback defensivo: ver PlanService.getUserPlan.
-            plan: (auth.plan as KioscoPlanEnum) ?? KioscoPlanEnum.Standard,
-            plan_status: (auth.plan_status as KioscoPlanStatusEnum) ?? KioscoPlanStatusEnum.Active,
+            plan,
+            plan_status,
             next_payment_date,
+            trial_ends_at: trial_ends_at ? trial_ends_at.toISOString() : null,
         };
     }
 

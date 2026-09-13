@@ -1,6 +1,7 @@
 import express from 'express';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { requireKioscoContext, requireKioscoRole } from '../middlewares/kioscoMiddleware';
+import { requireActiveMembership } from '../middlewares/requireActiveMembership';
 // Import relativo (no @typings): acá se usa como VALOR (AuthRoleEnum.Admin),
 // y el alias solo resuelve en tiempo de compilación, no en runtime (ts-node-dev).
 import { AuthRoleEnum } from '../typings/auth/enums';
@@ -32,13 +33,18 @@ const router = express.Router();
 - PUT    /:kiosco_id/member/:user_id/role  → cambiar el rol de un vendedor (solo admin)
 ──────────────────────────────*/
 
-router.post('/create', authMiddleware, createKiosco);
+// /my-kioscos y /:kiosco_id/select NO llevan requireActiveMembership: son las
+// rutas que el frontend usa para decidir a dónde navegar (hasActiveKiosco) al
+// entrar a la app, incluso con la cuenta bloqueada — bloquearlas rompería esa
+// decisión antes de poder mostrar la pantalla de "necesitás un plan".
+router.post('/create', authMiddleware, requireActiveMembership, createKiosco);
 router.get('/my-kioscos', authMiddleware, getMyKioscos);
-router.post('/join', authMiddleware, joinKiosco);
+router.post('/join', authMiddleware, requireActiveMembership, joinKiosco);
 
 router.get(
   '/:kiosco_id/invite-info',
   authMiddleware,
+  requireActiveMembership,
   requireKioscoContext,
   requireKioscoRole([AuthRoleEnum.Admin]),
   getInviteInfo,
@@ -46,6 +52,7 @@ router.get(
 router.put(
   '/:kiosco_id',
   authMiddleware,
+  requireActiveMembership,
   requireKioscoContext,
   requireKioscoRole([AuthRoleEnum.Admin]),
   editKiosco,
@@ -59,6 +66,7 @@ router.post(
 router.delete(
   '/:kiosco_id/member/:user_id',
   authMiddleware,
+  requireActiveMembership,
   requireKioscoContext,
   requireKioscoRole([AuthRoleEnum.Admin]),
   removeKioscoMember,
@@ -66,6 +74,7 @@ router.delete(
 router.put(
   '/:kiosco_id/member/:user_id/role',
   authMiddleware,
+  requireActiveMembership,
   requireKioscoContext,
   requireKioscoRole([AuthRoleEnum.Admin]),
   updateKioscoMemberRole,

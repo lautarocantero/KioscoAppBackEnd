@@ -4,7 +4,13 @@ import { PLAN_LIMITS } from '../config/planLimits';
 // Import relativo (no @typings): acá se usa como VALOR (KioscoPlanEnum.Standard
 // como fallback), y el alias solo resuelve en tiempo de compilación, no en
 // runtime (ts-node-dev).
-import { KioscoPlanEnum } from '../typings/membership/enums';
+import { KioscoPlanEnum, KioscoPlanStatusEnum } from '../typings/membership/enums';
+
+export type MembershipState = {
+    plan: KioscoPlanEnum;
+    plan_status: KioscoPlanStatusEnum;
+    trial_ends_at: Date | null;
+};
 
 /*──────────────────────────────
 🚧 PlanService
@@ -25,6 +31,34 @@ export class PlanService {
         // todavía (migrate:membership-plans lo backfillea, pero leer con
         // default evita romper mientras esa migración no corrió).
         return (auth?.plan as KioscoPlanEnum) ?? KioscoPlanEnum.Standard;
+    }
+
+    // No hay cron: el vencimiento del trial se evalúa perezosamente acá (y en
+    // MembershipModel.getStatus, que la usa para /membership/status). Si el
+    // trial venció, persiste el pase a Blocked antes de devolverlo, así la
+    // primera request de cualquier endpoint gateado ya ve el estado correcto.
+    static async getMembershipState(userId: string): Promise<MembershipState> {
+        const auth = await AuthSchema.findOne(
+            { _id: userId },
+            { plan: 1, plan_status: 1, trial_ends_at: 1 },
+        ).lean();
+
+        const plan = (auth?.plan as KioscoPlanEnum) ?? KioscoPlanEnum.Standard;
+        const plan_status = (auth?.plan_status as KioscoPlanStatusEnum) ?? KioscoPlanStatusEnum.Trial;
+        const trial_ends_at = auth?.trial_ends_at ?? null;
+
+        const trialExpired = plan_status === KioscoPlanStatusEnum.Trial
+            && trial_ends_at !== null
+            && trial_ends_at.getTime() < Date.now();
+
+        if (!trialExpired) return { plan, plan_status, trial_ends_at };
+
+        await AuthSchema.findOneAndUpdate(
+            { _id: userId },
+            { $set: { plan_status: KioscoPlanStatusEnum.Blocked } },
+        );
+
+        return { plan, plan_status: KioscoPlanStatusEnum.Blocked, trial_ends_at };
     }
 
     static async getKioscoOwnerPlan(kioscoId: string): Promise<KioscoPlanEnum> {

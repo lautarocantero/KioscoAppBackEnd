@@ -37,10 +37,11 @@ import {
 } from '../controllers/sell.controller';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
+import { requireActiveMembership } from '../middlewares/requireActiveMembership';
 
 const router = express.Router();
 
-router.use(authMiddleware, requireKioscoContext);
+router.use(authMiddleware, requireActiveMembership, requireKioscoContext);
 
 //──────────────────────────────────────────── 📥 GET 📥 ───────────────────────────────────────────//
 router.get('/', home);

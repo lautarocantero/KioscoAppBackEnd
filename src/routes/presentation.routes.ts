@@ -21,6 +21,7 @@ import {
 import multer from 'multer';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
+import { requireActiveMembership } from '../middlewares/requireActiveMembership';
 
 /*──────────────────────────────
 🎭 PresentationRouter
@@ -56,7 +57,7 @@ Rutas de presentationes de producto. Sin multer — imagen removida del modelo.
 const router = express.Router();
 const upload = multer();
 
-router.use(authMiddleware, requireKioscoContext);
+router.use(authMiddleware, requireActiveMembership, requireKioscoContext);
 
 // ── GET ───────────────────────────────────────────────────────────────────────
 router.get('/',                                    home);

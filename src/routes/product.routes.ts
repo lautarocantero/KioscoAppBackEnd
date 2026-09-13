@@ -15,6 +15,7 @@ import {
 } from '../controllers/product.controller';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { requireKioscoContext } from '../middlewares/kioscoMiddleware';
+import { requireActiveMembership } from '../middlewares/requireActiveMembership';
 
 const router = express.Router();
 
@@ -39,7 +40,7 @@ Todas las rutas requieren sesión + pertenencia al kiosco (header x-kiosco-id).
 - PUT    /edit-product       → editar producto existente
 ──────────────────────────────*/
 
-router.use(authMiddleware, requireKioscoContext);
+router.use(authMiddleware, requireActiveMembership, requireKioscoContext);
 
 router.get('/', home);
 router.get('/get-products', getProducts);

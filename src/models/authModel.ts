@@ -14,6 +14,8 @@ import {
 } from '../typings/auth';
 import { SellerStatus } from '../typings/seller/sellerEnums';
 
+const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+
 export class AuthModel {
 
     static async getRefreshToken(data: AuthRefreshTokenPayload): Promise<AuthTokenPublic> {
@@ -67,6 +69,7 @@ export class AuthModel {
 
         const _id = crypto.randomUUID();
         const hashedPassword = await bcrypt.hash(passwordResult, SALT_ROUNDS);
+        const trial_ends_at = new Date(Date.now() + TRIAL_DURATION_MS);
 
         const session = await mongoose.startSession();
         try {
@@ -77,6 +80,7 @@ export class AuthModel {
                     password: hashedPassword,
                     refreshToken: '',
                     isVerified: true, // TODO(email-verification): volver a `false` cuando se reactive el flujo
+                    trial_ends_at,
                 }], { session });
 
                 await SellerSchema.create([{
@@ -140,6 +144,7 @@ export class AuthModel {
         const _id = crypto.randomUUID();
         const randomPassword = crypto.randomUUID();
         const hashedPassword = await bcrypt.hash(randomPassword, SALT_ROUNDS);
+        const trial_ends_at = new Date(Date.now() + TRIAL_DURATION_MS);
 
         const session = await mongoose.startSession();
         try {
@@ -150,6 +155,7 @@ export class AuthModel {
                     password: hashedPassword,
                     refreshToken: '',
                     isVerified: true,
+                    trial_ends_at,
                 }], { session });
 
                 await SellerSchema.create([{

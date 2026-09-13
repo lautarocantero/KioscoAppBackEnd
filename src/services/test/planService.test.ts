@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlanService } from '../planService';
 import { AuthSchema } from '../../schemas/authSchema';
 import { KioscoSchema } from '../../schemas/kioscoSchema';
-import { KioscoPlanEnum } from '../../typings/membership/enums';
+import { KioscoPlanEnum, KioscoPlanStatusEnum } from '../../typings/membership/enums';
 
 vi.mock('../../schemas/authSchema', () => ({
-    AuthSchema: { findOne: vi.fn() },
+    AuthSchema: { findOne: vi.fn(), findOneAndUpdate: vi.fn() },
 }));
 
 vi.mock('../../schemas/kioscoSchema', () => ({
@@ -68,6 +68,62 @@ describe('PlanService.getKioscoOwnerPlan', () => {
 
         expect(result).toBe(KioscoPlanEnum.Deluxe);
         expect(mockedAuthSchema.findOne).toHaveBeenCalledWith({ _id: 'owner-1' }, { plan: 1 });
+    });
+});
+
+describe('PlanService.getMembershipState', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('devuelve Active tal cual, sin tocar la DB', async () => {
+        mockedAuthSchema.findOne.mockReturnValueOnce(lean({
+            plan: KioscoPlanEnum.Deluxe, plan_status: KioscoPlanStatusEnum.Active, trial_ends_at: null,
+        }) as never);
+
+        const result = await PlanService.getMembershipState('user-1');
+
+        expect(result).toEqual({ plan: KioscoPlanEnum.Deluxe, plan_status: KioscoPlanStatusEnum.Active, trial_ends_at: null });
+        expect(mockedAuthSchema.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('mantiene Trial si trial_ends_at todavía no pasó', async () => {
+        const trialEndsAt = new Date(Date.now() + 60_000);
+        mockedAuthSchema.findOne.mockReturnValueOnce(lean({
+            plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Trial, trial_ends_at: trialEndsAt,
+        }) as never);
+
+        const result = await PlanService.getMembershipState('user-1');
+
+        expect(result.plan_status).toBe(KioscoPlanStatusEnum.Trial);
+        expect(mockedAuthSchema.findOneAndUpdate).not.toHaveBeenCalled();
+    });
+
+    it('pasa a Blocked y lo persiste si trial_ends_at ya pasó', async () => {
+        const trialEndsAt = new Date(Date.now() - 60_000);
+        mockedAuthSchema.findOne.mockReturnValueOnce(lean({
+            plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Trial, trial_ends_at: trialEndsAt,
+        }) as never);
+        mockedAuthSchema.findOneAndUpdate.mockResolvedValueOnce(undefined as never);
+
+        const result = await PlanService.getMembershipState('user-1');
+
+        expect(result.plan_status).toBe(KioscoPlanStatusEnum.Blocked);
+        expect(mockedAuthSchema.findOneAndUpdate).toHaveBeenCalledWith(
+            { _id: 'user-1' },
+            { $set: { plan_status: KioscoPlanStatusEnum.Blocked } },
+        );
+    });
+
+    it('cuentas sin trial_ends_at (viejas) no se bloquean solas', async () => {
+        mockedAuthSchema.findOne.mockReturnValueOnce(lean({
+            plan: KioscoPlanEnum.Standard, plan_status: KioscoPlanStatusEnum.Trial, trial_ends_at: null,
+        }) as never);
+
+        const result = await PlanService.getMembershipState('user-1');
+
+        expect(result.plan_status).toBe(KioscoPlanStatusEnum.Trial);
+        expect(mockedAuthSchema.findOneAndUpdate).not.toHaveBeenCalled();
     });
 });
 

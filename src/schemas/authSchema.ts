@@ -25,9 +25,12 @@ const AuthMongoSchema = new Schema<AuthSchemaType>({
     type: String,
     enum: Object.values(KioscoPlanStatusEnum),
     required: true,
-    default: KioscoPlanStatusEnum.Active,
+    default: KioscoPlanStatusEnum.Trial,
   },
   mp_preapproval_id: { type: String, required: false, default: null },
+  // Fin del free trial de 7 días. null en cuentas viejas (migradas antes de
+  // este campo) o que ya pagaron alguna vez y no deberían volver a trial.
+  trial_ends_at: { type: Date, required: false, default: null },
 }, { _id: false });
 
 export const AuthSchema = mongoose.models.Auth ||

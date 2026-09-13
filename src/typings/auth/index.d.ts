@@ -18,6 +18,9 @@ interface AuthEntity {
   // Id de la última suscripción (preapproval) creada en Mercado Pago para
   // esta cuenta. null si nunca inició un checkout.
   mp_preapproval_id: string | null;
+  // Fin del free trial de 7 días (ver KioscoPlanStatusEnum.Trial). null si la
+  // cuenta nunca tuvo trial (vieja) o ya no aplica.
+  trial_ends_at: Date | null;
 }
 
 type AuthSchema = AuthEntity;

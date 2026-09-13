@@ -32,6 +32,8 @@ export type MembershipStatus = {
   plan: KioscoPlanEnum;
   plan_status: KioscoPlanStatusEnum;
   next_payment_date: string | null;
+  // Fin del free trial (KioscoPlanStatusEnum.Trial). null fuera de trial.
+  trial_ends_at: string | null;
 };
 
 /*══════════════════════════════════════════════════════════════════════╗
